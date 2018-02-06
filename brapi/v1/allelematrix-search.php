@@ -1,5 +1,5 @@
 <?php
-include('../../includes/bootstrap.inc');
+require '../../includes/bootstrap.inc';
 $mysqli = connecti();
 
 $self = $_SERVER['PHP_SELF'];
@@ -63,6 +63,10 @@ if ($rest[0] == "status") {
         $request = $_SERVER['REQUEST_URI'];
     } elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $request = file_get_contents('php://input');
+        if ($request) {
+        } else {
+            dieNice("Error", "invalid POST data");
+        }
     } else {
         dieNice("Error", "invalid request method");
     }
@@ -112,7 +116,8 @@ if ($rest[0] == "status") {
         $res = mysqli_query($mysqli, $sql);
         if ($row = mysqli_fetch_row($res)) {
             $marker_index = $row[0];
-            $marker_index = explode(",", $marker_index);
+            //$marker_index = explode(",", $marker_index);
+            $marker_index = json_decode($marker_index, true);
         } else {
             dieNice("Error", "invalid experiment $expid");
         }
@@ -197,7 +202,8 @@ if ($rest[0] == "status") {
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         if ($row = mysqli_fetch_row($res)) {
             $tmp = $row[0];
-            $marker_index = explode(",", $tmp);
+            //$marker_index = explode(",", $tmp);
+            $marker_index = json_explode($tmp, true);
         }
         $sql = "select alleles from allele_byline_exp
               where line_record_uid = $lineuid
