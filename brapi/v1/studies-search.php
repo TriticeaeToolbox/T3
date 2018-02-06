@@ -37,6 +37,9 @@ if (isset($_GET['page'])) {
 if (isset($_GET['studyType'])) {
     $studyType = $_GET['studyType'];
 }
+if (isset($_GET['trialDbId'])) {
+    $trialDbId = $_GET['trialDbId'];
+}
 
 function dieNice($msg)
 {
@@ -61,10 +64,12 @@ if ($action == "list") {
     $linearray['metadata']['datafiles'] = array();
 
     //first query all data
+    $options = "";
     if (isset($studyType)) {
         $options = " and experiment_type_name = \"$studyType\"";
-    } else {
-        $options = "";
+    }
+    if (isset($trialDbId)) {
+        $options .= " and experiment_set_uid = $trialDbId";
     }
     $sql = "select experiment_uid, experiment_set_uid, experiment_type_name, trial_code, CAPdata_programs_uid, experiment_year
         from experiments, experiment_types
@@ -89,7 +94,6 @@ if ($action == "list") {
     $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
         $uid = $row[0];
-        $trial = $row[1];
         $set_uid = $row[1];
         $data["studyDbId"] = $row[0];
         if (preg_match("/[0-9]/", $set_uid)) {
@@ -103,13 +107,13 @@ if ($action == "list") {
         $CAP_uid = $row[4];
         $data["programDbId"] = $row[4];
         if (preg_match("/[0-9]/", $set_uid)) {
-            $sql = "select experiment_set_name from experiment_set where experiment_set_uid = $row[1]";
+            $sql = "select experiment_set_name from experiment_set where experiment_set_uid = $set_uid";
             $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli) . "<br>$sql");
             if ($row2 = mysqli_fetch_row($res2)) {
                 $data["trialName"] = $row2[0];
             }
         }
-        $sql = "select location, planting_date, harvest_date from phenotype_experiment_info where experiment_uid = $row[0]";
+        $sql = "select location, planting_date, harvest_date from phenotype_experiment_info where experiment_uid = $uid";
         $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
         if ($row2 = mysqli_fetch_row($res2)) {
             $data["locationDbId"] = "";
