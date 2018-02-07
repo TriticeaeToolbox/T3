@@ -94,6 +94,12 @@ if ($action == "list") {
     header("Content-Type: application/json");
     echo "$return";
 } elseif ($uid != "") {
+    $linearray['metadata']['status'] = array();
+    $linearray['metadata']['datafiles'] = array();
+    $num_rows = 1;
+    $tot_pag = 1;
+    $pageList = array( "pageSize" => $pageSize, "currentPage" => 0, "totalCount" => $num_rows, "totalPages" => $tot_pag );
+    $linearray['metadata']['pagination'] = $pageList;
     $sql = "select marker_uid, marker_name, marker_type_name from markers, marker_types
         where markers.marker_type_uid = marker_types.marker_type_uid
         and marker_uid = $uid";
@@ -110,8 +116,8 @@ if ($action == "list") {
         echo "$return";
         die();
     }
-    $temp[] = $data;
-    $return = json_encode($results);
+    $linearray['result']['data'] = $temp;
+    $return = json_encode($linearray);
     header("Content-Type: application/json");
     echo "$return";
 } else {
