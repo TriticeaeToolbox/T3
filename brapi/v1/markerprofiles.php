@@ -28,7 +28,7 @@ if (isset($_GET['germplasmDbId'])) {
     $lineuid = $_GET['germplasmDbId'];
 }
 if (isset($_GET['markerprofileDbId'])) {
-   $profileid = $_GET['markerprofileDbId'];
+    $profileid = $_GET['markerprofileDbId'];
 }
 if (isset($_GET['extractDbId'])) {
     dieNice("extractDbId not supported");
@@ -116,20 +116,7 @@ if (($lineuid != "") && ($expuid != "")) {
     $sql = "select experiment_uid, line_record_name, count from allele_byline_exp
         where line_record_uid = $lineuid";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    $num_rows = mysqli_num_rows($res);
-
-    //now get just those selected
-    if ($currentPage == 0) {
-        $sql .= " limit $pageSize";
-    } else {
-        $offset = $currentPage * $pageSize;
-        if ($offset < 0) {
-            $offset = 0;
-        }
-        $sql .= " limit $offset, $pageSize";
-    }
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    while ($row = mysqli_fetch_row($res)) {
+    if ($row = mysqli_fetch_row($res)) {
         $expuid = $row[0];
         $resultCount = intval($row[1]);
         $linearray['markerprofileDbId'] = $lineuid . "_" . $row[0];
@@ -145,8 +132,6 @@ if (($lineuid != "") && ($expuid != "")) {
         $linearray['analysisMethod'] = $analysisMethod;
         $linearray['resultCount'] = $resultCount;
         $data[] = $linearray;
-    }
-    if ($resultCount > 0) {
         $response['result']['data'] = $data;
         $response['metadata']['pagination']['pageSize'] = $pageSize;
         $response['metadata']['pagination']['currentPage'] = $currentPage;
