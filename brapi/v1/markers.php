@@ -116,7 +116,7 @@ if ($action == "list") {
         echo "$return";
         die();
     }
-    $linearray['result']['data'] = $temp;
+    $linearray['result'] = $temp;
     $return = json_encode($linearray);
     header("Content-Type: application/json");
     echo "$return";
