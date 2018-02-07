@@ -22,6 +22,11 @@ if (isset($_GET['action'])) {
 if (isset($_GET['uid'])) {
     $uid = $_REQUEST['uid'];
 }
+if (isset($_GET['type'])) {
+    $type = $_GET['uid'];
+} else {
+    $type = "";
+}
 if (isset($_GET['pageSize'])) {
     $pageSize = $_GET['pageSize'];
 } else {
@@ -51,6 +56,42 @@ if ($action == "list") {
     //first query all data
     $sql = "select marker_uid, marker_name, marker_type_name from markers, marker_types
         where markers.marker_type_uid = marker_types.marker_type_uid";
+    $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
+    $num_rows = mysqli_num_rows($res);
+    $tot_pag = ceil($num_rows / $pageSize);
+    $pageList = array( "pageSize" => $pageSize, "currentPage" => 0, "totalCount" => $num_rows, "totalPages" => $tot_pag );
+    $linearray['metadata']['pagination'] = $pageList;
+
+    //now get just those selected
+    if ($currentPage == 0) {
+        $sql .= " limit $pageSize";
+    } else {
+        $offset = $currentPage * $pageSize;
+        if ($offset < 0) {
+            $offset = 0;
+        }
+        $sql .= " limit $offset, $pageSize";
+    }
+    $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $data["markerDbId"] = $row[0];
+        $data["defaultDisplayName"] = $row[1];
+        $data["type"] = $row[2];
+        $temp[] = $data;
+    }
+    $linearray['result']['data'] = $temp;
+    $return = json_encode($linearray);
+    header("Content-Type: application/json");
+    echo "$return";
+} elseif ($type != "") {
+    $linearray['metadata']['pagination'] = $pageList;
+    $linearray['metadata']['status'] = array();
+    $linearray['metadata']['datafiles'] = array();
+
+    //first query all data
+    $sql = "select marker_uid, marker_name, marker_type_name from markers, marker_types
+        where markers.marker_type_uid = marker_types.marker_type_uid
+        and marker_type_name = \"$type\"";
     $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
     $num_rows = mysqli_num_rows($res);
     $tot_pag = ceil($num_rows / $pageSize);
