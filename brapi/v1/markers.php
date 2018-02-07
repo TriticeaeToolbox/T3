@@ -108,7 +108,6 @@ if ($action == "list") {
         $data["markerDbId"] = $row[0];
         $data["defaultDisplayName"] = $row[1];
         $data["type"] = $row[2];
-        $temp[] = $data;
     } else {
         $results = null;
         $return = json_encode($results);
@@ -116,7 +115,7 @@ if ($action == "list") {
         echo "$return";
         die();
     }
-    $linearray['result'] = $temp;
+    $linearray['result'] = $data;
     $return = json_encode($linearray);
     header("Content-Type: application/json");
     echo "$return";
