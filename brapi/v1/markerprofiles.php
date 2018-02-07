@@ -109,7 +109,6 @@ if (($lineuid != "") && ($expuid != "")) {
     header("Content-Type: application/json");
     echo json_encode($response);
 } elseif ($lineuid != "") {
-    $resultCount = 0;
     $pageList = array();
     $data = array();
     $response['metadata']['pagination'] = $pageList;
@@ -118,7 +117,6 @@ if (($lineuid != "") && ($expuid != "")) {
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     if ($row = mysqli_fetch_row($res)) {
         $expuid = $row[0];
-        $resultCount = intval($row[1]);
         $linearray['markerprofileDbId'] = $lineuid . "_" . $row[0];
         $linearray['germplasmDbId'] = $lineuid;
         $linearray['uniqueDisplayName'] = $row[1];
@@ -130,7 +128,7 @@ if (($lineuid != "") && ($expuid != "")) {
             and g.experiment_uid = $expuid"
         );
         $linearray['analysisMethod'] = $analysisMethod;
-        $linearray['resultCount'] = $resultCount;
+        $linearray['resultCount'] = 1;
         $data[] = $linearray;
         $response['result']['data'] = $data;
         $response['metadata']['pagination']['pageSize'] = $pageSize;
