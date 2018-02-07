@@ -51,7 +51,7 @@ $ourcalls['maps/{mapDbId}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['maps/{mapDbID}/positions'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['crops'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['locations'] = ['datatypes' => ['json'], 'methods' => ['GET']];
-$ourcalls['markers-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['markers'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 
 /* If no request parameters, list all calls supported. */
 if (!$call && !$datatype) {
