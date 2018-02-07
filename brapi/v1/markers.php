@@ -21,6 +21,11 @@ if (isset($_GET['type'])) {
 } else {
     $type = "";
 }
+if (isset($_GET['name'])) {
+    $name = $_GET['name'];
+} else {
+    $name = "";
+}
 if (isset($_GET['pageSize'])) {
     $pageSize = $_GET['pageSize'];
 } else {
@@ -54,6 +59,9 @@ if ($action == "list") {
         $options = " and marker_type_name = \"$type\"";
     } else {
         $options = "";
+    }
+    if ($name != "") {
+        $options .= " and marker_name like \"$name\"";
     }
     $sql .= $options;
 

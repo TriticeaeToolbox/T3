@@ -53,6 +53,7 @@ $ourcalls['crops'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['locations'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['markers'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['markers/{type}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['markers/{name}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 
 /* If no request parameters, list all calls supported. */
 if (!$call && !$datatype) {
