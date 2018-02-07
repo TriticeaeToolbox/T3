@@ -49,7 +49,8 @@ if ($action == "list") {
     $linearray['metadata']['datafiles'] = array();
 
     //first query all data
-    $sql = "select distinct location from phenotype_experiment_info where location is not NULL order by location";
+    $sql = "select marker_uid, marker_name, marker_type_name from markers, marker_types
+        where markers.marker_type_uid = marker_types.marker_type_uid";
     $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
     $num_rows = mysqli_num_rows($res);
     $tot_pag = ceil($num_rows / $pageSize);
@@ -68,15 +69,9 @@ if ($action == "list") {
     }
     $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
-        $data["locationDbId"] = $row[0];
-        $data["locationType"] = "Breeding Location";
-        $data["countryCode"] = "";  //need to add field in database//
-        $data["name"] = $row[0];
-        $sql = "select experiments.experiment_uid, trial_code, location
-            from experiments, phenotype_experiment_info
-            where experiments.experiment_uid = phenotype_experiment_info.experiment_uid
-            and experiment_set_uid = $uid";
-        //$res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli) . $sql);
+        $data["markerDbId"] = $row[0];
+        $data["defaultDisplayName"] = $row[1];
+        $data["type"] = $row[2];
         $temp[] = $data;
     }
     $linearray['result']['data'] = $temp;
@@ -84,13 +79,15 @@ if ($action == "list") {
     header("Content-Type: application/json");
     echo "$return";
 } elseif ($uid != "") {
-    $sql = "select distinct location from phenotype_experiment_info where location where location = \"$uid\"";
+    $sql = "select marker_uid, marker_name, marker_type_name from markers, marker_types
+        where markers.marker_type_uid = marker_types.marker_type_uid
+        and marker_uid = $uid";
     $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
     if ($row = mysqli_fetch_row($res)) {
-        $data["locationDbId"] = $uid;
-        $data["locationType"] = "Breeding Location";
-        $data["countryCode"] = "";  //need to add field in database//
-        $data["name"] = $row[0];
+        $data["markerDbId"] = $row[0];
+        $data["defaultDisplayName"] = $row[1];
+        $data["type"] = $row[2];
+        $temp[] = $data;
     } else {
         $results = null;
         $return = json_encode($results);
