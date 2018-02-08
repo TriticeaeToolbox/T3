@@ -51,7 +51,7 @@ if ($rest[0] == "status") {
             $results['metadata']['status'][] = array("code" => "asyncstatus", "message" => "FINISHED");
         }
     } else {
-        $results['metadata']['status'][] = array("code" => "asyncstatus", "message" => "PENDING $statusFile");
+        $results['metadata']['status'][] = array("code" => "asyncstatus", "message" => "PENDING");
     }
     $return = json_encode($results);
     die("$return");
@@ -156,6 +156,13 @@ if ($rest[0] == "status") {
         }
         $resultProfile[] = $item;
     }
+} elseif (isset($_REQUEST['matrixDbId'])) {
+    $studyDbId = $_REQUEST['matrixDbId'];
+    $uniqueStr = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
+    $errorFile = "/tmp/tht/error_" . $uniqueStr . ".txt";
+    $cmd = "php allelematrix-offline.php \"$studyDbId\" \"$uniqueStr\" > /dev/null 2> $errorFile";
+    exec($cmd);
+    dieNice("asynchid", "$uniqueStr");
 } else {
     //first query all data
     dieNice("Error", "need markerprofileDbId");
