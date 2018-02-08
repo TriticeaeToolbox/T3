@@ -51,7 +51,7 @@ if ($rest[0] == "status") {
             $results['metadata']['status'][] = array("code" => "asyncstatus", "message" => "FINISHED");
         }
     } else {
-        $results['metadata']['status'][] = array("code" => "asyncstatus", "message" => "PENDING");
+        $results['metadata']['status'][] = array("code" => "asyncstatus", "message" => "PENDING $statusFile");
     }
     $return = json_encode($results);
     die("$return");
@@ -97,7 +97,7 @@ if ($rest[0] == "status") {
 
     $countExp = count($profile_list);
     if ($countExp > 1) {
-        $cmd = "php allelematrix-search-offline.php \"$profile_str\" \"$uniqueStr\" > /dev/null 2> $errorFile";
+        $cmd = "php allelematrix-search-offline.php $profile_str $uniqueStr > /dev/null 2> $errorFile";
         exec($cmd);
         dieNice("asynchid", "$uniqueStr");
     }
