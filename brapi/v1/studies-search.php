@@ -135,21 +135,22 @@ if ($action == "list") {
             $sql = "select location, planting_date, harvest_date from phenotype_experiment_info where experiment_uid = $uid";
             $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
             if ($row2 = mysqli_fetch_row($res2)) {
-                $data["location"]["locationDbId"] = $row2[0];
                 if (isset($row2[0])) {
-                    $data["location"]["name"] = $row2[0];
+                    $data["locationDbId"] = $row2[0];
+                    $data["locationName"] = $row2[0];
                 } else {
-                    $data["location"]["name"] = "";
+                    $data["locationDbId"] = "";
+                    $data["locationName"] = "";
                 }
                 $data["startDate"] = $row2[1];
                 $data["endDate"] = $row2[2];
             } else {
-                $data["location"]["locationDbId"] = "";
-                $data["location"]["name"] = "";
+                $data["locationDbId"] = "";
+                $data["locationName"] = "";
             }
         } else {
-            $data["location"]["locationDbId"] = "";
-            $data["location"]["name"] = "";
+            $data["locationDbId"] = "";
+            $data["locationName"] = "";
         }
         $sql = "select data_program_name from CAPdata_programs where CAPdata_programs_uid = $CAP_uid";
         $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
