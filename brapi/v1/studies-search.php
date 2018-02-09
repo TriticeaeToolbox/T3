@@ -192,7 +192,7 @@ if ($action == "list") {
     $results["studyDbId"] = $uid;
     $results["studyType"] = $type;
     $results["trialDbId"] = $set;
-    $results["name"] = $row[2];
+    $results["StudyName"] = $row[2];
     $sql = "select trial_code, planting_date, harvest_date, collaborator, begin_weather_date, location, experiment_design
        from experiments, phenotype_experiment_info
        where phenotype_experiment_info.experiment_uid = experiments.experiment_uid
@@ -213,7 +213,7 @@ if ($action == "list") {
          and experiments.experiment_uid = $uid";
         $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
         if ($row = mysqli_fetch_row($res)) {
-            $results["additionalInfo"] =  $row[0];
+            $results["additionalInfo"]["platform"] = $row[0];
         }
         $results["location"]["locationDbId"] = "";
         $results["location"]["name"] = "";
