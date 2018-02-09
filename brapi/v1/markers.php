@@ -26,6 +26,11 @@ if (isset($_GET['name'])) {
 } else {
     $name = "";
 }
+if (isset($_GET['markerDbIds'])) {
+    $markerDbIds = $_GET['markerDbIds'];
+} else {
+    $markerDbIds = "";
+}
 if (isset($_GET['pageSize'])) {
     $pageSize = $_GET['pageSize'];
 } else {
@@ -62,6 +67,9 @@ if ($action == "list") {
     }
     if ($name != "") {
         $options .= " and marker_name like \"$name\"";
+    }
+    if ($markerDbIds != "") {
+        $options .= " and marker_uid in ($markerDbIds)";
     }
     $sql .= $options;
 
