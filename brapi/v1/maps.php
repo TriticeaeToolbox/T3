@@ -215,7 +215,7 @@ if ($action == "list") {
             mysqli_stmt_execute($stmt);
             mysqli_stmt_bind_result($stmt, $marker_uid, $marker_name, $start_position, $chromosome, $arm);
             while (mysqli_stmt_fetch($stmt)) {
-                 $temp2["markerDbId"] = $marker_uid;
+                 $temp2["markerDbId"] = "$marker_uid";
                  $temp2["markerName"] = $marker_name;
                  $temp2["location"] = "$start_position";
                  $temp2["linkageGroup"] = $chromosome;
@@ -237,7 +237,7 @@ if ($action == "list") {
                 mysqli_stmt_execute($stmt);
                 mysqli_stmt_bind_result($stmt, $marker_uid, $marker_name, $start_position, $chromosome, $arm);
                 while (mysqli_stmt_fetch($stmt)) {
-                    $temp2["markerDbId"] = $marker_uid;
+                    $temp2["markerDbId"] = "$marker_uid";
                     $temp2["markerName"] = $marker_name;
                     $temp2["location"] = "$start_position";
                     $temp2["linkageGroup"] = $chromosome;
