@@ -114,7 +114,7 @@ if ($action == "list") {
             $data["trialDbId"] = "";
         }
         $data["studyType"] = $row[2];
-        $data["studyName"] = $row[3];
+        $data["name"] = $row[3];
         $data["trialName"] = "";
         $CAP_uid = $row[4];
         $data["programDbId"] = $row[4];
@@ -147,6 +147,9 @@ if ($action == "list") {
                 $data["location"]["locationDbId"] = "";
                 $data["location"]["name"] = "";
             }
+        } else {
+            $data["location"]["locationDbId"] = "";
+            $data["location"]["name"] = "";
         }
         $sql = "select data_program_name from CAPdata_programs where CAPdata_programs_uid = $CAP_uid";
         $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
@@ -188,7 +191,7 @@ if ($action == "list") {
     $results["studyDbId"] = $uid;
     $results["studyType"] = $type;
     $results["trialDbId"] = $set;
-    $results["studyName"] = $row[2];
+    $results["name"] = $row[2];
     $sql = "select trial_code, planting_date, harvest_date, collaborator, begin_weather_date, location, experiment_design
        from experiments, phenotype_experiment_info
        where phenotype_experiment_info.experiment_uid = experiments.experiment_uid
@@ -211,6 +214,8 @@ if ($action == "list") {
         if ($row = mysqli_fetch_row($res)) {
             $results["additionalInfo"] =  $row[0];
         }
+        $results["location"]["locationDbId"] = "";
+        $results["location"]["name"] = "";
     }
     if (isset($results["trialDbId"])) {
         $sql = "select experiment_set_name from experiment_set where experiment_set_uid = $uid";
