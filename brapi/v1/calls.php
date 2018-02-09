@@ -48,7 +48,7 @@ $ourcalls['trials/{trialDbId'] = ['datatypes' => ['json'], 'methods' => ['GET']]
 $ourcalls['traits'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['maps'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['maps/{mapDbId}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
-$ourcalls['maps/{mapDbID}/positions'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['maps/{mapDbId}/positions'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['crops'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['locations'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['markers'] = ['datatypes' => ['json'], 'methods' => ['GET']];
