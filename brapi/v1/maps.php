@@ -217,7 +217,7 @@ if ($action == "list") {
             while (mysqli_stmt_fetch($stmt)) {
                  $temp2["markerDbId"] = $marker_uid;
                  $temp2["markerName"] = $marker_name;
-                 $temp2["location"] = $start_position;
+                 $temp2["location"] = "$start_position";
                  $temp2["linkageGroup"] = $chromosome;
                  $linearray['result']['data'][] = $temp2;
             }
@@ -239,7 +239,7 @@ if ($action == "list") {
                 while (mysqli_stmt_fetch($stmt)) {
                     $temp2["markerDbId"] = $marker_uid;
                     $temp2["markerName"] = $marker_name;
-                    $temp2["location"] = $start_position;
+                    $temp2["location"] = "$start_position";
                     $temp2["linkageGroup"] = $chromosome;
                     $linearray['result']['data'][] = $temp2;
                 }
