@@ -174,7 +174,7 @@ function changeParameters(value, parameters) {
 	var expectLabel = document.createElement("span");
 	expectLabel.className = 'label';
 	var expectLink = document.createElement("a");
-	expectLink.href = "docs/parameters.html#expect";
+	expectLink.href = "viroblast/docs/parameters.html#expect";
 	var expectFormw = document.createElement("span");
 	expectFormw.className = 'formw';
 	var expectObj = document.createElement("input");
@@ -195,7 +195,7 @@ function changeParameters(value, parameters) {
 	var wordLabel = document.createElement("span");
 	wordLabel.className = 'label';
 	var wordsizeLink = document.createElement("a");
-	wordsizeLink.href = "docs/parameters.html#wordsize";
+	wordsizeLink.href = "viroblast/docs/parameters.html#wordsize";
 	var wordFormw = document.createElement("span");
 	wordFormw.className = 'formw';
 	var wordObj = document.createElement("select");
@@ -237,7 +237,7 @@ function changeParameters(value, parameters) {
 	var targetLabel = document.createElement("span");
 	targetLabel.className = 'label';
 	var targetLink = document.createElement("a");
-	targetLink.href = "docs/parameters.html#targetseqs";
+	targetLink.href = "viroblast/docs/parameters.html#targetseqs";
 	var targetFormw = document.createElement("span");
 	targetFormw.className = 'formw';
 	var targetObj = document.createElement("select");
@@ -273,7 +273,7 @@ function changeParameters(value, parameters) {
 		var mmScoreLabel = document.createElement("span");
 		mmScoreLabel.className = 'label';
 		var mmScoreLink = document.createElement("a");
-		mmScoreLink.href = "docs/parameters.html#mmscore";
+		mmScoreLink.href = "viroblast/docs/parameters.html#mmscore";
 		var mmScoreFormw = document.createElement("span");
 		mmScoreFormw.className = 'formw';
 		var mmScoreObj = document.createElement("select");
@@ -307,7 +307,7 @@ function changeParameters(value, parameters) {
 		var matrixLabel = document.createElement("span");
 		matrixLabel.className = 'label';
 		var matrixLink = document.createElement("a");
-		matrixLink.href = "docs/parameters.html#matrix";
+		matrixLink.href = "viroblast/docs/parameters.html#matrix";
 		var matrixFormw = document.createElement("span");
 		matrixFormw.className = 'formw';
 		var matrixObj = document.createElement("select");
@@ -342,7 +342,7 @@ function changeParameters(value, parameters) {
 		var gapcostLabel = document.createElement("span");
 		gapcostLabel.className = 'label';
 		var gapcostLink = document.createElement("a");
-		gapcostLink.href = "docs/parameters.html#gapcost";
+		gapcostLink.href = "viroblast/docs/parameters.html#gapcost";
 		var gapcostFormw = document.createElement("span");
 		gapcostFormw.className = 'formw';
 		var gapcostObj = document.createElement("select");
@@ -388,7 +388,7 @@ function changeParameters(value, parameters) {
 	var filterLabel = document.createElement("span");
 	filterLabel.className = 'label';
 	var filterLink = document.createElement("a");
-	filterLink.href = "docs/parameters.html#filter";
+	filterLink.href = "viroblast/docs/parameters.html#filter";
 	var filterFormw = document.createElement("span");
 	filterFormw.className = 'formw';
 	var filterObj;
@@ -422,7 +422,7 @@ function changeParameters(value, parameters) {
 	var lookupLabel = document.createElement("span");
 	lookupLabel.className = 'label';
 	var lookupLink = document.createElement("a");
-	lookupLink.href = "docs/parameters.html#lookup";
+	lookupLink.href = "viroblast/docs/parameters.html#lookup";
 	var lookupFormw = document.createElement("span");
 	lookupFormw.className = 'formw';	
 	var lookupObj;
@@ -468,7 +468,7 @@ function changeParameters(value, parameters) {
 		var gapalignLabel = document.createElement("span");
 		gapalignLabel.className = 'label';
 		var gapalignLink = document.createElement("a");
-		gapalignLink.href = "docs/parameters.html#gapalign";
+		gapalignLink.href = "viroblast/docs/parameters.html#gapalign";
 		var gapalignFormw = document.createElement("span");
 		gapalignFormw.className = 'formw';
 		var gapalignObj = document.createElement("input");
@@ -489,7 +489,7 @@ function changeParameters(value, parameters) {
 	var outfmtLabel = document.createElement("span");
 	outfmtLabel.className = 'label';
 	var outfmtLink = document.createElement("a");
-	outfmtLink.href = "docs/parameters.html#outfmt";
+	outfmtLink.href = "viroblast/docs/parameters.html#outfmt";
 	var outfmtFormw = document.createElement("span");
 	outfmtFormw.className = 'formw';
 	var outfmtObj = document.createElement("select");
@@ -525,7 +525,7 @@ function changeParameters(value, parameters) {
 		var qcodeLabel = document.createElement("span");
 		qcodeLabel.className = 'label';
 		var qcodeLink = document.createElement("a");
-		qcodeLink.href = "docs/parameters.html#qcode";
+		qcodeLink.href = "viroblast/docs/parameters.html#qcode";
 		var qcodeFormw = document.createElement("span");
 		qcodeFormw.className = 'formw';
 		var qcodeObj = document.createElement("select");
@@ -581,7 +581,7 @@ function changeParameters(value, parameters) {
 		var dbcodeLabel = document.createElement("span");
 		dbcodeLabel.className = 'label';
 		var dbcodeLink = document.createElement("a");
-		dbcodeLink.href = "docs/parameters.html#dbcode";
+		dbcodeLink.href = "viroblast/docs/parameters.html#dbcode";
 		var dbcodeFormw = document.createElement("span");
 		dbcodeFormw.className = 'formw';
 		var dbcodeObj = document.createElement("select");
@@ -636,7 +636,7 @@ function changeParameters(value, parameters) {
 	var otherLabel = document.createElement("span");
 	otherLabel.className = 'label';
 	var otherLink = document.createElement("a");
-	otherLink.href = "docs/parameters.html#other";
+	otherLink.href = "viroblast/docs/parameters.html#other";
 	var otherFormw = document.createElement("span");
 	otherFormw.className = 'formw';
 	var otherObj = document.createElement("input");
