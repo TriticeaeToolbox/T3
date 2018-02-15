@@ -192,7 +192,7 @@ if ($action == "list") {
     $results["studyDbId"] = $uid;
     $results["studyType"] = $type;
     $results["trialDbId"] = $set;
-    $results["StudyName"] = $row[2];
+    $results["studyName"] = $row[2];
     $sql = "select trial_code, planting_date, harvest_date, collaborator, begin_weather_date, location, experiment_design
        from experiments, phenotype_experiment_info
        where phenotype_experiment_info.experiment_uid = experiments.experiment_uid
