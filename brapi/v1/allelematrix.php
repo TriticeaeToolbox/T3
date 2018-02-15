@@ -1,5 +1,5 @@
 <?php
-include('../../includes/bootstrap.inc');
+require '../../includes/bootstrap.inc';
 $mysqli = connecti();
 
 $self = $_SERVER['PHP_SELF'];
@@ -28,7 +28,7 @@ function dieNice($code, $msg)
     global $results;
     $results['metadata']['pagination'] = null;
     $results['metadata']['status'][] = array("code" => $code, "message" => "$msg");
-    $results['result'] = null;
+    $results['result']['data'] = array();
     $return = json_encode($results);
     die("$return");
 }
@@ -93,7 +93,7 @@ if ($rest[0] == "status") {
 
     $countExp = count($profile_list);
     if ($countExp > 1) {
-        $cmd = "php allelematrix-search-offline.php \"$profile_str\" \"$uniqueStr\" > /dev/null 2> $errorFile";
+        $cmd = "php allelematrix-search-offline.php $profile_str $uniqueStr > /dev/null 2> $errorFile";
         exec($cmd);
         dieNice("asynchid", "$uniqueStr");
     }
@@ -112,7 +112,8 @@ if ($rest[0] == "status") {
         $res = mysqli_query($mysqli, $sql);
         if ($row = mysqli_fetch_row($res)) {
             $marker_index = $row[0];
-            $marker_index = explode(",", $marker_index);
+            $marker_index = json_decode($marker_index, true);
+            //$marker_index = explode(",", $marker_index);
         } else {
             dieNice("Error", "invalid experiment $expid");
         }
@@ -151,6 +152,13 @@ if ($rest[0] == "status") {
         }
         $resultProfile[] = $item;
     }
+} elseif (isset($_REQUEST['matrixDbId'])) {
+    $studyDbId = $_REQUEST['matrixDbId'];
+    $uniqueStr = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
+    $errorFile = "/tmp/tht/error_" . $uniqueStr . ".txt";
+    $cmd = "php allelematrix-offline.php \"$studyDbId\" \"$uniqueStr\" > /dev/null 2> $errorFile";
+    exec($cmd);
+    dieNice("asynchid", "$uniqueStr");
 } else {
     //first query all data
     dieNice("Error", "need markerprofileDbId");
@@ -197,7 +205,8 @@ if ($rest[0] == "status") {
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         if ($row = mysqli_fetch_row($res)) {
             $tmp = $row[0];
-            $marker_index = explode(",", $tmp);
+            $marker_index = json_explode($tmp, true);
+            //$marker_index = explode(",", $tmp);
         }
         $sql = "select alleles from allele_byline_exp
               where line_record_uid = $lineuid

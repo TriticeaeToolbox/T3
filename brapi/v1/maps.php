@@ -2,7 +2,6 @@
 /**
  * brapi/v1/maps.php
  * Deliver genome maps according to http://docs.brapi.apiary.io
- *
  */
 
 require '../../includes/bootstrap.inc';
@@ -157,7 +156,8 @@ if ($action == "list") {
     $return = json_encode($linearray);
     echo "$return";
 } elseif ($action == "MapData") {
-    $linearray['metadata']['status'] = null;
+    $linearray['metadata']['status'] = array();
+    $linearray['metadata']['datafiles'] = array();
     $num_rows = 0;
     if (empty($uid_ary)) {
         $sql = "select markers.marker_uid, markers.marker_name, start_position, chromosome, arm
@@ -215,9 +215,9 @@ if ($action == "list") {
             mysqli_stmt_execute($stmt);
             mysqli_stmt_bind_result($stmt, $marker_uid, $marker_name, $start_position, $chromosome, $arm);
             while (mysqli_stmt_fetch($stmt)) {
-                 $temp2["markerDbId"] = $marker_uid;
+                 $temp2["markerDbId"] = "$marker_uid";
                  $temp2["markerName"] = $marker_name;
-                 $temp2["location"] = $start_position;
+                 $temp2["location"] = "$start_position";
                  $temp2["linkageGroup"] = $chromosome;
                  $linearray['result']['data'][] = $temp2;
             }
@@ -237,9 +237,9 @@ if ($action == "list") {
                 mysqli_stmt_execute($stmt);
                 mysqli_stmt_bind_result($stmt, $marker_uid, $marker_name, $start_position, $chromosome, $arm);
                 while (mysqli_stmt_fetch($stmt)) {
-                    $temp2["markerDbId"] = $marker_uid;
+                    $temp2["markerDbId"] = "$marker_uid";
                     $temp2["markerName"] = $marker_name;
-                    $temp2["location"] = $start_position;
+                    $temp2["location"] = "$start_position";
                     $temp2["linkageGroup"] = $chromosome;
                     $linearray['result']['data'][] = $temp2;
                 }

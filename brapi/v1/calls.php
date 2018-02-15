@@ -3,9 +3,10 @@
  * Brapi/v1/calls.php, DEM jul2016
  * Document the data formats and HTTP methods we support.
  * http://docs.brapi.apiary.io/
- *
+ * Change Log
  * CLB 4/10/2017 - added traits, use empty list instead of null for status
  * CLB 1/22/2018 - added crops
+ * CLB 2/06/2018 - change parameter format to include curly braces
  */
 
 require '../../includes/bootstrap.inc';
@@ -33,21 +34,26 @@ if (isset($_GET['page'])) {
 $ourcalls['allelematrices'] = ['datatypes' => ['flapjack'], 'methods' => ['GET']];
 $ourcalls['allelematrix-search'] = ['datatypes' => ['json'], 'methods' => ["GET", "POST"]];
 $ourcalls['markerprofiles'] = ['datatypes' => ['json'], 'methods' => ['GET']];
-$ourcalls['markerprofiles/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['markerprofiles/{markerprofileDbId}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['markerprofiles/{germplasmDbId}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['calls'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['germplasm-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['germplasm'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['studies-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
-$ourcalls['studies-search/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['studies-search/{studyType}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['studies'] = ['datatypes' => ['json'], 'methods' => ['GET']];
-$ourcalls['studies/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['studies/{studyDbId}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['trials'] = ['datatypes' => ['json'], 'methods' => ['GET']];
-$ourcalls['trials/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['trials/{trialDbId'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['traits'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['maps'] = ['datatypes' => ['json'], 'methods' => ['GET']];
-$ourcalls['maps/id'] = ['datatypes' => ['json'], 'methods' => ['GET']];
-$ourcalls['maps/id/positions'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['maps/{mapDbId}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['maps/{id}/positions'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['crops'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['locations'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['markers'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['markers/{markerDbId}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['markers-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 
 /* If no request parameters, list all calls supported. */
 if (!$call && !$datatype) {

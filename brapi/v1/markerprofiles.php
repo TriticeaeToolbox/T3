@@ -18,14 +18,17 @@ $script = $_SERVER["SCRIPT_NAME"]."/";
 $rest = str_replace($script, "", $self);
 $rest = explode("/", $rest);
 //echo "rest[0] = $rest[0], rest[1] = $rest[1]\n";
-if (!empty($rest[0])) {
-    $profileid = $rest[0];
-}
+//if (!empty($rest[0])) {
+//    $profileid = $rest[0];
+//}
 $lineuid = "";
 $expuid = "";
 $analmeth = "";
 if (isset($_GET['germplasmDbId'])) {
     $lineuid = $_GET['germplasmDbId'];
+}
+if (isset($_GET['markerprofileDbId'])) {
+    $profileid = $_GET['markerprofileDbId'];
 }
 if (isset($_GET['extractDbId'])) {
     dieNice("extractDbId not supported");
@@ -53,11 +56,16 @@ if ($_GET) {
 
 function dieNice($msg)
 {
-    $linearray['metadata']['pagination'] = null;
-    $linearray['metadata']['status'] = array("code" => 1, "message" => "Error: $msg");
-    $linearray['result'] = array();
+    $data = array();
+    $linearray['metadata']['pagination']['pageSize'] = 1;
+    $linearray['metadata']['pagination']['currentPage'] = 0;
+    $linearray['metadata']['pagination']['totalCount'] = 1;
+    $linearray['metadata']['pagination']['totalPages'] = 1;
+    $linearray['metadata']['status'][] = array("code" => "1", "message" => "Error: $msg");
+    $linearray['metadata']['datafiles'] = array();
+    $linearray['result']['data'] = $data;
     $return = json_encode($linearray);
-    header("Content-Type: application/json");
+    header("Content-Type: application/json", true, 404);
     die("$return");
 }
 
@@ -107,22 +115,8 @@ if (($lineuid != "") && ($expuid != "")) {
     $sql = "select experiment_uid, line_record_name, count from allele_byline_exp
         where line_record_uid = $lineuid";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    $num_rows = mysqli_num_rows($res);
-
-    //now get just those selected
-    if ($currentPage == 0) {
-        $sql .= " limit $pageSize";
-    } else {
-        $offset = $currentPage * $pageSize;
-        if ($offset < 0) {
-            $offset = 0;
-        }
-        $sql .= " limit $offset, $pageSize";
-    }
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    while ($row = mysqli_fetch_row($res)) {
+    if ($row = mysqli_fetch_row($res)) {
         $expuid = $row[0];
-        $resultCount = intval($row[1]);
         $linearray['markerprofileDbId'] = $lineuid . "_" . $row[0];
         $linearray['germplasmDbId'] = $lineuid;
         $linearray['uniqueDisplayName'] = $row[1];
@@ -134,16 +128,18 @@ if (($lineuid != "") && ($expuid != "")) {
             and g.experiment_uid = $expuid"
         );
         $linearray['analysisMethod'] = $analysisMethod;
-        $linearray['resultCount'] = $resultCount;
+        $linearray['resultCount'] = 1;
         $data[] = $linearray;
+        $response['result']['data'] = $data;
+        $response['metadata']['pagination']['pageSize'] = $pageSize;
+        $response['metadata']['pagination']['currentPage'] = $currentPage;
+        $response['metadata']['pagination']['totalCount'] = $num_rows;
+        $response['metadata']['pagination']['totalPages'] = ceil($num_rows / $pageSize);
+        header("Content-Type: application/json");
+        echo json_encode($response);
+    } else {
+        dieNice("Line not found");
     }
-    $response['result']['data'] = $data;
-    $response['metadata']['pagination']['pageSize'] = $pageSize;
-    $response['metadata']['pagination']['currentPage'] = $currentPage;
-    $response['metadata']['pagination']['totalCount'] = $num_rows;
-    $response['metadata']['pagination']['totalPages'] = ceil($num_rows / $pageSize);
-    header("Content-Type: application/json");
-    echo json_encode($response);
 } elseif ($expuid != "") {
     $pageList = array();
     $data = array();
@@ -201,6 +197,7 @@ if (($lineuid != "") && ($expuid != "")) {
 } elseif (isset($profileid)) {
     // "Get Genotype By Id"
     // URI is something like genotype/{id}[?runId={runId}][&analysisMethod={method}][&pageSize={pageSize}&page={page}]
+    $data = array();
     if (preg_match("/(\d+)_(\d+)/", $profileid, $match)) {
         $lineuid = $match[1];
         $expid = $match[2];
@@ -210,6 +207,7 @@ if (($lineuid != "") && ($expuid != "")) {
     $pageList = array();
     $linearray['metadata']['pagination'] = $pageList;
     $linearray['metadata']['status'] = array();
+    $linearray['metadata']['datafiles'] = array();
     $linearray['result']['markerprofileDbId'] = $profileid;
     $linearray['result']['germplasmDbId'] = $lineuid;
     $linearray['result']['uniqueDisplayName'] = mysql_grab("select line_record_name from line_records where line_record_uid = $lineuid");
