@@ -5,9 +5,8 @@
 <title>Plant Breeding API demo</title>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
 <script src="//code.jquery.com/jquery-2.2.4.min.js"></script>
-<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-<script type="text/javascript" src="fieldBookApp06.js"></script>
-<!--link rel="stylesheet" href="/resources/demos/style.css"i-->
+<script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script type="text/javascript" src="wizard.js"></script>
 <script>
 $(function() {
   $( "#tabs" ).tabs();
@@ -32,33 +31,36 @@ $(function() {
 <select name= "url" id="url2" onchange="javascript: updateUrl();">
   <option>Select database server or enter a URL below</option>
   <option value="https://t3sandbox.org/t3/wheatplus/brapi/v1">Triticeae Toolbox Development</option>
-  <option value="https://triticeaetoolbox.org/wheat/brapi/v1">Triticeae Toolbox Wheat (TCAP)</option>
+  <option value="https://triticeaetoolbox.org/wheat/brapi/v1" selected="selected">Triticeae Toolbox Wheat (TCAP)</option>
   <option value="https://triticeaetoolbox.org/barley/brapi/v1">Triticeae Toolbox Barley (TCAP)</option>
   <option value="https://triticeaetoolbox.org/oat/brapi/v1">Triticeae Toolbox Oat </option>
   <option value="https://cassava-test.sgn.cornell.edu/brapi/v1">CassavaBase (BTI)</option>
 </select>
-<tr><td><td><input type="text" id="url" size="60" value="">
-<tr><td>Debug:<td>
+<tr><td><td><input type="text" id="url" size="60" value="https://t3sandbox.org/t3/wheatplus/brapi/v1">
+<!--tr><td>Debug:<td-->
 <input type="radio" name="debug" id="NoDebug" checked>No
-<input type="radio" name="debug" id="YesDebug">Yes
+<input type="radio" name="debug" id="YesDebug">Yes>
 </table>
 </p>
 </div>
 <div id="tabs-2">
 <p>
-<input type="button" value="Get list of calls" onclick="javascript: getListCalls();"/><br>
-<input type="button" value="Get list of studies" onclick="javascript: getListStudies();"/><br>
-<input type="button" value="Get list of traits" onclick="javascript: getListTraits();"/><br>
-<input type="button" value="Get list of maps" onclick="javascript: getListMaps();"/><br>
-<input type="button" value="GET list of germplasm" onclick="javascript: getListGermp();"/><br>
-<input type="button" value="Get markerprofiles" onclick="javascript: getMarkerprofiles();"/>
-<input type="button" value="Get allelematrix" onclick="javascript: getAlleleMatrix();"/><br>
-<br>
+<div id="step1" style="float: left; margin-bottom: 1.5em;">
+<select id="step11" onchange="javascript: updateStep1();">
+  <option value="Program" selected="selected">Program</option>
+  <option value="Location">Location</option>
+  <option value="Trial">Trial</option>
+  <option value="Study">Studies</option>
+  <option value="Trait">Traits</option>
+</select>
+<div id="step12">
+</div></div>
+<div id="step2" style="float: left; margin-bottom: 1.5em;"></div>
+<div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
 </p>
 </div>
 <div id="tabs-3">
 <p>
-<input type="button" value="Submit" onclick="javascript: getCluster1();"/><br>
 </p>
 </div>
 <div id="step2"></div>
