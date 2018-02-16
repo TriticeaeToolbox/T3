@@ -2,7 +2,7 @@
 /**
  * create-allele-byline-exp.php
  * create 2D table where rows contain lines and experiment
- * columns contain lines
+ * columns contain markers
  *
  * PHP version 5
  *
@@ -46,7 +46,7 @@ while ($row = mysqli_fetch_array($res)) {
 }
 
 /*get list of experiments loaded so we know if new or updates*/
-$sql = "select experiment_uid, line_record_uid from allele_byline_exp";
+$sql = "select experiment_uid, line_record_uid from allele_byline_exp_ACTG";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 while ($row = mysqli_fetch_array($res)) {
     $exp_uid = $row[0];
@@ -72,6 +72,14 @@ while ($row = mysqli_fetch_array($res)) {
     $max_markers++;
 }
 echo "max_markers = $max_markers<br>\n";
+
+$sql = "select marker_uid, A_allele, B_allele from markers";
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+while ($row = mysqli_fetch_array($res)) {
+    $marker_uid = $row[0];
+    $allele = $row[1] . $row[2];
+    $marker_allele_list[$marker_uid] = $allele;
+}
 
 $max_lines=0;
 $line_uid_list = array();
@@ -101,34 +109,56 @@ if ($max_markers > 0) {
     $empty = array_fill(0, $max_markers, '');
 }
 
+    $lookup_101 = array(
+        'AA' => '1',
+        'BB' => '-1',
+        '--' => 'NA',
+        'AB' => '0'
+    );
+
 $k = 0;
 $count_update = 0;
 $count_new = 0;
 for ($j=0; $j<$max_lines; $j++) {
     $line_uid = $line_uid_list[$j];
     $line_name = $line_name_list[$j];
-    $allele = $empty;
+    $allele_101 = $empty;
+    $allele_ACTG = $empty;
     $sql = "select marker_uid, alleles from allele_cache where line_record_uid = $line_uid and experiment_uid = $experiment_uid";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
     $count = 0;
     while ($row = mysqli_fetch_array($res)) {
         $marker_uid = $row[0];
+        $marker_allele = $marker_allele_list[$marker_uid];
+        
+        $lookup_actg = array(
+            'AA' => substr($marker_allele, 0, 1) . substr($marker_allele, 0, 1),
+            'BB' => substr($marker_allele, 1, 1) . substr($marker_allele, 1, 1),
+            '--' => 'NN',
+            'AB' => substr($marker_allele, 0, 1) . substr($marker_allele, 1, 1),
+            'BA' => substr($marker_allele, 1, 1) . substr($marker_allele, 0, 1),
+            '' => 'NN'
+        );
+
         $loc = $marker_list_loc[$marker_uid];
-        $allele[$loc] = $row[1];
+        $allele = $row[1];
+        $allele_101[$loc] = $lookup_101[$allele];
+        $allele_ACTG[$loc] = $lookup_actg[$allele];
+        //echo "allele = $allele $allele_ACTG[$loc]<br>\n";
         $count++;
     }
     if ($count > 0) {
         $k++;
-        $string = implode('\t', $allele);
+        $string = implode(",", $allele_ACTG);
         $length=strlen($string);
         if (isset($exp_list[$index])) {
-            $sql = "update allele_byline_exp set alleles = \"$string\", count = $count  where experiment_uid = $experiment_uid and line_record_uid = $marker_uid";
+            $sql = "update allele_byline_exp_ACTG set alleles = \"$string\", count = $count  where experiment_uid = $experiment_uid and line_record_uid = $marker_uid";
             $count_update++;
         } else {
-            $sql = "insert into allele_byline_exp (experiment_uid, line_record_uid, line_record_name, count, alleles) values ($experiment_uid, $line_uid, '$line_name', $count, '$string')";
+            $sql = "insert into allele_byline_exp_ACTG (experiment_uid, line_record_uid, line_record_name, count, alleles) values ($experiment_uid, $line_uid, '$line_name', $count, '$string')";
             $count_new++;
         }
-        echo "$sql<br>\n";
+        //echo "$sql<br>\n";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     } else {
         echo "skip $experiment_uid $marker_uid\n";
