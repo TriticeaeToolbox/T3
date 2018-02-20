@@ -81,7 +81,7 @@ if ($action == "list") {
     $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
     $num_rows = mysqli_num_rows($res);
     $tot_pag = ceil($num_rows / $pageSize);
-    $pageList = array( "pageSize" => $pageSize, "currentPage" => 0, "totalCount" => $num_rows, "totalPages" => $tot_pag );
+    $pageList = array( "pageSize" => $pageSize, "currentPage" => $currentPage, "totalCount" => $num_rows, "totalPages" => $tot_pag );
     $linearray['metadata']['pagination'] = $pageList;
 
     //now get just those selected
