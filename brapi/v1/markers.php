@@ -1,4 +1,9 @@
 <?php
+
+/**
+ * only supports GET
+ **/
+
 require '../../includes/bootstrap.inc';
 $mysqli = connecti();
 

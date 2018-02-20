@@ -31,12 +31,12 @@ if (isset($_GET['page'])) {
 }
 
 /* Array of our supported calls */
-$ourcalls['allelematrices'] = ['datatypes' => ['flapjack'], 'methods' => ['GET']];
-$ourcalls['allelematrices/{studyDbId}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
-$ourcalls['allelematrix-search'] = ['datatypes' => ['json'], 'methods' => ["GET", "POST"]];
-$ourcalls['markerprofiles'] = ['datatypes' => ['json'], 'methods' => ['GET']];
-$ourcalls['markerprofiles/{markerprofileDbId}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
-$ourcalls['markerprofiles/{germplasmDbId}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['allelematrices'] = ['datatypes' => ["flapjack"], 'methods' => ["GET"]];
+$ourcalls['allelematrix-search'] = ['datatypes' => ["json", "flapjack"], 'methods' => ["GET", "POST"]];
+$ourcalls['allelematrices/{studyDbId}'] = ['datatypes' => ["json"], 'methods' => ['GET']];
+$ourcalls['markerprofiles'] = ['datatypes' => ["json"], 'methods' => ["GET"]];
+$ourcalls['markerprofiles/{markerprofileDbId}'] = ['datatypes' => ["json"], 'methods' => ["GET"]];
+$ourcalls['markerprofiles/{germplasmDbId}'] = ['datatypes' => ["json"], 'methods' => ["GET"]];
 $ourcalls['calls'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['germplasm-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['germplasm'] = ['datatypes' => ['json'], 'methods' => ['GET']];
@@ -51,10 +51,11 @@ $ourcalls['maps'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['maps/{mapDbId}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['maps/{id}/positions'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['crops'] = ['datatypes' => ['json'], 'methods' => ['GET']];
-$ourcalls['locations'] = ['datatypes' => ['json'], 'methods' => ['GET']];
-$ourcalls['markers'] = ['datatypes' => ['json'], 'methods' => ['GET']];
-$ourcalls['markers/{markerDbId}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
-$ourcalls['markers-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['locations'] = ['datatypes' => ['json'], 'methods' => ["GET"]];
+$ourcalls['markers'] = ['datatypes' => ["json"], 'methods' => ["GET"]];
+$ourcalls['markers/{markerDbId}'] = ['datatypes' => ["json"], 'methods' => ["GET"]];
+$ourcalls['markers-search'] = ['datatypes' => ["json"], 'methods' => ["GET", "POST"]];
+$ourcalls['markers-search/{markerDbIds}'] = ['datatypes' => ["json"], 'methods' => ["GET", "POST"]];
 
 /* If no request parameters, list all calls supported. */
 if (!$call && !$datatype) {
