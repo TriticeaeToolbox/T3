@@ -20,8 +20,45 @@ if (isset($_REQUEST['page'])) {
 } else {
     $currentPage = 0;
 }
+if (isset($_REQUEST['format'])) {
+    $format = $_REQUEST['format'];
+} else {
+    $format = "json";
+}
+$logFile = "/tmp/tht/request-log.txt";
 
-header("Content-Type: application/json");
+$profile_list = array();
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $fh = fopen($logFile, "w");
+    fwrite($fh, "POST $format\n");
+    $request = json_decode(file_get_contents('php://input'), true);
+    foreach ($request as $key => $val) {
+        fwrite($fh, "key=$key\nval=$val\n");
+        if ($key == "markerprofileDbId") {
+            $profile_str = implode(",", $val);
+            $profile_list = $val;
+        } elseif ($key == "format") {
+            $format = $val;
+        } elseif ($key == "page") {
+            $currentPage = $val;
+        } elseif ($key == "pageSize") {
+            $pageSize = $val;
+        }
+    }
+} elseif ($_SERVER['REQUEST_METHOD'] == 'GET') {
+    $fh = fopen($logFile, "a");
+    fwrite($fh, "GET $format\n");
+    foreach ($_GET as $key => $val) {
+        fwrite($fh, "key=$key val=$val\n");
+        if ($key == "markerprofileDbId") {
+            $profile_str = $val;
+            $profile_list = explode(",", $match[1]);
+        }
+    }
+    fwrite($fh, "$rest[0] $rest[1] $rest[2]\n");
+} else {
+    dieNice("Error", "invalid request method");
+}
 
 function dieNice($code, $msg)
 {
@@ -30,18 +67,16 @@ function dieNice($code, $msg)
     $results['metadata']['status'][] = array("code" => $code, "message" => "$msg");
     $results['result']['data'] = array();
     $return = json_encode($results);
+    header("Content-Type: application/json");
     die("$return");
 }
 
 if ($rest[0] == "status") {
-    if (isset($rest[1])) {
-        $unqStr = $rest[1];
-    } else {
-        dieNice("Error", "missing message id");
-    }
+    $unqStr = $rest[1];
     $results['metadata']['pagination'] = null;
     $results['result'] = null;
-    $tmpFile = "/tmp/tht/download_" . $unqStr . ".txt";
+    $base_url = "https://" . $_SERVER['HTTP_HOST'];
+    $tmpFile = $base_url . "/tmp/tht/download_" . $unqStr . ".tsv";
     $statusFile = "/tmp/tht/status_" . $unqStr . ".txt";
     $results['metadata']['datafiles'] = array($tmpFile);
     if (file_exists($statusFile)) {
@@ -51,39 +86,15 @@ if ($rest[0] == "status") {
             $results['metadata']['status'][] = array("code" => "asyncstatus", "message" => "FINISHED");
         }
     } else {
-        $results['metadata']['status'][] = array("code" => "asyncstatus", "message" => "PENDING");
+        $results['metadata']['status'][] = array("code" => "asyncstatus", "message" => "INPROCESS");
     }
     $return = json_encode($results);
+    fwrite($fh, $return);
+    header("Content-Type: application/json");
     die("$return");
-} elseif (isset($_REQUEST['markerprofileDbId'])) {
+} elseif ($profile_list != array()) {
     $uniqueStr = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
     $errorFile = "/tmp/tht/error_" . $uniqueStr . ".txt";
-    /** PHP does not handle multiple paramaters with same name so use URI**/
-    if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-        $request = $_SERVER['REQUEST_URI'];
-    } elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        $request = file_get_contents('php://input');
-        if ($request) {
-        } else {
-            dieNice("Error", "invalid POST data");
-        }
-    } else {
-        dieNice("Error", "invalid request method");
-    }
-    if (preg_match("/,/", $request)) {
-        /** one or more markerprofileDBId seperated by "," **/
-        $profile_str = $request;
-        $profile_list = explode(",", $request);
-    } else {
-        /** each markerprofileDbId a seperate paramater **/
-        if (preg_match_all("/markerprofileDbId=([0-9_]+)/", $request, $match)) {
-            foreach ($match[1] as $key => $val) {
-                //echo "found $key $val[0] $val\n";
-                $profile_list[] = $val;
-            }
-        }
-        $profile_str = implode(",", $profile_list);
-    }
 
     //first query all data
     foreach ($profile_list as $item) {
@@ -96,8 +107,9 @@ if ($rest[0] == "status") {
     }
 
     $countExp = count($profile_list);
-    if ($countExp > 1) {
-        $cmd = "php allelematrix-search-offline.php $profile_str $uniqueStr > /dev/null 2> $errorFile";
+    if ($format != "json") {
+        $cmd = "php allelematrix-search-offline.php $profile_str $uniqueStr $format > /dev/null 2> $errorFile";
+        fwrite($fh, "$cmd\n");
         exec($cmd);
         dieNice("asynchid", "$uniqueStr");
     }
@@ -116,14 +128,14 @@ if ($rest[0] == "status") {
         $res = mysqli_query($mysqli, $sql);
         if ($row = mysqli_fetch_row($res)) {
             $marker_index = $row[0];
-            //$marker_index = explode(",", $marker_index);
             $marker_index = json_decode($marker_index, true);
+            //$marker_index = explode(",", $marker_index);
         } else {
             dieNice("Error", "invalid experiment $expid");
         }
 
         //now get just those selected
-        $sql = "select alleles from allele_byline_exp where experiment_uid = $expid and line_record_uid = $lineuid";
+        $sql = "select alleles from allele_byline_exp_ACTG where experiment_uid = $expid and line_record_uid = $lineuid";
         if ($currentPage == 0) {
         } else {
             $offset = $currentPage * $pageSize;
@@ -136,7 +148,7 @@ if ($rest[0] == "status") {
             while ($row = mysqli_fetch_row($res)) {
                 $found = 1;
                 $alleles = $row[0];
-                $alleles_ary = explode(",", $alleles);
+                $alleles_ary = explode("\t", $alleles);
                 foreach ($alleles_ary as $i => $v) {
                     if ($v[0] == $v[1]) {
                         $v = $v[0];
@@ -152,7 +164,7 @@ if ($rest[0] == "status") {
             dieNice("SQL", mysqli_error($mysqli));
         }
         if ($found == 0) {
-            dieNice("Error", "marker profile not found $item");
+            dieNice("Error", "marker profile not found $item $sql");
         }
         $resultProfile[] = $item;
     }
@@ -209,17 +221,12 @@ if ($rest[0] == "status") {
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         if ($row = mysqli_fetch_row($res)) {
             $tmp = $row[0];
-            //$marker_index = explode(",", $tmp);
             $marker_index = json_explode($tmp, true);
+            //$marker_index = explode(",", $tmp);
         }
-        $sql = "select alleles from allele_byline_exp
+        $sql = "select alleles from allele_byline_exp_ACTG
               where line_record_uid = $lineuid
               and experiment_uid = $expid";
-        /**$sql = "select marker_uid, alleles from allele_cache
-              where line_record_uid = $lineuid
-              and experiment_uid = $expid
-              and not alleles = '--'
-              order by marker_uid"; **/
         $res = mysqli_query($mysqli, $sql);
         if ($row = mysqli_fetch_row($res)) {
             $tmp = $row[0];
@@ -237,4 +244,5 @@ $tot_pag = ceil($num_rows / $pageSize);
 $pageList = array( "pageSize" => $pageSize, "currentPage" => $currentPage, "totalCount" => $num_rows, "totalPages" => $tot_pag );
 $results['metadata']['pagination'] = $pageList;
 $results['result']['data'] = $dataList;
+header("Content-Type: application/json");
 echo json_encode($results);

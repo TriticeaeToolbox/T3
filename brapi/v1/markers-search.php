@@ -17,11 +17,17 @@ if (isset($rest[1]) && ($rest[1] == "table")) {
 } else {
     $outFormat = "json";
 }
+$pageSize = 1000;
+$currentPage = 0;
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $request = json_decode(file_get_contents('php://input'), true);
     foreach ($request as $key => $val) {
         if ($key == "markerDbIds") {
             $markerDbIds = implode(",", $val);
+        } elseif ($key == "page") {
+            $currentPage = $val;
+        } elseif ($key == "pageSize") {
+            $pageSize = $val;
         }
     }
 } elseif ($_SERVER['REQUEST_METHOD'] == 'GET') {
@@ -40,18 +46,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         $markerDbIds = "";
     }
+    if (isset($_GET['pageSize'])) {
+        $pageSize = $_GET['pageSize'];
+    }
+    if (isset($_GET['page'])) {
+        $currentPage = $_GET['page'];
+    }
 } else {
     dieNice("Error", "invalid request method");
-}
-if (isset($_REQUEST['pageSize'])) {
-    $pageSize = $_REQUEST['pageSize'];
-} else {
-    $pageSize = 1000;
-}
-if (isset($_REQUEST['page'])) {
-    $currentPage = $_REQUEST['page'];
-} else {
-    $currentPage = 0;
 }
 
 function dieNice($msg)
