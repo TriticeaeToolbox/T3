@@ -20,49 +20,6 @@ if (isset($_REQUEST['page'])) {
 } else {
     $currentPage = 0;
 }
-if (isset($_REQUEST['format'])) {
-    $format = $_REQUEST['format'];
-} else {
-    $format = "json";
-}
-$logFile = "/tmp/tht/request-log.txt";
-
-$profile_list = array();
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $fh = fopen($logFile, "w");
-    fwrite($fh, "POST $format\n");
-    $request = json_decode(file_get_contents('php://input'), true);
-    foreach ($request as $key => $val) {
-        fwrite($fh, "key=$key\nval=$val\n");
-        if ($key == "markerprofileDbId") {
-            $profile_str = implode(",", $val);
-            $profile_list = $val;
-        } elseif ($key == "format") {
-            $format = $val;
-        } elseif ($key == "page") {
-            $currentPage = $val;
-        } elseif ($key == "pageSize") {
-            $pageSize = $val;
-        }
-    }
-} elseif ($_SERVER['REQUEST_METHOD'] == 'GET') {
-    $fh = fopen($logFile, "a");
-    fwrite($fh, "GET $format\n");
-    foreach ($_GET as $key => $val) {
-        fwrite($fh, "key=$key val=$val\n");
-        if ($key == "markerprofileDbId") {
-            $profile_str = $val;
-            $profile_list = explode(",", $val);
-        }
-    }
-    fwrite($fh, "$rest[0] $rest[1] $rest[2]\n");
-} elseif ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-    header("Content-Type: application/json");
-    die();
-} else {
-    dieNice("Error", "invalid request method");
-}
 
 function dieNice($code, $msg)
 {
@@ -71,16 +28,18 @@ function dieNice($code, $msg)
     $results['metadata']['status'][] = array("code" => $code, "message" => "$msg");
     $results['result']['data'] = array();
     $return = json_encode($results);
-    header("Content-Type: application/json");
     die("$return");
 }
 
 if ($rest[0] == "status") {
-    $unqStr = $rest[1];
+    if (isset($rest[1])) {
+        $unqStr = $rest[1];
+    } else {
+        dieNice("Error", "missing message id");
+    }
     $results['metadata']['pagination'] = null;
     $results['result'] = null;
-    $base_url = "https://" . $_SERVER['HTTP_HOST'];
-    $tmpFile = $base_url . "/tmp/tht/download_" . $unqStr . ".tsv";
+    $tmpFile = "/tmp/tht/download_" . $unqStr . ".txt";
     $statusFile = "/tmp/tht/status_" . $unqStr . ".txt";
     $results['metadata']['datafiles'] = array($tmpFile);
     if (file_exists($statusFile)) {
@@ -90,15 +49,39 @@ if ($rest[0] == "status") {
             $results['metadata']['status'][] = array("code" => "asyncstatus", "message" => "FINISHED");
         }
     } else {
-        $results['metadata']['status'][] = array("code" => "asyncstatus", "message" => "INPROCESS");
+        $results['metadata']['status'][] = array("code" => "asyncstatus", "message" => "PENDING");
     }
     $return = json_encode($results);
-    fwrite($fh, $return);
-    header("Content-Type: application/json");
     die("$return");
-} elseif ($profile_list != array()) {
+} elseif (isset($_REQUEST['markerprofileDbId'])) {
     $uniqueStr = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
     $errorFile = "/tmp/tht/error_" . $uniqueStr . ".txt";
+    $format = "json";
+    /** PHP does not handle multiple paramaters with same name so use URI**/
+    if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+        $request = $_SERVER['REQUEST_URI'];
+        if (isset($_GET['format'])) {
+            $format = $_GET['format'];
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $request = file_get_contents('php://input');
+    } else {
+        dieNice("Error", "invalid request method");
+    }
+    if (preg_match("/,/", $request)) {
+        /** one or more markerprofileDBId seperated by "," **/
+        $profile_str = $request;
+        $profile_list = explode(",", $request);
+    } else {
+        /** each markerprofileDbId a seperate paramater **/
+        if (preg_match_all("/markerprofileDbId=([0-9_]+)/", $request, $match)) {
+            foreach ($match[1] as $key => $val) {
+                //echo "found $key $val[0] $val\n";
+                $profile_list[] = $val;
+            }
+        }
+        $profile_str = implode(",", $profile_list);
+    }
 
     //first query all data
     foreach ($profile_list as $item) {
@@ -111,9 +94,8 @@ if ($rest[0] == "status") {
     }
 
     $countExp = count($profile_list);
-    if ($format != "json") {
+    if ($countExp > 1) {
         $cmd = "php allelematrix-search-offline.php $profile_str $uniqueStr $format > /dev/null 2> $errorFile";
-        fwrite($fh, "$cmd\n");
         exec($cmd);
         dieNice("asynchid", "$uniqueStr");
     }
@@ -139,7 +121,7 @@ if ($rest[0] == "status") {
         }
 
         //now get just those selected
-        $sql = "select alleles from allele_byline_exp_ACTG where experiment_uid = $expid and line_record_uid = $lineuid";
+        $sql = "select alleles from allele_byline_exp where experiment_uid = $expid and line_record_uid = $lineuid";
         if ($currentPage == 0) {
         } else {
             $offset = $currentPage * $pageSize;
@@ -168,7 +150,7 @@ if ($rest[0] == "status") {
             dieNice("SQL", mysqli_error($mysqli));
         }
         if ($found == 0) {
-            dieNice("Error", "marker profile not found $item $sql");
+            dieNice("Error", "marker profile not found $item");
         }
         $resultProfile[] = $item;
     }
@@ -228,9 +210,14 @@ if ($rest[0] == "status") {
             $marker_index = json_explode($tmp, true);
             //$marker_index = explode(",", $tmp);
         }
-        $sql = "select alleles from allele_byline_exp_ACTG
+        $sql = "select alleles from allele_byline_exp
               where line_record_uid = $lineuid
               and experiment_uid = $expid";
+        /**$sql = "select marker_uid, alleles from allele_cache
+              where line_record_uid = $lineuid
+              and experiment_uid = $expid
+              and not alleles = '--'
+              order by marker_uid"; **/
         $res = mysqli_query($mysqli, $sql);
         if ($row = mysqli_fetch_row($res)) {
             $tmp = $row[0];
@@ -248,5 +235,9 @@ $tot_pag = ceil($num_rows / $pageSize);
 $pageList = array( "pageSize" => $pageSize, "currentPage" => $currentPage, "totalCount" => $num_rows, "totalPages" => $tot_pag );
 $results['metadata']['pagination'] = $pageList;
 $results['result']['data'] = $dataList;
-header("Content-Type: application/json");
-echo json_encode($results);
+if ($format == "json") {
+    header("Content-Type: application/json");
+    echo json_encode($results);
+} else {
+    header("Content-Type: text/csv");
+}
