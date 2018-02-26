@@ -107,8 +107,9 @@ function show_line_records($id)
   else {
     $bpclink = getBarleyPedigreeCatalogLink($id);
     $n_bpc = count($bpclink);
-    for ($i = 0;$i<$n_bpc;$i++) 
+    for ($i = 0;$i<$n_bpc;$i++) {
       echo "<tr><td><a href=".$bpclink[$i].">".$bpc[$i]."</a>";
+    }
   }
   echo "</table>";
   // Pheno/Geno data links
@@ -712,7 +713,8 @@ function getBarleyPedigreeCatalogIDs($id)
     }
 
     while ($row = mysqli_fetch_array($sql_bpc)) {
-        $bpc[] = urlencode($row['catname'].": ".$row['value']);
+        //$bpc[] = urlencode($row['catname'].": ".$row['value']);
+        $bpc[] = htmlspecialchars($row['catname'].": ".$row['value']);
     }
     return $bpc;
 }
@@ -741,7 +743,7 @@ function getBarleyPedigreeCatalogLink($id)
 
     while ($row = mysqli_fetch_assoc($sql_bpc)) {
         // GRIN PI numbers include a required Space character.
-        $value = urlencode($row['value']);
+        $value = htmlentities($row['value']);
         $url_bpc[] = str_replace('XXXX', $value, $row['link_out']);
     }
     return $url_bpc;
