@@ -105,10 +105,8 @@ function show_line_records($id)
   if ($bpc===FALSE)
     echo "<tr><td>No database links";
   else {
-    $bpclink = getBarleyPedigreeCatalogLink($id);
-    $n_bpc = count($bpclink);
-    for ($i = 0;$i<$n_bpc;$i++) {
-      echo "<tr><td><a href=".$bpclink[$i].">".$bpc[$i]."</a>";
+    foreach ($bpc as $key => $val) {
+      echo "<tr><td><a href=".$val.">".$key."</a>";
     }
   }
   echo "</table>";
@@ -703,7 +701,7 @@ function getBarleyPedigreeCatalogIDs($id)
 {
     global $mysqli;
     $sql_bpc = mysqli_query($mysqli, "
-	SELECT b_ref.barley_ref_number as value, b.barley_pedigree_catalog_name as catname
+	SELECT b_ref.barley_ref_number as value, b.barley_pedigree_catalog_name as catname, b.link_out
 	FROM barley_pedigree_catalog_ref AS b_ref, barley_pedigree_catalog AS b
 	WHERE b_ref.line_record_uid = '$id'
 	AND b.barley_pedigree_catalog_uid = b_ref.barley_pedigree_catalog_uid
@@ -713,8 +711,10 @@ function getBarleyPedigreeCatalogIDs($id)
     }
 
     while ($row = mysqli_fetch_array($sql_bpc)) {
-        //$bpc[] = urlencode($row['catname'].": ".$row['value']);
-        $bpc[] = htmlspecialchars($row['catname'].": ".$row['value']);
+        $catId = htmlspecialchars($row['catname'].": ".$row['value']);
+        $value = urlencode($row['value']);
+        $url = str_replace('XXXX', $value, $row['link_out']);
+        $bpc[$catId] = $url;
     }
     return $bpc;
 }
