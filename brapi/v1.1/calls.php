@@ -56,6 +56,7 @@ $ourcalls['markers'] = ['datatypes' => ["json"], 'methods' => ["GET"]];
 $ourcalls['markers/{markerDbId}'] = ['datatypes' => ["json"], 'methods' => ["GET"]];
 $ourcalls['markers-search'] = ['datatypes' => ["json"], 'methods' => ["GET", "POST"]];
 $ourcalls['markers-search/{markerDbIds}'] = ['datatypes' => ["json"], 'methods' => ["GET", "POST"]];
+$ourcalls['phenotypes-search'] = ['datatypes' => ["json"], 'methods' => ["GET", "POST"]];
 
 /* If no request parameters, list all calls supported. */
 if (!$call && !$datatype) {
