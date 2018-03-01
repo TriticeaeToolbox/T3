@@ -3,16 +3,15 @@
  * Quick search
  *
  * PHP version 5.3
- * Prototype version 1.5.0
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/search.php
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/search.php
  *
  * DEM apr2015 added Deep Search
  */
-include "includes/bootstrap.inc";
-include "theme/normal_header.php";
+require "includes/bootstrap.inc";
+require "theme/admin_header2.php";
 $mysqli = connecti();
 $table_name = strip_tags($_REQUEST['table']);
 ?>
@@ -57,8 +56,8 @@ if (isset($_REQUEST['deep'])) {
             $found = array_merge($found);
         }
     }
-/****************************************************************************************/
-/* Quick Search */
+    /****************************************************************************************/
+    /* Quick Search */
 } elseif (isset($_REQUEST['keywords'])) {
     /* sidebar general search term has been submitted */
     $keywords = $_REQUEST['keywords'];
@@ -84,17 +83,17 @@ if (isset($_REQUEST['deep'])) {
         /* do not add duplicates */
         for ($i=0; $i<count($ukeys); $i++) {
             if (strpos($ukeys[$i], "_uid")  === false) {
-	    if (!in_array($ukeys[$i],$names)) 
-	      array_push($names, $ukeys[$i] );
+                if (!in_array($ukeys[$i], $names)) {
+                    array_push($names, $ukeys[$i]);
+                }
+            }
         }
-    }
-    /* add this table to the search tree if there are fields to search */
-    if(count($names) > 0) {
-      $searchTree[$table] = $names;
-    }
-  }  // end foreach($allTables)
-  // Cool! Here are all the unique keys in the database:
-  //print_h($searchTree); 
+        /* add this table to the search tree if there are fields to search */
+        if (count($names) > 0) {
+            $searchTree[$table] = $names;
+        }
+    }  // end foreach($allTables)
+    // Cool! Here are all the unique keys in the database:
 
   // Remove the \ characters inserted before quotes by magic_quotes_gpc.
   $keywords = stripslashes($keywords);
