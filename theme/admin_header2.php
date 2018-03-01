@@ -347,8 +347,8 @@ if (isset($_SESSION['selected_lines']) || isset($_SESSION['selected_traits']) ||
   <form style="margin-bottom:3px" action="search.php" method="post">
   <input type="hidden" value="Search" >
   <input style="width:170px" type="text" name="keywords" value="Quick search..."
-   title="This search term will match on any part of a string.
-These regular expressions modify the search
+   title="These regular expressions modify the search and the query will run slower
+   [ ] - bracket expression
    ^ - beginning of string
    $ - end of string
    . - any single character
