@@ -89,7 +89,6 @@ function respond($data)
 {
     global $pageSize, $currentPage;
     $count = count($data);
-    header("Access-Control-Allow-Origin: *");
     header("Content-Type: application/json");
     $response['metadata']['pagination']['pageSize'] = $pageSize;
     $response['metadata']['pagination']['currentPage'] = $currentPage;

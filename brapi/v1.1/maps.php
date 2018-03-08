@@ -51,6 +51,17 @@ if (isset($_GET['page'])) {
 if (isset($_GET['uid'])) {
     $uid = $_REQUEST['uid'];
 }
+
+function dieNice($msg)
+{
+    $linearray["metadata"]["pagination"] = null;
+    $linearray["metadata"]["status"] = array("code" => 1, "message" => "SQL Error: $msg");
+    $linearray["metadata"]["datafiles"] = array();
+    $linearray["result"] = null;
+    $return = json_encode($linearray);
+    die("$return");
+}
+
 if ($action == "list") {
     $linearray['metadata']['status'] = array();
     $linearray['metadata']['datafiles'] = array();
@@ -77,7 +88,11 @@ if ($action == "list") {
         $temp["mapDbId"] = $row[1];
         $temp["name"] = $row[2];
         $temp["species"] = $row[3];
-        $temp["type"] = $row[4];
+        if ($row[4] == "Computational map") {
+            $temp["type"] = "Physical";
+        } else {
+            $temp["type"] = $row[4];
+        }
         if ($row[5] == "cM") {
             $temp["unit"] = $row[5];
         } else {
@@ -113,9 +128,11 @@ if ($action == "list") {
         AND map.map_uid = markers_in_maps.map_uid
         AND mapset_uid = $uid 
         GROUP by chromosome";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $res = mysqli_query($mysqli, $sql) or dieNice("Error in SQL");
     $num_rows = mysqli_num_rows($res);
-    //$results['metadata']['status'][] = array("code" => "sql error", "message" => "$error");
+    if ($num_rows < 1) {
+        dieNice("Map not found");
+    }
     $tot_pag = ceil($num_rows / $pageSize);
     $pageList = array( "pageSize" => $pageSize, "currentPage" => $currentPage, "totalCount" => $num_rows, "totalPages" => $tot_pag );
     $linearray['metadata']['pagination'] = $pageList;
@@ -128,7 +145,11 @@ if ($action == "list") {
         mysqli_stmt_fetch($stmt);
         $results["mapDbId"] = $uid;
         $results["name"] = $mapset_name;
-        $results["type"] = $map_type;
+        if ($map_type == "Computational map") {
+            $results["type"] = "Physical";
+        } else {
+            $results["type"] = $map_type;
+        }
         if ($map_uint == "cM") {
             $results["unit"] = $map_unit;
         } else {
@@ -138,6 +159,7 @@ if ($action == "list") {
     } else {
         $results['metadata']['status'][] = array("code" => "sql error", "message" => "error connecting to database");
     }
+    $results["linkageGroups"] = array();
     $sql = "select count(markers.marker_uid), max(end_position) ,chromosome
         from markers_in_maps, markers, map
         where markers_in_maps.marker_uid = markers.marker_uid
@@ -189,6 +211,9 @@ if ($action == "list") {
             }
         }
     }
+    if ($num_rows < 1) {
+        dieNice("Map not found");
+    }
     $tot_pag = ceil($num_rows / $pageSize);
     $pageList = array( "pageSize" => $pageSize, "currentPage" => $currentPage, "totalCount" => $num_rows, "totalPages" => $tot_pag );
     $linearray['metadata']['pagination'] = $pageList;
@@ -215,6 +240,7 @@ if ($action == "list") {
             mysqli_stmt_execute($stmt);
             mysqli_stmt_bind_result($stmt, $marker_uid, $marker_name, $start_position, $chromosome, $arm);
             while (mysqli_stmt_fetch($stmt)) {
+                 //$temp2["linkageGroupId"] = null;
                  $temp2["markerDbId"] = "$marker_uid";
                  $temp2["markerName"] = $marker_name;
                  $temp2["location"] = "$start_position";
