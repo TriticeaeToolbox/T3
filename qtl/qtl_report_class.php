@@ -50,11 +50,14 @@ class Downloads
         ?>
         </div>
         <div id="step1" style="float: left; margin-bottom: 1.5em;">
-        <script type="text/javascript" src="qtl/menu12.js"></script><br>
+        <script type="text/javascript" src="qtl/menu13.js"></script><br>
         <?php
         if (isset($_GET['pi'])) {
             $var = $_GET['pi'];
             $_SESSION['selected_traits'] = array($var);
+            ?>
+            <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" /></div>
+            <?php
         }
         if (isset($_SESSION['selected_traits']) || isset($_SESSION['selected_trials'])) {
             ?>
@@ -110,9 +113,9 @@ class Downloads
         Beagle version 4.0 was used for phasing and imputation.<br><br>-->
         <b>GWAS:</b> The analysis use rrBLUP GWAS package (Endleman, Jeffery, "Ridge Regression and Other Kernels for Genomic Selection with R package rrBLUP", The Plant Genome Vol 4 no. 3).
         The settings are: MAF > 0.05, P3D = TRUE (equivalent to EMMAX).
-        The q-value is an estimate of significance given p-values from multiple comparisons using a false discovery rate of 0.05.
+        The q-value is an estimate of significance given p-values from multiple comparisons using a false discovery rate of 0.05.<br>
+        The Z-score is a average of the p-values, calculated as Z = (1/Trial Count) *  &#931 abs( qnorm( p-value / 2 ))<br>
         To view the p-value and q-value for each trial, select the trial count link.<br>
-        <b>External Links:</b> The "Pathway" column contains links to Plant Reactome from http://plantreactome.gramene.org/download/gene_ids_by_pathway_and_species.tab.<br><br>
         <?php
         $trialCount = 0;
         $platforms = "";
@@ -864,7 +867,9 @@ class Downloads
         echo "<input type=\"radio\" name=\"sort\" id=\"sort\" onclick=\"sort('posit')\" $select_posit> position<br>";
         echo "</table><br>";
 
-        /** get WheatExp **/
+        /**
+         * Get WheatExp
+         **/
         $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"IWGSC1+popseq\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
@@ -873,7 +878,9 @@ class Downloads
             $desc = $row[2];
             $annot_list1[$marker] = $gene;
         }
-        /** get expVIP **/
+        /**
+         * Get expVIP
+         **/
         $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"Wheat_TGACv1\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
@@ -893,13 +900,6 @@ class Downloads
             $annot_list4[$marker] = $desc;
         }
 
-        $sql = "select value, gene from gene_annotations";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-        while ($row = mysqli_fetch_array($res)) {
-            $stableID = $row[0];
-            $gene = $row[1];
-            $annot_list5[$gene] = $stableID;
-        }
         $sql = "select experiment_uid, number_entries from phenotype_experiment_info";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
@@ -909,8 +909,8 @@ class Downloads
             //echo "$geno_exp $count<br>\n";
         }
 
-//get z-stat
-//get count of significant qtls when grouping by marker_name
+        //get z-stat
+        //get count of significant qtls when grouping by marker_name
         $zsum = array();
         if ($gb == "marker") {
             if (isset($trial_str)) {
@@ -955,7 +955,7 @@ class Downloads
                 }
             }
         } else {
-//get count of significant qtls when groupinng by gene
+            //get count of significant qtls when groupinng by gene
             $sql = "select gwas from $database where phenotype_uid IN ($puid)";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
             while ($row = mysqli_fetch_array($res)) {
@@ -985,7 +985,6 @@ class Downloads
                 $zvalue = $val[3];
                 $qvalue = $val[4];
                 $pvalue = $val[5];
-                $reactome = "";
                 if ($qvalue < 0.05) {
                     $count++;
                     $sql = "select chrom, pos, bin from marker_report_reference where marker_name = \"$marker\" and assembly_name = \"$assembly\"";
@@ -1015,10 +1014,6 @@ class Downloads
                         $gene = $annot_list2[$marker];
                         $exp2 = "<a target=\"_new\" href=\"http://www.wheat-expression.com/genes/1?gene=$gene&studies%5B%5D=DRP000768&studies%5B%5D=ERP003465&studies%5B%5D=ERP004505&studies%5B%5D=SRP004884&studies%5B%5D=SRP013449&studies%5B%5D=SRP017303&studies%5B%5D=SRP022869&studies%5B%5D=SRP028357&studies%5B%5D=SRP029372&studies%5B%5D=SRP038912&studies%5B%5D=SRP041017&studies%5B%5D=SRP041022&studies%5B%5D=ERP008767&studies%5B%5D=SRP045409&studies%5B%5D=INRA-RNASeq&studies%5B%5D=SRP056412&studies%5B%5D=TGAC_genome\">expVIP</a>";
                         $exp3 = "<a target=\"_new\" href=\"https://www.ebi.ac.uk/gxa/genes/$gene\">EMBL-EBI</a>";
-                        if (isset($annot_list5[$gene])) {
-                            $stableID = $annot_list5[$gene];
-                            $reactome = "<a target=\"_new\" href=\"http://plantreactome.gramene.org/PathwayBrowser/#/$stableID\">Plant Reactome</a>";
-                        }
                     } else {
                         $exp2 = "";
                         $exp3 = "";
@@ -1085,11 +1080,16 @@ class Downloads
                             $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
                             $row2 = mysqli_fetch_row($res2);
                             $uid = $row2[0];
+                            $sql = "select gene_annotation_uid from gene_annotations where gene_id =\"$gene\"";
+                            $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                            $row2 = mysqli_fetch_row($res2);
+                            $gene_uid = $row2[0];
                             $marker_link = "<a href=\"$target_url" . "view.php?table=markers&uid=" . $uid . "\">$marker</a>";
+                            $gene_link = "<a href=\"view.php?table=gene_annotations&uid=" . $gene_uid . "\">$gene</a>";
                             $zvalue = number_format($zmeta[$marker], 3);
                             $detail_link = "$ztot[$marker]<td><a id=\"detail\" onclick=\"detailM('$marker')\">Trial details</a>";
                             $output_index[] = $sort_index;
-                            $output_list[] = "<tr><td>$marker_link<td>$chrom<td>$pos<td>$gene<td>$desc2<td>$zvalue<td>$detail_link<td>$jbrowse<td>$exp1 $exp2 $exp3<td>$reactome";
+                            $output_list[] = "<tr><td>$marker_link<td>$chrom<td>$pos<td>$gene_link<td>$desc2<td>$zvalue<td>$detail_link<td>$jbrowse<td>$exp1 $exp2 $exp3";
                         }
                     } else {
                         if ($gene == "") {
@@ -1111,7 +1111,7 @@ class Downloads
             if ($gb == "marker") {
                 //echo "<table><tr><td>marker<td><a id=\"sort2\" onclick=\"sort('pos')\">location</a>";
                 echo "<table><tr><td>marker<td>chromosome<td>location";
-                echo "<td>gene<td>feature<td nowrap>Z-score<td>Trial Count<td>Trial Details<td>Genome Browser<td>Expression<td>Pathway";
+                echo "<td>gene<td>feature<td nowrap>Z-score<td>Trial Count<td>Trial Details<td>Genome Browser<td>Expression";
             } else {
                 //echo "<table><tr><td>gene<td><a id=\"sort2\" onclick=\"sort('pos')\">location</a>";
                 echo "<table><tr><td>gene<td>location";
