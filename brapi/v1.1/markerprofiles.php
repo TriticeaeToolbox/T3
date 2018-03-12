@@ -22,7 +22,7 @@ if (!empty($rest[0])) {
     if (preg_match("/(\d+)_(\d+)/", $profileid, $match)) {
         $lineuid = $match[1];
         $expuid = $match[2];
-    } 
+    }
 }
 $analmeth = "";
 if (isset($_GET['germplasmDbId'])) {
@@ -93,7 +93,6 @@ if (($lineuid != "") && ($expuid != "")) {
     while ($row = mysqli_fetch_row($res)) {
         $linearray['uniqueDisplayName'] = $row[0];
         $alleles = $row[2];
-        $linearray['sampleDbId'] = "";
         $linearray['extractDbId'] = "";
         $resultCount = intval($row[1]);
         $analysisMethod = mysql_grab(
@@ -102,7 +101,6 @@ if (($lineuid != "") && ($expuid != "")) {
             and g.experiment_uid = $expuid"
         );
         $linearray['analysisMethod'] = $analysisMethod;
-        $linearray['resultCount'] = $resultCount;
         
         $linearray['data'] = $alleles;
         // Restrict to the requested analysis method if any.
@@ -125,7 +123,7 @@ if (($lineuid != "") && ($expuid != "")) {
     $response['metadata']['pagination']['currentPage'] = $currentPage;
     $sql = "select experiment_uid, line_record_name, count from allele_byline_exp_ACTG
         where line_record_uid = $lineuid";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));;
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     $num_rows = mysqli_num_rows($res);
     $response['metadata']['pagination']['totalCount'] = $num_rows;
     $response['metadata']['pagination']['totalPages'] = ceil($num_rows / $pageSize);
@@ -136,7 +134,6 @@ if (($lineuid != "") && ($expuid != "")) {
         $linearray['markerprofileDbId'] = $lineuid . "_" . $row[0];
         $linearray['germplasmDbId'] = $lineuid;
         $linearray['uniqueDisplayName'] = $row[1];
-        $linearray['sampleDbId'] = "";
         $linearray['extractDbId'] = "";
         $analysisMethod = mysql_grab(
             "select platform_name from platform p, genotype_experiment_info g
@@ -144,7 +141,6 @@ if (($lineuid != "") && ($expuid != "")) {
             and g.experiment_uid = $expuid"
         );
         $linearray['analysisMethod'] = $analysisMethod;
-        $linearray['resultCount'] = 1;
         $data[] = $linearray;
     }
     $response['result']['data'] = $data;
@@ -182,7 +178,6 @@ if (($lineuid != "") && ($expuid != "")) {
             $linearray['markerprofileDbId'] = $row[0] . "_" . $expuid;
             $linearray['germplasmDbId'] = $row[0];
             $linearray['uniqueDisplayName'] = $row[1];
-            $linearray['sampleDbId'] = "";
             $linearray['extractDbId'] = "";
             $analysisMethod = mysql_grab(
                 "select platform_name from platform p, genotype_experiment_info g
@@ -190,7 +185,6 @@ if (($lineuid != "") && ($expuid != "")) {
                 and g.experiment_uid = $expuid"
             );
             $linearray['analysisMethod'] = $analysisMethod;
-            $linearray['resultCount'] = intval($row[2]);
             $data[] = $linearray;
         }
         if ($count == 0) {
