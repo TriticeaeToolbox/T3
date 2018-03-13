@@ -33,6 +33,43 @@
  * This functionality is very simple. 1 query per table.
  **/
 
+function quickTermSearch(array $tableTree, $searchQ)
+{
+    global $mysqli;
+    ini_set('memory_limit', '2G');
+    // If the $searchQ came from a POST form, "&" will have been replaced. Put it back.
+    $searchQ = str_replace('&amp;', '&', $searchQ);
+    $tablenames = array_keys($tableTree);
+    $tables = count($tablenames);
+    $ret = array();
+    for ($i=0; $i<$tables; $i++) {
+        $table = $tablenames[$i];
+        if (is_array($tableTree[$table])) {
+            $pkey = get_pkey($table);  //proper tree format
+            for ($j=0; $j<count($tableTree[$table]); $j++) {
+                $field = $tableTree[$table][$j];
+                $sql = "SELECT $pkey FROM $table WHERE $field=?";
+                if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                    mysqli_stmt_bind_param($stmt, "s", $searchQ);
+                    mysqli_stmt_execute($stmt);
+                    mysqli_stmt_bind_result($stmt, $rec);
+                    while (mysqli_stmt_fetch($stmt)) {
+                        $str = $table . "@@" . $field . "@@" . $rec;
+                        array_push($ret, $str);
+                    }
+                    mysqli_stmt_close($stmt);
+                }
+            }
+        }
+    }
+    // DEM apr2015: Set a limit, for memory and execution time's sake.
+    $limit = 1000000;
+    if (count($ret) > $limit) {
+        die("More than 1 million records were found.  Please narrow your search.<p>");
+    }
+    return $ret;
+}
+
 function generalTermSearch(array $tableTree, $searchQ)
 {
     global $mysqli;
@@ -48,11 +85,7 @@ function generalTermSearch(array $tableTree, $searchQ)
             $pkey = get_pkey($table);  //proper tree format
             for ($j=0; $j<count($tableTree[$table]); $j++) {
                 $field = $tableTree[$table][$j];
-                if (preg_match("/[\[\]\^\$\.\*\+]/", $searchQ)) {
-                    $sql = "SELECT $pkey from $table where $field REGEXP ?";
-                } else {
-                    $sql = "SELECT $pkey FROM $table WHERE $field=?";
-                }
+                $sql = "SELECT $pkey from $table where $field REGEXP ?";
                 if ($stmt = mysqli_prepare($mysqli, $sql)) {
                     mysqli_stmt_bind_param($stmt, "s", $searchQ);
                     mysqli_stmt_execute($stmt);
@@ -121,37 +154,27 @@ function desperateTermSearch(array $tables, $searchQ)
             }
         }
 
-    /* Quick search through the foreign tables. If the unique name matches then search through the original */
-    /* and get those results as well. */
+        /* Quick search through the foreign tables. If the unique name matches then search through the original */
+        /* and get those results as well. */
 
-    // Get foreign tables
-    $ftables = chk_tbl_references($tables[$i]);
+        // Get foreign tables
+        $ftables = chk_tbl_references($tables[$i]);
 
-	foreach($ftables as $ftab) {
+        foreach ($ftables as $ftab) {
+            $fpkey = get_pkey($ftab);
+            $ukeys = get_ukey($ftab);
 
-			$fpkey = get_pkey($ftab);
-			$ukeys = get_ukey($ftab);
-
-			foreach($ukeys as $ukey) {
-
-				$foreign_find = mysqli_query($mysqli, "SELECT $pkey 
-						     FROM $tables[$i]
-						     WHERE $fpkey = ANY (
-								SELECT $fpkey 
-								FROM $ftab
-								WHERE $ukey LIKE '%$searchQ%')
-						    ") or die("Error in Term Search");
-
-				while($row = mysqli_fetch_assoc($foreign_find)) {
-
-					if(!in_array($row[$pkey], $visited)) {		//no duplicate rows allowed.
-
-						$str = $tables[$i] . "@@" . $fpkey . "@@" . $row[$pkey];
-						array_push($ret, $str);
-						array_push($visited, $row[$pkey]);
-					}
-				}
-			}
+            foreach ($ukeys as $ukey) {
+                $sql = "SELECT $pkey FROM $tables[$i] WHERE $fpkey = ANY (SELECT $fpkey FROM $ftab WHERE $ukey LIKE '%$searchQ%')";
+                $foreign_find = mysqli_query($mysqli, $sql) or die("Error in Term Search");
+                while ($row = mysqli_fetch_assoc($foreign_find)) {
+                    if (!in_array($row[$pkey], $visited)) {  //no duplicate rows allowed.
+                        $str = $tables[$i] . "@@" . $fpkey . "@@" . $row[$pkey];
+                        array_push($ret, $str);
+                        array_push($visited, $row[$pkey]);
+		    }
+		}
+		}
 		}
 	}
 	return $ret;

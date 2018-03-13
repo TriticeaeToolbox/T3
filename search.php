@@ -95,29 +95,41 @@ if (isset($_REQUEST['deep'])) {
     }  // end foreach($allTables)
     // Cool! Here are all the unique keys in the database:
 
-  // Remove the \ characters inserted before quotes by magic_quotes_gpc.
-  $keywords = stripslashes($keywords);
-  // If the input is doublequoted, don't split at <space>s.
-  if (preg_match('/^".*"$/', $keywords)) {
-    $keywords = trim($keywords, "\"");
-    $found = generalTermSearch($searchTree, $keywords);
-  }
-  else {
-    /* Break into separate words and query for each. */
-    $words = explode(" ", $keywords);
-    for($i=0; $i<count($words); $i++) {
-      if(trim($words[$i]) != "") 
-	/* $found = array_merge($found, generalTermSearch($searchTree, $words[$i])); */
-	// Return only items that contain _all_ words (AND) instead of _any_ of them (OR). 
-	$partial[$i] = generalTermSearch($searchTree, $words[$i]);
+    // Remove the \ characters inserted before quotes by magic_quotes_gpc.
+    $keywords = stripslashes($keywords);
+    // If the input is doublequoted, don't split at <space>s.
+    if (preg_match('/^".*"$/', $keywords)) {
+        $keywords = trim($keywords, "\"");
+        $found = generalTermSearch($searchTree, $keywords);
+    } else {
+        /* Break into separate words and query for each. */
+        $words = explode(" ", $keywords);
+        for ($i=0; $i<count($words); $i++) {
+            if (trim($words[$i]) != "") {
+                $partial[$i] = quickTermSearch($searchTree, $words[$i]);
+            }
+        }
+        $found = $partial[0];
+        for ($i = 1; $i < count($words); $i++) {
+            $found = array_intersect($found, $partial[$i]);
+            // Reset the (numeric) key of the array to start at [0].
+            $found = array_merge($found);
+        }
+        if (count($found) < 1) {
+            echo "No matches for Quick search, now trying REGEXP search<br><br>\n";
+            for ($i=0; $i<count($words); $i++) {
+                if (trim($words[$i]) != "") {
+                    $partial[$i] = generalTermSearch($searchTree, $keywords);
+                }
+            }
+            $found = $partial[0];
+            for ($i = 1; $i < count($words); $i++) {
+                $found = array_intersect($found, $partial[$i]);
+                // Reset the (numeric) key of the array to start at [0].
+                $found = array_merge($found);
+            }
+        }
     }
-    $found = $partial[0];
-    for ($i = 1; $i < count($words); $i++) {
-      $found = array_intersect($found, $partial[$i]);
-      // Reset the (numeric) key of the array to start at [0].
-      $found = array_merge($found);
-    }
-  }
 }
 
 /* Handle the results */
