@@ -15,8 +15,8 @@
 /**
  * This will update the last access time for a given account
  *
- * @param $account - the unique username for the given account
- * @param $time - the last access time stored in a session variable right after the last login time.
+ * @param  $account - the unique username for the given account
+ * @param  $time - the last access time stored in a session variable right after the last login time.
  * @return void
  */
 function updateLastAccess($account, $time)
@@ -139,8 +139,8 @@ function show_users($id)
 
 
 /**
- * This is a special case function used in view.php to view the experimetns table. This will select all the 
- * lines associated with an experiment in addition to the usual experiment data shown. 
+ * This is a special case function used in view.php to view the experimetns table. This will select all the
+ * lines associated with an experiment in addition to the usual experiment data shown.
  */
 function show_experiments($id)
 {
@@ -178,14 +178,18 @@ function show_gene_annotations($id)
     show_general("gene_annotations", $id);
 
     $count = 0;
-    echo "<br>Pathways from Plant Reactome";
-    $sql = "select gene_id from gene_annotations where gene_annotation_uid = $id";
+    $sql = "select gene_id, start, stop, bin from gene_annotations where gene_annotation_uid = $id";
     $res = mysqli_query($mysqli, $sql) or die("Error in show gene annotation<br>$sql");
     if ($row = mysqli_fetch_row($res)) {
         $gene_id = $row[0];
+        $start = $row[1];
+        $stop = $row[2];
+        $bin = $row[3];
+        $link = "http://plants.ensembl.org/Triticum_aestivum/Gene/Summary?g=$gene_id";
     } else {
         die("Error: gene not found");
     }
+    echo "<br>Pathways from Plant Reactome";
     $sql = "SELECT pathways.pathway_uid, stableId, name, species
         from pathways, pathway_gene
         where pathways.pathway_uid = pathway_gene.pathway_uid
@@ -200,21 +204,23 @@ function show_gene_annotations($id)
         echo "<td><a href=\"http://plantreactome.gramene.org/PathwayBrowser/#/$row[1]\" target=\"_new\">$row[1]\n";
     }
     if ($count > 0) {
-        echo "</table>";
+        echo "</table><br>";
     } else {
-        echo " - none<br>";
+        echo " - none<br><br>";
     }
 
     $count = 0;
+    echo "<a href=\"$link\">Ensembl Plant link</a><br>";
     echo "<br>Markers near this gene";
-    $sql = "select distinct marker_uid, marker_name from qtl_annotations where gene = \"$gene_id\"";
+    $sql = "select distinct marker_uid, marker_name, distance from qtl_annotations where gene = \"$gene_id\"";
     $res = mysqli_query($mysqli, $sql) or die("Error in show gene annotation<br>$sql");
     while ($row = mysqli_fetch_row($res)) {
         if ($count == 0) {
             echo "<table>";
+            echo "<tr><td>Marker<td>distance\n";
             $count++;
         }
-        echo "<tr><td><a href=\"view.php?table=markers&uid=$row[0]\">$row[1]</a>";
+        echo "<tr><td><a href=\"view.php?table=markers&uid=$row[0]\">$row[1]</a><td>$row[2]\n";
     }
     if ($count > 0) {
         echo "</table>";
