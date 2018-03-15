@@ -49,13 +49,14 @@ $ourcalls['trials/{trialDbId'] = ['datatypes' => ['json'], 'methods' => ['GET']]
 $ourcalls['traits'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['maps'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['maps/{mapDbId}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
-$ourcalls['maps/{id}/positions'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['maps/{mapDbId}/positions'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['crops'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['locations'] = ['datatypes' => ['json'], 'methods' => ["GET"]];
 $ourcalls['markers'] = ['datatypes' => ["json"], 'methods' => ["GET"]];
 $ourcalls['markers/{markerDbId}'] = ['datatypes' => ["json"], 'methods' => ["GET"]];
 $ourcalls['markers-search'] = ['datatypes' => ["json"], 'methods' => ["GET", "POST"]];
 $ourcalls['markers-search/{markerDbIds}'] = ['datatypes' => ["json"], 'methods' => ["GET", "POST"]];
+$ourcalls['phenotypes-search'] = ['datatypes' => ["json"], 'methods' => ["GET", "POST"]];
 
 /* If no request parameters, list all calls supported. */
 if (!$call && !$datatype) {
@@ -88,7 +89,6 @@ function respond($data)
 {
     global $pageSize, $currentPage;
     $count = count($data);
-    header("Access-Control-Allow-Origin: *");
     header("Content-Type: application/json");
     $response['metadata']['pagination']['pageSize'] = $pageSize;
     $response['metadata']['pagination']['currentPage'] = $currentPage;

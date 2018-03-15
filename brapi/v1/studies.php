@@ -46,6 +46,9 @@ if (isset($_GET['seasonDbId'])) {
 if (isset($_GET['locationDbId'])) {
     $locationDbId = $_GET['locationDbId'];
 }
+if (isset($_GET['programDbId'])) {
+    $programDbId = $_GET['programDbId'];
+}
 
 function dieNice($msg)
 {
@@ -80,13 +83,20 @@ if ($action == "list") {
     if (isset($seasonDbId)) {
         $options .= " and experiment_year = \"$seasonDbId\"";
     }
-    if (isset($locationDbId)) {
-        $options .= " and location = \"$locationDbId\"";
+    if (isset($programDbId)) {
+        $options .= " and CAPdata_programs_uid = \"$programDbId\"";
     }
-    $sql = "select experiments.experiment_uid, experiment_set_uid, experiment_type_name, trial_code, CAPdata_programs_uid, experiment_year
-        from experiments, experiment_types
-        where experiments.experiment_type_uid = experiment_types.experiment_type_uid
-        $options";
+    if (isset($locationDbId)) {  //only phenotype experiments have locations
+        $sql = "select experiments.experiment_uid, experiment_set_uid, \"phenotype\" as experiment_type_name, trial_code, CAPdata_programs_uid, experiment_year
+            from experiments, phenotype_experiment_info
+            where experiments.experiment_uid = phenotype_experiment_info.experiment_uid
+            and location = \"$locationDbId\"";
+    } else {
+        $sql = "select experiments.experiment_uid, experiment_set_uid, experiment_type_name, trial_code, CAPdata_programs_uid, experiment_year
+            from experiments, experiment_types
+            where experiments.experiment_type_uid = experiment_types.experiment_type_uid
+            $options";
+    }
     $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
     $num_rows = mysqli_num_rows($res);
     $tot_pag = ceil($num_rows / $pageSize);
@@ -192,7 +202,7 @@ if ($action == "list") {
     $results["studyDbId"] = $uid;
     $results["studyType"] = $type;
     $results["trialDbId"] = $set;
-    $results["StudyName"] = $row[2];
+    $results["studyName"] = $row[2];
     $sql = "select trial_code, planting_date, harvest_date, collaborator, begin_weather_date, location, experiment_design
        from experiments, phenotype_experiment_info
        where phenotype_experiment_info.experiment_uid = experiments.experiment_uid

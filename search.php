@@ -3,16 +3,15 @@
  * Quick search
  *
  * PHP version 5.3
- * Prototype version 1.5.0
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/search.php
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/search.php
  *
  * DEM apr2015 added Deep Search
  */
-include "includes/bootstrap.inc";
-include "theme/normal_header.php";
+require "includes/bootstrap.inc";
+require "theme/admin_header2.php";
 $mysqli = connecti();
 $table_name = strip_tags($_REQUEST['table']);
 ?>
@@ -57,8 +56,8 @@ if (isset($_REQUEST['deep'])) {
             $found = array_merge($found);
         }
     }
-/****************************************************************************************/
-/* Quick Search */
+    /****************************************************************************************/
+    /* Quick Search */
 } elseif (isset($_REQUEST['keywords'])) {
     /* sidebar general search term has been submitted */
     $keywords = $_REQUEST['keywords'];
@@ -84,41 +83,53 @@ if (isset($_REQUEST['deep'])) {
         /* do not add duplicates */
         for ($i=0; $i<count($ukeys); $i++) {
             if (strpos($ukeys[$i], "_uid")  === false) {
-	    if (!in_array($ukeys[$i],$names)) 
-	      array_push($names, $ukeys[$i] );
+                if (!in_array($ukeys[$i], $names)) {
+                    array_push($names, $ukeys[$i]);
+                }
+            }
+        }
+        /* add this table to the search tree if there are fields to search */
+        if (count($names) > 0) {
+            $searchTree[$table] = $names;
+        }
+    }  // end foreach($allTables)
+    // Cool! Here are all the unique keys in the database:
+
+    // Remove the \ characters inserted before quotes by magic_quotes_gpc.
+    $keywords = stripslashes($keywords);
+    // If the input is doublequoted, don't split at <space>s.
+    if (preg_match('/^".*"$/', $keywords)) {
+        $keywords = trim($keywords, "\"");
+        $found = generalTermSearch($searchTree, $keywords);
+    } else {
+        /* Break into separate words and query for each. */
+        $words = explode(" ", $keywords);
+        for ($i=0; $i<count($words); $i++) {
+            if (trim($words[$i]) != "") {
+                $partial[$i] = quickTermSearch($searchTree, $words[$i]);
+            }
+        }
+        $found = $partial[0];
+        for ($i = 1; $i < count($words); $i++) {
+            $found = array_intersect($found, $partial[$i]);
+            // Reset the (numeric) key of the array to start at [0].
+            $found = array_merge($found);
+        }
+        if (count($found) < 1) {
+            echo "No matches for Quick search, now trying REGEXP search<br><br>\n";
+            for ($i=0; $i<count($words); $i++) {
+                if (trim($words[$i]) != "") {
+                    $partial[$i] = generalTermSearch($searchTree, $keywords);
+                }
+            }
+            $found = $partial[0];
+            for ($i = 1; $i < count($words); $i++) {
+                $found = array_intersect($found, $partial[$i]);
+                // Reset the (numeric) key of the array to start at [0].
+                $found = array_merge($found);
+            }
         }
     }
-    /* add this table to the search tree if there are fields to search */
-    if(count($names) > 0) {
-      $searchTree[$table] = $names;
-    }
-  }  // end foreach($allTables)
-  // Cool! Here are all the unique keys in the database:
-  //print_h($searchTree); 
-
-  // Remove the \ characters inserted before quotes by magic_quotes_gpc.
-  $keywords = stripslashes($keywords);
-  // If the input is doublequoted, don't split at <space>s.
-  if (preg_match('/^".*"$/', $keywords)) {
-    $keywords = trim($keywords, "\"");
-    $found = generalTermSearch($searchTree, $keywords);
-  }
-  else {
-    /* Break into separate words and query for each. */
-    $words = explode(" ", $keywords);
-    for($i=0; $i<count($words); $i++) {
-      if(trim($words[$i]) != "") 
-	/* $found = array_merge($found, generalTermSearch($searchTree, $words[$i])); */
-	// Return only items that contain _all_ words (AND) instead of _any_ of them (OR). 
-	$partial[$i] = generalTermSearch($searchTree, $words[$i]);
-    }
-    $found = $partial[0];
-    for ($i = 1; $i < count($words); $i++) {
-      $found = array_intersect($found, $partial[$i]);
-      // Reset the (numeric) key of the array to start at [0].
-      $found = array_merge($found);
-    }
-  }
 }
 
 /* Handle the results */

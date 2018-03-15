@@ -5,7 +5,7 @@
 <title>Plant Breeding API demo</title>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
 <script src="//code.jquery.com/jquery-2.2.4.min.js"></script>
-<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script type="text/javascript" src="wizard.js"></script>
 <script>
 $(function() {
@@ -30,16 +30,16 @@ $(function() {
 <tr><td>URL of website API:<td>
 <select name= "url" id="url2" onchange="javascript: updateUrl();">
   <option>Select database server or enter a URL below</option>
-  <option value="https://t3sandbox.org/t3/wheatplus/brapi/v1" selected="selected">Triticeae Toolbox Development</option>
-  <option value="https://triticeaetoolbox.org/wheat/brapi/v1">Triticeae Toolbox Wheat (TCAP)</option>
+  <option value="https://t3sandbox.org/t3/wheatplus/brapi/v1">Triticeae Toolbox Development</option>
+  <option value="https://triticeaetoolbox.org/wheat/brapi/v1" selected="selected">Triticeae Toolbox Wheat (TCAP)</option>
   <option value="https://triticeaetoolbox.org/barley/brapi/v1">Triticeae Toolbox Barley (TCAP)</option>
   <option value="https://triticeaetoolbox.org/oat/brapi/v1">Triticeae Toolbox Oat </option>
   <option value="https://cassava-test.sgn.cornell.edu/brapi/v1">CassavaBase (BTI)</option>
 </select>
 <tr><td><td><input type="text" id="url" size="60" value="https://t3sandbox.org/t3/wheatplus/brapi/v1">
-<tr><td>Debug:<td>
+<!--tr><td>Debug:<td-->
 <input type="radio" name="debug" id="NoDebug" checked>No
-<input type="radio" name="debug" id="YesDebug">Yes
+<input type="radio" name="debug" id="YesDebug">Yes>
 </table>
 </p>
 </div>
@@ -47,12 +47,11 @@ $(function() {
 <p>
 <div id="step1" style="float: left; margin-bottom: 1.5em;">
 <select id="step11" onchange="javascript: updateStep1();">
-  <option> Select by</option>
+  <option value="Program" selected="selected">Program</option>
   <option value="Location">Location</option>
   <option value="Trial">Trial</option>
   <option value="Study">Studies</option>
   <option value="Trait">Traits</option>
-  <option value="Program">Program</option>
 </select>
 <div id="step12">
 </div></div>

@@ -50,11 +50,16 @@ function step2Location()
 
 }
 
-function step2Studies()
+function step2Studies(parm1)
 {
     var items = [];
-    var selTrial = document.getElementById("selTrial").value;
-    var apiUrl = document.getElementById("url").value + "/studies-search?studyType=Phenotype&trialDbId=" + selTrial;
+    if (parm1 == "selTrial") {
+      var selTrial = document.getElementById("selTrial").value;
+      var apiUrl = document.getElementById("url").value + "/studies-search?studyType=Phenotype&trialDbId=" + selTrial;
+    } else if (parm1 == "selProg") {
+      var selProg = document.getElementById("selProg").value;
+      var apiUrl = document.getElementById("url").value + "/studies-search?studyType=Phenotype&programDbId=" + selProg;
+    }
     if (document.getElementById("YesDebug").checked === true) {
       items.push("API call = " + apiUrl);
     }
@@ -76,7 +81,7 @@ function step2Studies()
                 if (typeof val3 == "object") {
                   items.push("<tr>");
                   jQuery.each( val3, function(key4, val4) {
-                    if (key4 == "studyName") {
+                    if (key4 == "name") {
                       items.push("<option>" + val4 + "</option>");
                     }
                   });
@@ -155,7 +160,7 @@ function getListTrials()
     dataType: "json",
     url: apiUrl,
     success: function(data, textStatus) {
-      items.push("<select id=\"selTrial\" multiple=\"multiple\" onclick=\"step2Studies()\">");
+      items.push("<select id=\"selTrial\" multiple=\"multiple\" onclick=\"step2Studies('selTrial')\">");
       jQuery.each( data, function( key, val ) {
         if (key == "metadata") {
         } else if (key == "result") {
@@ -212,7 +217,7 @@ function getListStudies()
                 if (typeof val3 == "object") {
                   items.push("<tr>");
                   jQuery.each( val3, function(key4, val4) {
-                    if (key4 == "studyName") {
+                    if (key4 == "name") {
                       items.push("<option>" + val4 + "</option>");
                     }
                   });
@@ -277,8 +282,67 @@ function getListTraits()
   });
 }
 
-function getListProgram
+function getListPrograms()
 {
+  var unq = {};
+  var unqItems = [];
+  var items = [];
+  var programDbId = "";
+  var programName = "";
+  var programList = [];
+  var apiUrl = document.getElementById("url").value + "/studies-search?studyType=Phenotype";
+  if (document.getElementById("YesDebug").checked === true) {
+      items.push("API call = " + apiUrl);
+  }   
+  jQuery.ajax({
+    type: "GET",
+    dataType: "json",
+    url: apiUrl,
+    success: function(data, textStatus) {
+      items.push("<select id=\"selProg\" multiple=\"multiple\" onclick=\"step2Studies('selProg')\">");
+      jQuery.each( data, function( key, val ) {
+        if (key == "metadata") {
+        } else if (key == "result") {
+          jQuery.each( val, function( key2, val2 ) {
+            if ((key2 == "data") && (typeof val2 == "object")) {
+              jQuery.each( val2, function (key3, val3) {
+                if (typeof val3 == "object") {
+                  items.push("<tr>");
+                  jQuery.each( val3, function(key4, val4) {
+                    if (key4 == "programDbId") {
+                      programDbId = val4;
+                    }
+                    if (key4 == "programName") {
+                      programName = val4;
+                      if (!unq.hasOwnProperty(val4)) {
+                        unq[val4] = 1;
+                        unqItems.push(val4);
+                        //items.push("<option>" + val4 + "</option>");
+                      }
+                    } 
+                  });
+                  programList[programName] = programDbId;
+                } 
+              });
+            } 
+          });
+        } 
+      });
+      unqItems.sort();
+      for (var i = 0, len = unqItems.length; i < len; i++) {
+          programName = unqItems[i];
+          programDbId = programList[programName];
+          items.push("<option value=" + programDbId + ">" + unqItems[i] + "</option>");
+      }
+      items.push("</select>");
+      var html = items.join("");
+      jQuery("#step12").html(html);
+      jQuery("#step2").html("");
+    },
+    error: function() {
+        alert('Error in selecting program');
+      } 
+  }); 
 }
 
 function updateUrl()
@@ -302,3 +366,5 @@ function updateStep1()
        getListPrograms();
     }
 }
+
+window.onload = getListPrograms;

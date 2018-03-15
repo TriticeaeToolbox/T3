@@ -1,0 +1,312 @@
+<?php
+/**
+ * brapi/0.1/genotype.php, DEM jun 2014
+ * Deliver genotyping data for a line according to
+ * http://docs.breeding.apiary.io/
+ * 120414 - changed structure of output to match API CLB
+ * 082115 - changed structure of output to match ABP CLB
+ */
+
+require '../../includes/bootstrap.inc';
+$mysqli = connecti();
+ini_set('memory_limit', '2G');
+
+$self = $_SERVER['PHP_SELF'];
+$script = $_SERVER["SCRIPT_NAME"]."/";
+$rest = str_replace($script, "", $self);
+$rest = explode("/", $rest);
+$lineuid = "";
+$expuid = "";
+if (!empty($rest[0])) {
+    $profileid = $rest[0];
+    if (preg_match("/(\d+)_(\d+)/", $profileid, $match)) {
+        $lineuid = $match[1];
+        $expuid = $match[2];
+    }
+}
+$analmeth = "";
+if (isset($_GET['germplasmDbId'])) {
+    $lineuid = $_GET['germplasmDbId'];
+}
+if (isset($_GET['markerprofileDbId'])) {
+    $profileid = $_GET['markerprofileDbId'];
+}
+if (isset($_GET['extractDbId'])) {
+    dieNice("extractDbId not supported");
+} elseif (isset($_GET['sampleDbId'])) {
+    dieNice("samplbDbID not supported");
+}
+if (isset($_GET['studyDbId'])) {
+    $expuid = $_GET['studyDbId'];
+}
+if (isset($_GET['pageSize'])) {
+    $pageSize = $_GET['pageSize'];
+} else {
+    $pageSize = 1000;
+}
+if (isset($_GET['page'])) {
+    $currentPage = $_GET['page'];
+} else {
+    $currentPage = 0;
+}
+// Get the URI's querystring.
+if ($_GET) {
+    $getkeys = array_keys($_GET);
+    $analmeth = $_GET['methodDbId'];
+}
+
+function dieNice($msg)
+{
+    $data = array();
+    $linearray['metadata']['pagination']['pageSize'] = 1;
+    $linearray['metadata']['pagination']['currentPage'] = 0;
+    $linearray['metadata']['pagination']['totalCount'] = 1;
+    $linearray['metadata']['pagination']['totalPages'] = 1;
+    $linearray['metadata']['status'][] = array("code" => "1", "message" => "Error: $msg");
+    $linearray['metadata']['datafiles'] = array();
+    $linearray['result']['data'] = $data;
+    $return = json_encode($linearray);
+    header("Content-Type: application/json", true, 404);
+    die("$return");
+}
+
+$response['metadata']['status'] = array();
+$response['metadata']['datafiles'] = array();
+
+if (($lineuid != "") && ($expuid != "")) {
+    $pageList = array();
+    $data = array();
+    $response['metadata']['pagination'] = $pageList;
+    $response['metadata']['pagination']['pageSize'] = $pageSize;
+    $response['metadata']['pagination']['currentPage'] = $currentPage;
+
+    $linearray['markerprofileDbId'] = $lineuid;
+    $linearray['germplasmDbId'] = $lineuid;
+    // Get the number of non-missing allele data points for this line, by experiment.
+    $sql = "select line_record_name, count, alleles from allele_byline_exp_ACTG
+        where line_record_uid = $lineuid
+        and experiment_uid = $expuid";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $num_rows = mysqli_num_rows($res);
+    $response['metadata']['pagination']['totalCount'] = $num_rows;
+    $response['metadata']['pagination']['totalPages'] = ceil($num_rows / $pageSize);
+    while ($row = mysqli_fetch_row($res)) {
+        $linearray['uniqueDisplayName'] = $row[0];
+        $alleles = $row[2];
+        $linearray['extractDbId'] = "";
+        $resultCount = intval($row[1]);
+        $analysisMethod = mysql_grab(
+            "select platform_name from platform p, genotype_experiment_info g
+            where p.platform_uid = g.platform_uid
+            and g.experiment_uid = $expuid"
+        );
+        $linearray['analysisMethod'] = $analysisMethod;
+        
+        $linearray['data'] = $alleles;
+        // Restrict to the requested analysis method if any.
+        if (!$analmeth or $analmeth == $analysisMethod) {
+            //$linearray['extractDbId'] = $expuid;
+            //$linearray['analysisMethod'] = $analysisMethod;
+            //$linearray['result']['resultCount'] = $resultCount;
+            $response['result'] = $linearray;
+        }
+        $data[] = $linearray;
+    }
+    $response['result']['data'] = $data;
+    header("Content-Type: application/json");
+    echo json_encode($response);
+} elseif ($lineuid != "") {
+    $pageList = array();
+    $data = array();
+    $response['metadata']['pagination'] = $pageList;
+    $response['metadata']['pagination']['pageSize'] = $pageSize;
+    $response['metadata']['pagination']['currentPage'] = $currentPage;
+    $sql = "select experiment_uid, line_record_name, count from allele_byline_exp_ACTG
+        where line_record_uid = $lineuid";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $num_rows = mysqli_num_rows($res);
+    $response['metadata']['pagination']['totalCount'] = $num_rows;
+    $response['metadata']['pagination']['totalPages'] = ceil($num_rows / $pageSize);
+
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $expuid = $row[0];
+        $linearray['markerprofileDbId'] = $lineuid . "_" . $row[0];
+        $linearray['germplasmDbId'] = $lineuid;
+        $linearray['uniqueDisplayName'] = $row[1];
+        $linearray['extractDbId'] = "";
+        $analysisMethod = mysql_grab(
+            "select platform_name from platform p, genotype_experiment_info g
+            where p.platform_uid = g.platform_uid
+            and g.experiment_uid = $expuid"
+        );
+        $linearray['analysisMethod'] = $analysisMethod;
+        $data[] = $linearray;
+    }
+    $response['result']['data'] = $data;
+    header("Content-Type: application/json");
+    echo json_encode($response);
+} elseif ($expuid != "") {
+    $pageList = array();
+    $data = array();
+    $response['metadata']['pagination'] = $pageList;
+    $sql = "select line_record_uid, line_record_name, count from allele_byline_exp_ACTG
+            where experiment_uid = $expuid";
+    $res = mysqli_query($mysqli, $sql);
+    $num_rows = mysqli_num_rows($res);
+
+    //now get just those selected
+    if ($currentPage == 0) {
+        $sql .= " limit $pageSize";
+    } else {
+        $offset = $currentPage * $pageSize;
+        if ($offset < 0) {
+            $offset = 0;
+        }
+        $sql .= " limit $offset, $pageSize";
+    }
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+
+    if ($num_rows == 0) {
+        dieNice("experiment $expuid not found");
+    } elseif ($res == false) {
+        $response['metadata']['status'][] = array("code" => "sql error", "message" => mysqli_error($mysqli));
+    } else {
+        while ($row = mysqli_fetch_row($res)) {
+            $count++;
+            $line_record_uid = $row[0];
+            $linearray['markerprofileDbId'] = $row[0] . "_" . $expuid;
+            $linearray['germplasmDbId'] = $row[0];
+            $linearray['uniqueDisplayName'] = $row[1];
+            $linearray['extractDbId'] = "";
+            $analysisMethod = mysql_grab(
+                "select platform_name from platform p, genotype_experiment_info g
+                where p.platform_uid = g.platform_uid
+                and g.experiment_uid = $expuid"
+            );
+            $linearray['analysisMethod'] = $analysisMethod;
+            $data[] = $linearray;
+        }
+        if ($count == 0) {
+            $metadata['metadata']['status'][] = array("code" => "not found", "message" => "No entries in database");
+        }
+    }
+    $response['result']['data'] = $data;
+    $response['metadata']['pagination']['pageSize'] = $pageSize;
+    $response['metadata']['pagination']['currentPage'] = $currentPage;
+    $response['metadata']['pagination']['totalCount'] = $num_rows;
+    $response['metadata']['pagination']['totalPages'] = ceil($num_rows / $pageSize);
+    header("Content-Type: application/json");
+    echo json_encode($response);
+} elseif (isset($profileid)) {
+    // "Get Genotype By Id"
+    // URI is something like genotype/{id}[?runId={runId}][&analysisMethod={method}][&pageSize={pageSize}&page={page}]
+    $data = array();
+    if (preg_match("/(\d+)_(\d+)/", $profileid, $match)) {
+        $lineuid = $match[1];
+        $expid = $match[2];
+    } else {
+        dieNice("Error: invalid format of marker profile id $lineuid");
+    }
+    $pageList = array();
+    $linearray['metadata']['pagination'] = $pageList;
+    $linearray['metadata']['status'] = array();
+    $linearray['metadata']['datafiles'] = array();
+    $linearray['result']['markerprofileDbId'] = $profileid;
+    $linearray['result']['germplasmDbId'] = $lineuid;
+    $linearray['result']['uniqueDisplayName'] = mysql_grab("select line_record_name from line_records where line_record_uid = $lineuid");
+    $linearray['sampleDbId'] = "";
+    $linearray['result']['extractDbId'] = "";
+    $linearray['result']['encoding'] = "AA,BB,AB";
+
+    $linearray['result']['analysisMethod'] = mysql_grab(
+        "select platform_name from platform p, genotype_experiment_info g
+	 where p.platform_uid = g.platform_uid
+	 and g.experiment_uid = $expid"
+    );
+    $data = array();
+    //first query all data
+    $sql = "select marker_name, alleles from allele_cache
+	      where line_record_uid = $lineuid
+	      and experiment_uid = $expid
+	      and not alleles = '--'
+	      order by marker_name";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $num_rows = mysqli_num_rows($res);
+
+    //now get just those selected
+    if ($currentPage == 0) {
+        $sql .= " limit $pageSize";
+    } else {
+        $offset = $currentPage * $pageSize;
+        if ($offset < 0) {
+            $offset = 0;
+        }
+        $sql .= " limit $offset, $pageSize";
+    }
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $tot_pag = ceil($num_rows / $pageSize);
+    $pageList = array( "pageSize" => $pageSize, "currentPage" => 0, "totalCount" => $num_rows, "totalPages" => $tot_pag );
+    $linearray['metadata']['pagination'] = $pageList;
+    while ($row = mysqli_fetch_row($res)) {
+        $count++;
+        $data[] = array($row[0] => $row[1]);
+    }
+    $linearray['result']['data'] = $data;
+    //$response = array($linearray, $genotypes);
+    $response = $linearray;
+    header("Content-Type: application/json");
+    /* Requires PHP 5.4.0: */
+    /* echo json_encode($response, JSON_PRETTY_PRINT); */
+    echo json_encode($response);
+    /* echo json_encode($linearray);
+    /* print_h($response); */
+} else {
+    //first query all data
+    $sql = "select line_record_uid, experiment_uid, count from allele_byline_exp_ACTG order by line_record_uid, experiment_uid";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $num_rows = mysqli_num_rows($res);
+
+    //now get just those selected
+    if ($currentPage == 0) {
+        $sql .= " limit $pageSize";
+    } else {
+        $offset = $currentPage * $pageSize;
+        if ($offset < 0) {
+            $offset = 0;
+        }
+        $sql .= " limit $offset, $pageSize";
+    }
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $tot_pag = ceil($num_rows / $pageSize);
+    $pageList = array( "pageSize" => $pageSize, "currentPage" => $currentPage, "totalCount" => $num_rows, "totalPages" => $tot_pag );
+    $response['metadata']['pagination'] = $pageList;
+    while ($row = mysqli_fetch_row($res)) {
+        $line_uid = $row[0];
+        $exp_uid = $row[1];
+        $resultCount = intval($row[2]);
+        $profileid = $line_uid . "_" . $exp_uid;
+        $linearray['markerprofileDbId'] = $profileid;
+        $linearray['germplasmDbId'] = $line_uid;
+        $linearray['uniqueDisplayName'] = mysql_grab("select line_record_name from line_records where line_record_uid = $line_uid");
+        $linearray['sampleDbId'] = "";
+        $linearray['extractDbId'] = "";
+        $analysisMethod = mysql_grab(
+            "select platform_name from platform p, genotype_experiment_info g
+            where p.platform_uid = g.platform_uid
+            and g.experiment_uid = $exp_uid"
+        );
+        if ($analysisMethod == null) {
+            $analysisMethod = "";
+        }
+        // Restrict to the requested analysis method if any.
+        if (!$analmeth or $analmeth == $analysisMethod) {
+            $linearray['extractDbId'] = "";
+            $linearray['analysisMethod'] = $analysisMethod;
+            $linearray['resultCount'] = $resultCount;
+            $response['result']['data'][] = $linearray;
+        }
+    }
+    header("Content-Type: application/json");
+    echo json_encode($response);
+}

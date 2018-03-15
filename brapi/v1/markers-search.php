@@ -1,4 +1,9 @@
 <?php
+
+/**
+ * supports GET and POST
+ **/
+
 require '../../includes/bootstrap.inc';
 $mysqli = connecti();
 
@@ -6,40 +11,49 @@ $self = $_SERVER['PHP_SELF'];
 $script = $_SERVER["SCRIPT_NAME"]."/";
 $rest = str_replace($script, "", $self);
 $rest = explode("/", $rest);
-if (is_numeric($rest[0])) {
-    $uid = $rest[0];
-} else {
-    $action = "list";
-}
+
 if (isset($rest[1]) && ($rest[1] == "table")) {
     $outFormat = "table";
 } else {
     $outFormat = "json";
 }
-if (isset($_GET['type'])) {
-    $type = $_GET['type'];
+$pageSize = 1000;
+$currentPage = 0;
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $request = json_decode(file_get_contents('php://input'), true);
+    foreach ($request as $key => $val) {
+        if ($key == "markerDbIds") {
+            $markerDbIds = implode(",", $val);
+        } elseif ($key == "page") {
+            $currentPage = $val;
+        } elseif ($key == "pageSize") {
+            $pageSize = $val;
+        }
+    }
+} elseif ($_SERVER['REQUEST_METHOD'] == 'GET') {
+    if (isset($_GET['type'])) {
+        $type = $_GET['type'];
+    } else {
+        $type = "";
+    }
+    if (isset($_GET['name'])) {
+        $name = $_GET['name'];
+    } else {
+        $name = "";
+    }
+    if (isset($_GET['markerDbIds'])) {
+        $markerDbIds = $_GET['markerDbIds'];
+    } else {
+        $markerDbIds = "";
+    }
+    if (isset($_GET['pageSize'])) {
+        $pageSize = $_GET['pageSize'];
+    }
+    if (isset($_GET['page'])) {
+        $currentPage = $_GET['page'];
+    }
 } else {
-    $type = "";
-}
-if (isset($_GET['name'])) {
-    $name = $_GET['name'];
-} else {
-    $name = "";
-}
-if (isset($_GET['markerDbIds'])) {
-    $markerDbIds = $_GET['markerDbIds'];
-} else {
-    $markerDbIds = "";
-}
-if (isset($_GET['pageSize'])) {
-    $pageSize = $_GET['pageSize'];
-} else {
-    $pageSize = 1000;
-}
-if (isset($_GET['page'])) {
-    $currentPage = $_GET['page'];
-} else {
-    $currentPage = 0;
+    dieNice("Error", "invalid request method");
 }
 
 function dieNice($msg)
@@ -51,8 +65,8 @@ function dieNice($msg)
     die("$return");
 }
 
-//header("Content-Type: application/json");
-if ($action == "list") {
+header("Content-Type: application/json");
+
     $linearray['metadata']['pagination'] = $pageList;
     $linearray['metadata']['status'] = array();
     $linearray['metadata']['datafiles'] = array();
@@ -76,7 +90,7 @@ if ($action == "list") {
     $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
     $num_rows = mysqli_num_rows($res);
     $tot_pag = ceil($num_rows / $pageSize);
-    $pageList = array( "pageSize" => $pageSize, "currentPage" => 0, "totalCount" => $num_rows, "totalPages" => $tot_pag );
+    $pageList = array( "pageSize" => $pageSize, "currentPage" => $currentPage, "totalCount" => $num_rows, "totalPages" => $tot_pag );
     $linearray['metadata']['pagination'] = $pageList;
 
     //now get just those selected
@@ -99,34 +113,4 @@ if ($action == "list") {
     }
     $linearray['result']['data'] = $temp;
     $return = json_encode($linearray);
-    header("Content-Type: application/json");
     echo "$return";
-} elseif ($uid != "") {
-    $linearray['metadata']['status'] = array();
-    $linearray['metadata']['datafiles'] = array();
-    $num_rows = 1;
-    $tot_pag = 1;
-    $pageList = array( "pageSize" => $pageSize, "currentPage" => 0, "totalCount" => $num_rows, "totalPages" => $tot_pag );
-    $linearray['metadata']['pagination'] = $pageList;
-    $sql = "select marker_uid, marker_name, marker_type_name from markers, marker_types
-        where markers.marker_type_uid = marker_types.marker_type_uid
-        and marker_uid = $uid";
-    $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
-    if ($row = mysqli_fetch_row($res)) {
-        $data["markerDbId"] = $row[0];
-        $data["defaultDisplayName"] = $row[1];
-        $data["type"] = $row[2];
-    } else {
-        $results = null;
-        $return = json_encode($results);
-        header("Content-Type: application/json");
-        echo "$return";
-        die();
-    }
-    $linearray['result'] = $data;
-    $return = json_encode($linearray);
-    header("Content-Type: application/json");
-    echo "$return";
-} else {
-    echo "Error: missing experiment id<br>\n";
-}

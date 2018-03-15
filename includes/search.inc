@@ -1,55 +1,42 @@
 <?php
-//*****************************************************************************
-//
-//
-// 07/05/2011  JLee   Update table names to reflect current schema
-//*****************************************************************************
-/* 
+/**
+ * 07/05/2011  JLee   Update table names to reflect current schema
+ *
  * This file contains most of the functions used when searching with Quick Search.
  * Special handling of certain data classes such as Trial is routed
  * in function displayTermSearchResults().
- */
-
-/*
- * The following functions are general term searching functions, match the term in the table. 
+ *
+ * The following functions are general term searching functions, match the term in the table.
  * Nothing fancy.
- */
-
-/* 
+ *
  * These functions all return the following:
- * 	- name of the table where the match was found
- *	- name of the field in the table that the match was found
- *	- uid of specific row in the table that the match was found
- * 
- * The format that these things are returned are as follows: 
- *	array( 
- *		[x] => "Table Name @@ Field Name @@ row UID"; 
- *	     )
- */
-
-/*
+ * - name of the table where the match was found
+ * - name of the field in the table that the match was found
+ * - uid of specific row in the table that the match was found
+ *
+ * The format that these things are returned are as follows:
+ * array(
+ *     [x] => "Table Name @@ Field Name @@ row UID";
+ * )
+ *
  * This function is a simple fetching function. This doesn't do any matching between tables, it simply
- * looks in a set of tables for a certain value or set of values. 
- * 
- * You can search multiple tables and multiple fields in those tables.  
+ * looks in a set of tables for a certain value or set of values.
  *
- * @param $tableTree - 2 level deep tree. 
- *	1st level - the tables in which we're going to look through
- * 	2nd level - the fields in each of the tables that we're going to look through.
+ * You can search multiple tables and multiple fields in those tables.
  *
- * @param $searchQ, this is the string that will attempted to be matched. 
+ * @param $tableTree - 2 level deep tree.
+ * 1st level - the tables in which we're going to look through
+ * 2nd level - the fields in each of the tables that we're going to look through.
  *
- * This functionality is very simple. 1 query per table. 
- */
-function generalTermSearch(array $tableTree, $searchQ)
+ * @param $searchQ, this is the string that will attempted to be matched.
+ *
+ * This functionality is very simple. 1 query per table.
+ **/
+
+function quickTermSearch(array $tableTree, $searchQ)
 {
     global $mysqli;
     ini_set('memory_limit', '2G');
-    //Special % escape. PHP does not have a function to do this for us.
-    //$searchQ = preg_replace('/%/', '\\%', $searchQ);
-    // Square brackets don't work in a regexp search, must be escaped.
-    $searchQ = preg_replace('/\[/', '\\\\\[', $searchQ);
-    $searchQ = preg_replace('/\]/', '\\\\\]', $searchQ);
     // If the $searchQ came from a POST form, "&" will have been replaced. Put it back.
     $searchQ = str_replace('&amp;', '&', $searchQ);
     $tablenames = array_keys($tableTree);
@@ -61,8 +48,8 @@ function generalTermSearch(array $tableTree, $searchQ)
             $pkey = get_pkey($table);  //proper tree format
             for ($j=0; $j<count($tableTree[$table]); $j++) {
                 $field = $tableTree[$table][$j];
-                $sql = "SELECT $pkey from $table where $field REGEXP $searchQ";
-                if ($stmt = mysqli_prepare($mysqli, "SELECT $pkey FROM $table WHERE $field REGEXP ?")) {
+                $sql = "SELECT $pkey FROM $table WHERE $field=?";
+                if ($stmt = mysqli_prepare($mysqli, $sql)) {
                     mysqli_stmt_bind_param($stmt, "s", $searchQ);
                     mysqli_stmt_execute($stmt);
                     mysqli_stmt_bind_result($stmt, $rec);
@@ -83,16 +70,51 @@ function generalTermSearch(array $tableTree, $searchQ)
     return $ret;
 }
 
+function generalTermSearch(array $tableTree, $searchQ)
+{
+    global $mysqli;
+    ini_set('memory_limit', '2G');
+    // If the $searchQ came from a POST form, "&" will have been replaced. Put it back.
+    $searchQ = str_replace('&amp;', '&', $searchQ);
+    $tablenames = array_keys($tableTree);
+    $tables = count($tablenames);
+    $ret = array();
+    for ($i=0; $i<$tables; $i++) {
+        $table = $tablenames[$i];
+        if (is_array($tableTree[$table])) {
+            $pkey = get_pkey($table);  //proper tree format
+            for ($j=0; $j<count($tableTree[$table]); $j++) {
+                $field = $tableTree[$table][$j];
+                $sql = "SELECT $pkey from $table where $field REGEXP ?";
+                if ($stmt = mysqli_prepare($mysqli, $sql)) {
+                    mysqli_stmt_bind_param($stmt, "s", $searchQ);
+                    mysqli_stmt_execute($stmt);
+                    mysqli_stmt_bind_result($stmt, $rec);
+                    while (mysqli_stmt_fetch($stmt)) {
+                        $str = $table . "@@" . $field . "@@" . $rec;
+                        array_push($ret, $str);
+                    }
+                    mysqli_stmt_close($stmt);
+                }
+            }
+        }
+    }
+    // DEM apr2015: Set a limit, for memory and execution time's sake.
+    $limit = 1000000;
+    if (count($ret) > $limit) {
+        die("More than 1 million records were found.  Please narrow your search.<p>");
+    }
+    return $ret;
+}
 
-/*
+/**
  * This function is a desperate search function. It merely requires a list of tables
- * to search and what to search for. It will search every column in that table for 
+ * to search and what to search for. It will search every column in that table for
  * anything that remotely resembles $searchQ.
  *
  * @param $tables - the tables to search through.
  * @param $searchQ - what to search for.
- *
- */
+ **/
 function desperateTermSearch(array $tables, $searchQ)
 {
     global $mysqli;
@@ -132,37 +154,27 @@ function desperateTermSearch(array $tables, $searchQ)
             }
         }
 
-	/* Quick search through the foreign tables. If the unique name matches then search through the original */
-	/* and get those results as well. */
+        /* Quick search through the foreign tables. If the unique name matches then search through the original */
+        /* and get those results as well. */
 
-	// Get foreign tables
-	$ftables = chk_tbl_references($tables[$i]);
+        // Get foreign tables
+        $ftables = chk_tbl_references($tables[$i]);
 
-	foreach($ftables as $ftab) {
+        foreach ($ftables as $ftab) {
+            $fpkey = get_pkey($ftab);
+            $ukeys = get_ukey($ftab);
 
-			$fpkey = get_pkey($ftab);
-			$ukeys = get_ukey($ftab);
-
-			foreach($ukeys as $ukey) {
-
-				$foreign_find = mysqli_query($mysqli, "SELECT $pkey 
-						     FROM $tables[$i]
-						     WHERE $fpkey = ANY (
-								SELECT $fpkey 
-								FROM $ftab
-								WHERE $ukey LIKE '%$searchQ%')
-						    ") or die("Error in Term Search");
-
-				while($row = mysqli_fetch_assoc($foreign_find)) {
-
-					if(!in_array($row[$pkey], $visited)) {		//no duplicate rows allowed.
-
-						$str = $tables[$i] . "@@" . $fpkey . "@@" . $row[$pkey];
-						array_push($ret, $str);
-						array_push($visited, $row[$pkey]);
-					}
-				}
-			}
+            foreach ($ukeys as $ukey) {
+                $sql = "SELECT $pkey FROM $tables[$i] WHERE $fpkey = ANY (SELECT $fpkey FROM $ftab WHERE $ukey LIKE '%$searchQ%')";
+                $foreign_find = mysqli_query($mysqli, $sql) or die("Error in Term Search");
+                while ($row = mysqli_fetch_assoc($foreign_find)) {
+                    if (!in_array($row[$pkey], $visited)) {  //no duplicate rows allowed.
+                        $str = $tables[$i] . "@@" . $fpkey . "@@" . $row[$pkey];
+                        array_push($ret, $str);
+                        array_push($visited, $row[$pkey]);
+		    }
+		}
+		}
 		}
 	}
 	return $ret;

@@ -15,8 +15,8 @@
 /**
  * This will update the last access time for a given account
  *
- * @param $account - the unique username for the given account
- * @param $time - the last access time stored in a session variable right after the last login time.
+ * @param  $account - the unique username for the given account
+ * @param  $time - the last access time stored in a session variable right after the last login time.
  * @return void
  */
 function updateLastAccess($account, $time)
@@ -138,9 +138,9 @@ function show_users($id)
 
 
 
-/* *
- * This is a special case function used in view.php to view the experimetns table. This will select all the 
- * lines associated with an experiment in addition to the usual experiment data shown. 
+/**
+ * This is a special case function used in view.php to view the experimetns table. This will select all the
+ * lines associated with an experiment in addition to the usual experiment data shown.
  */
 function show_experiments($id)
 {
@@ -163,6 +163,109 @@ function show_experiments($id)
 	") or die("Error in show experiments");
 
     echo viewTable($lines, "line_records") . "\n</div>\n";
+}
+
+/**
+ * This is a special case function used in view.php to view the pathways table. This will select all the
+ * genes associated with a pathway and link to Plant Reactome.
+ */
+function show_gene_annotations($id)
+{
+    global $mysqli;
+    echo "<div style=\"float: left;\"><br /><br />";
+
+    //To simply things, just refer to this function.
+    show_general("gene_annotations", $id);
+
+    $count = 0;
+    $sql = "select gene_id, start, stop, bin from gene_annotations where gene_annotation_uid = $id";
+    $res = mysqli_query($mysqli, $sql) or die("Error in show gene annotation<br>$sql");
+    if ($row = mysqli_fetch_row($res)) {
+        $gene_id = $row[0];
+        $start = $row[1];
+        $stop = $row[2];
+        $bin = $row[3];
+        $link = "http://plants.ensembl.org/Triticum_aestivum/Gene/Summary?g=$gene_id";
+    } else {
+        die("Error: gene not found");
+    }
+    echo "<br>Pathways from Plant Reactome";
+    $sql = "SELECT pathways.pathway_uid, stableId, name, species
+        from pathways, pathway_gene
+        where pathways.pathway_uid = pathway_gene.pathway_uid
+        and pathway_gene.gene_id = \"$gene_id\"";
+    $res = mysqli_query($mysqli, $sql) or die("Error in show gene annotation<br>$sql");
+    while ($row = mysqli_fetch_row($res)) {
+        if ($count == 0) {
+            echo "<table><tr><td>Pathway<td>Species<td>Plant Reactome";
+            $count++;
+        }
+        echo "<tr><td><a href=\"view.php?table=pathways&uid=$row[0]\">$row[2]</a><td>$row[3]";
+        echo "<td><a href=\"http://plantreactome.gramene.org/PathwayBrowser/#/$row[1]\" target=\"_new\">$row[1]\n";
+    }
+    if ($count > 0) {
+        echo "</table><br>";
+    } else {
+        echo " - none<br><br>";
+    }
+
+    $count = 0;
+    echo "<a href=\"$link\">Ensembl Plant link</a><br>";
+    echo "<br>Markers near this gene";
+    $sql = "select distinct marker_uid, marker_name, distance from qtl_annotations where gene = \"$gene_id\"";
+    $res = mysqli_query($mysqli, $sql) or die("Error in show gene annotation<br>$sql");
+    while ($row = mysqli_fetch_row($res)) {
+        if ($count == 0) {
+            echo "<table>";
+            echo "<tr><td>Marker<td>distance\n";
+            $count++;
+        }
+        echo "<tr><td><a href=\"view.php?table=markers&uid=$row[0]\">$row[1]</a><td>$row[2]\n";
+    }
+    if ($count > 0) {
+        echo "</table>";
+    } else {
+        echo " - none";
+    }
+    echo "</div><br>";
+}
+
+/**
+ * This is a special case function used in view.php to view the pathways table. This will select all the
+ * genes associated with a pathway and link to Plant Reactome.
+ */
+function show_pathways($id)
+{
+    global $mysqli;
+    echo "<div style=\"float: left;\"><br /><br />";
+    echo "<table>";
+
+    $sql = "SELECT stableId, name, species from pathways where pathway_uid = $id";
+    $genes = mysqli_query($mysqli, $sql) or die("Error in show pathways");
+    if ($row = mysqli_fetch_row($genes)) {
+        echo "<tr><td>Pathway Name<td>$row[1]\n";
+        echo "<tr><td>Species<td>$row[2]\n";
+        echo "<tr><td>Plant Reactome<td><a href=\"http://plantreactome.gramene.org/PathwayBrowser/#/$row[0]\" target=\"_new\">$row[0]\n";
+    }
+    echo "</table><table><br>";
+    echo "<tr><td>Genes in this pathway";
+    $sql = "select gene_annotation_uid, gene_id from gene_annotations";
+    $res = mysqli_query($mysqli, $sql) or die("Error in show pathways");
+    while ($row = mysqli_fetch_row($res)) {
+        $uid = $row[0];
+        $gene = $row[1];
+        $gene_list[$gene] = $uid;
+    }
+    $sql = "SELECT stableId, name, gene_id from pathways, pathway_gene
+        where pathways.pathway_uid = pathway_gene.pathway_uid
+        and pathways.pathway_uid = $id";
+    $genes = mysqli_query($mysqli, $sql) or die("Error in show pathways");
+    while ($row = mysqli_fetch_row($genes)) {
+        $uid = $row[0];
+        $gene = $row[2];
+        echo "<tr><td><a href=\"view.php?table=gene_annotations&uid=$gene_list[$gene]\">$gene</a>\n";
+    }
+    echo "</table></div>";
 }
 
 /**

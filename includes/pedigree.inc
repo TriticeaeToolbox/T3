@@ -105,10 +105,9 @@ function show_line_records($id)
   if ($bpc===FALSE)
     echo "<tr><td>No database links";
   else {
-    $bpclink = getBarleyPedigreeCatalogLink($id);
-    $n_bpc = count($bpclink);
-    for ($i = 0;$i<$n_bpc;$i++) 
-      echo "<tr><td><a href=".$bpclink[$i].">".$bpc[$i]."</a>";
+    foreach ($bpc as $key => $val) {
+      echo "<tr><td><a href=".$val.">".$key."</a>";
+    }
   }
   echo "</table>";
   // Pheno/Geno data links
@@ -690,29 +689,35 @@ function getSynonymNames($id) {
     return $synonyms;
 }
 
-/*
+/**
  * This function is a helper function. It takes the line ID and returns its corresponding links to barley pedigree
  * catalogs such as GRINS. 
  *
  * @param $id - the id of the line whose synonyms to retrieve
  * @return the corresponding synonyms if they exists in the database. If it does not,
  * 	the function returns FALSE.
- */
+ **/
 function getBarleyPedigreeCatalogIDs($id)
 {
     global $mysqli;
-    $sql_bpc = mysqli_query($mysqli, "
-	SELECT b_ref.barley_ref_number as value, b.barley_pedigree_catalog_name as catname
-	FROM barley_pedigree_catalog_ref AS b_ref, barley_pedigree_catalog AS b
-	WHERE b_ref.line_record_uid = '$id'
-	AND b.barley_pedigree_catalog_uid = b_ref.barley_pedigree_catalog_uid
-	") or die(mysqli_error($mysqli));
+    $sql_bpc = mysqli_query(
+        $mysqli,
+        "SELECT b_ref.barley_ref_number as value, b.barley_pedigree_catalog_name as catname, b.link_out
+        FROM barley_pedigree_catalog_ref AS b_ref, barley_pedigree_catalog AS b
+        WHERE b_ref.line_record_uid = '$id'
+        AND b.barley_pedigree_catalog_uid = b_ref.barley_pedigree_catalog_uid"
+    ) or die(mysqli_error($mysqli));
     if (mysqli_num_rows($sql_bpc) < 1) {
-	return FALSE;
+        return false;
     }
 
+    $entities = array(' ');
+    $replacements = array("+");
     while ($row = mysqli_fetch_array($sql_bpc)) {
-        $bpc[] = urlencode($row['catname'].": ".$row['value']);
+        $catId = htmlspecialchars($row['catname'].": ".$row['value']);
+        $value = str_replace($entities, $replacements, $row['value']);
+        $url = str_replace('XXXX', $value, $row['link_out']);
+        $bpc[$catId] = $url;
     }
     return $bpc;
 }
@@ -741,7 +746,7 @@ function getBarleyPedigreeCatalogLink($id)
 
     while ($row = mysqli_fetch_assoc($sql_bpc)) {
         // GRIN PI numbers include a required Space character.
-        $value = urlencode($row['value']);
+        $value = htmlentities($row['value']);
         $url_bpc[] = str_replace('XXXX', $value, $row['link_out']);
     }
     return $url_bpc;
@@ -760,20 +765,19 @@ function getBarleyPedigreeCatalogLink($id)
  */ 
 function getPedigreeId($name) {
     global $mysqli;
-	$pedigree = mysqli_query($mysqli, "
-			SELECT line_record_uid
-			FROM line_records
-			WHERE line_record_name = '$name'
-			");
+    $pedigree = mysqli_query($mysqli, "
+		SELECT line_record_uid
+		FROM line_records
+		WHERE line_record_name = '$name'
+		");
 
-	if(mysqli_num_rows($pedigree) < 1) {
-		error(1, "$name is not in our database");
-		return FALSE;
-	}
+    if(mysqli_num_rows($pedigree) < 1) {
+	error(1, "$name is not in our database");
+	return FALSE;
+    }
 
-	$row = mysqli_fetch_assoc($pedigree);
-	return $row['line_record_uid'];
-
+    $row = mysqli_fetch_assoc($pedigree);
+    return $row['line_record_uid'];
 }
 
 /*

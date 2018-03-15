@@ -52,10 +52,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         fwrite($fh, "key=$key val=$val\n");
         if ($key == "markerprofileDbId") {
             $profile_str = $val;
-            $profile_list = explode(",", $match[1]);
+            $profile_list = explode(",", $val);
         }
     }
     fwrite($fh, "$rest[0] $rest[1] $rest[2]\n");
+} elseif ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+    header("Content-Type: application/json");
+    die();
 } else {
     dieNice("Error", "invalid request method");
 }
@@ -148,7 +152,7 @@ if ($rest[0] == "status") {
             while ($row = mysqli_fetch_row($res)) {
                 $found = 1;
                 $alleles = $row[0];
-                $alleles_ary = explode("\t", $alleles);
+                $alleles_ary = explode(",", $alleles);
                 foreach ($alleles_ary as $i => $v) {
                     if ($v[0] == $v[1]) {
                         $v = $v[0];
