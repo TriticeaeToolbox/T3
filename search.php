@@ -116,7 +116,7 @@ if (isset($_REQUEST['deep'])) {
             $found = array_merge($found);
         }
         if (count($found) < 1) {
-            echo "No matches for Quick search, now trying REGEXP search<br><br>\n";
+            // No matches for Quick search, now try LIKE or REGEXP search<br><br>\n";
             for ($i=0; $i<count($words); $i++) {
                 if (trim($words[$i]) != "") {
                     $partial[$i] = generalTermSearch($searchTree, $keywords);
@@ -135,25 +135,25 @@ if (isset($_REQUEST['deep'])) {
 /* Handle the results */
 // If no hits.
 if (count($found) < 1) {
-  if (isset($_REQUEST['deep'])) {
-    print "<h3>In-Depth Search executed.</h3>";
-    print "<p>Keyword \"$keywords\" not found.<p>";
-  } elseif (isset($_REQUEST['keywords'])) {
-    print "<p>Keyword \"$keywords\" not found.<p>";
-    ?>
+    if (isset($_REQUEST['deep'])) {
+        print "<h3>In-Depth Search executed.</h3>";
+        print "<p>Keyword \"$keywords\" not found.<p>";
+    } elseif (isset($_REQUEST['keywords'])) {
+        print "<p>Keyword \"$keywords\" not found.<p>";
+        ?>
     <form method="post" action="search.php">
     <div>
     <p><strong>Search deeper: </strong>
     <input type="hidden" name="deep" value="yes">
-    <?php
-    print "<input type=\"text\" size=30 name=\"keywords\" value=$keywords>";
-    ?>
+        <?php
+        print "<input type=\"text\" size=30 name=\"keywords\" value=$keywords>";
+        ?>
     <input type="submit" class="button" value="Go"><br>
     </div>
     </form>
-    <?php
-  } else {
-    ?>
+        <?php
+    } else {
+        ?>
     <form method="post" action="search.php">
     <div>
     <p><strong>Search: </strong>
@@ -161,24 +161,23 @@ if (count($found) < 1) {
     <input type="submit" class="button" value="Go"><br>
     </div>
     </form>
-    <?php
-  }
-}
-// If there's only one hit, jump directly to it.
-else if (count($found) == 1) {
-  $line = explode("@@", $found[0]);
-  echo "Single result, redirecting.<br>";
+        <?php
+    }
+    // If there's only one hit, jump directly to it.
+} elseif (count($found) == 1) {
+    $line = explode("@@", $found[0]);
+    echo "Single result, redirecting.<br>";
 
-  // Intercept experiments and route to display_phenotype.php or display_genotype.php.
-  if ($line[0] == "experiments") {
-    $trialcode = mysql_grab("select trial_code from experiments where experiment_uid = $line[2]");
-    $expttype = mysql_grab("select experiment_type_uid from experiments where experiment_uid = $line[2]");
-    if ($expttype == 1)
-      echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."display_phenotype.php?trial_code=$trialcode\">";
-    else
-      echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."display_genotype.php?trial_code=$trialcode\">";
-  }
-  else 
+    // Intercept experiments and route to display_phenotype.php or display_genotype.php.
+    if ($line[0] == "experiments") {
+        $trialcode = mysql_grab("select trial_code from experiments where experiment_uid = $line[2]");
+        $expttype = mysql_grab("select experiment_type_uid from experiments where experiment_uid = $line[2]");
+        if ($expttype == 1) {
+            echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."display_phenotype.php?trial_code=$trialcode\">";
+        } else {
+            echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."display_genotype.php?trial_code=$trialcode\">";
+        }
+    } else 
     echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."view.php?table=".urlencode($line[0])."&uid=$line[2]\">";
 }
 // There is more than one hit.

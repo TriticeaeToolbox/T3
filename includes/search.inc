@@ -76,6 +76,14 @@ function generalTermSearch(array $tableTree, $searchQ)
     ini_set('memory_limit', '2G');
     // If the $searchQ came from a POST form, "&" will have been replaced. Put it back.
     $searchQ = str_replace('&amp;', '&', $searchQ);
+    if (preg_match("/[\^\$]/", $searchQ)) {
+        echo "Using REGEXP search<br>\n";
+        $quick = 0;
+    } else {
+        echo "Using LIKE search<br>\n";
+        $quick = 1;
+        $searchQ = "%" . $searchQ . "%";
+    }
     $tablenames = array_keys($tableTree);
     $tables = count($tablenames);
     $ret = array();
@@ -85,7 +93,11 @@ function generalTermSearch(array $tableTree, $searchQ)
             $pkey = get_pkey($table);  //proper tree format
             for ($j=0; $j<count($tableTree[$table]); $j++) {
                 $field = $tableTree[$table][$j];
-                $sql = "SELECT $pkey from $table where $field REGEXP ?";
+                if ($quick) {
+                    $sql = "SELECT $pkey from $table where $field LIKE ?";
+                } else {
+                    $sql = "SELECT $pkey from $table where $field REGEXP ?";
+                }
                 if ($stmt = mysqli_prepare($mysqli, $sql)) {
                     mysqli_stmt_bind_param($stmt, "s", $searchQ);
                     mysqli_stmt_execute($stmt);
@@ -172,18 +184,18 @@ function desperateTermSearch(array $tables, $searchQ)
                         $str = $tables[$i] . "@@" . $fpkey . "@@" . $row[$pkey];
                         array_push($ret, $str);
                         array_push($visited, $row[$pkey]);
-		    }
-		}
-		}
-		}
-	}
-	return $ret;
+                    }
+                }
+            }
+        }
+    }
+    return $ret;
 }
 
 /**
  * This function is specifically designed to take the formatted output of all the functions in this file and display them in
- * a paragraph list. They aren't shown in actual HTML list format but rather <p> format. 
- * 
+ * a paragraph list. They aren't shown in actual HTML list format but rather <p> format.
+ *
  * Example:  MOREX - Line Record
  * 
  * Note: This will perform a fairly simple query on the database to pull the desired information. Sometimes in the
