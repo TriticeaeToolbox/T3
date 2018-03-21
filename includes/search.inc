@@ -76,7 +76,7 @@ function generalTermSearch(array $tableTree, $searchQ)
     ini_set('memory_limit', '2G');
     // If the $searchQ came from a POST form, "&" will have been replaced. Put it back.
     $searchQ = str_replace('&amp;', '&', $searchQ);
-    if (preg_match("/[\^\$]/", $searchQ)) {
+    if (preg_match("/[\^\$\[\]\.\*]/", $searchQ)) {
         echo "Using REGEXP search<br>\n";
         $quick = 0;
     } else {
