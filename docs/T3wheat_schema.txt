@@ -1504,7 +1504,7 @@ CREATE TABLE `qtl_raw` (
   `platform` int(11) DEFAULT NULL,
   `method` int(11) NOT NULL,
   `chrom` varchar(10) NOT NULL,
-  `gwas` json DEFAULT NULL,
+  `gwas` text DEFAULT NULL,
   PRIMARY KEY (`genotype_exp`,`phenotype_uid`,`phenotype_exp`,`method`,`chrom`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;

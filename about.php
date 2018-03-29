@@ -135,7 +135,7 @@ The T3 software is available under the GNU General Public License
 It requires Linux, Apache, MySQL, and PHP.  Details are in the <a href="docs/INSTALL.html">INSTALL</a> document.<br>
 A list of recent changes to the T3 software are in the <a href="changelog.html">Change Log</a> document.<br>
 The database schema in .sql format
-is <a href="docs/T3wheat_schema.sql">here</a>. Graphical diagrams are
+is <a href="docs/T3wheat_schema.txt">here</a>. Graphical diagrams are
 available in MySQL Workbench (<a href="docs/T3wheat_schema_May2012.mwb">.mwb</a>)
 format and <a href="docs/T3wheat_schema_May2012.png">.png</a> format.
 </div>
