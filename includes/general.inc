@@ -185,7 +185,6 @@ function show_gene_annotations($id)
         $start = $row[1];
         $stop = $row[2];
         $bin = $row[3];
-        $link = "http://plants.ensembl.org/Triticum_aestivum/Gene/Summary?g=$gene_id";
     } else {
         die("Error: gene not found");
     }
@@ -210,8 +209,7 @@ function show_gene_annotations($id)
     }
 
     $count = 0;
-    echo "<a href=\"$link\">Ensembl Plant link</a><br>";
-    echo "<br>Markers near this gene";
+    echo "Markers near this gene";
     $sql = "select distinct marker_uid, marker_name, distance from qtl_annotations where gene = \"$gene_id\"";
     $res = mysqli_query($mysqli, $sql) or die("Error in show gene annotation<br>$sql");
     while ($row = mysqli_fetch_row($res)) {
@@ -238,16 +236,11 @@ function show_pathways($id)
 {
     global $mysqli;
     echo "<div style=\"float: left;\"><br /><br />";
-    echo "<table>";
 
-    $sql = "SELECT stableId, name, species from pathways where pathway_uid = $id";
-    $genes = mysqli_query($mysqli, $sql) or die("Error in show pathways");
-    if ($row = mysqli_fetch_row($genes)) {
-        echo "<tr><td>Pathway Name<td>$row[1]\n";
-        echo "<tr><td>Species<td>$row[2]\n";
-        echo "<tr><td>Plant Reactome<td><a href=\"http://plantreactome.gramene.org/PathwayBrowser/#/$row[0]\" target=\"_new\">$row[0]\n";
-    }
-    echo "</table><table><br>";
+    //To simply things, just refer to this function.
+    show_general("pathways", $id);
+
+    echo "<table><br>";
     echo "<tr><td>Genes in this pathway";
     $sql = "select gene_annotation_uid, gene_id from gene_annotations";
     $res = mysqli_query($mysqli, $sql) or die("Error in show pathways");
@@ -256,7 +249,7 @@ function show_pathways($id)
         $gene = $row[1];
         $gene_list[$gene] = $uid;
     }
-    $sql = "SELECT stableId, name, gene_id from pathways, pathway_gene
+    $sql = "SELECT pathway_reference, pathway_name, gene_id from pathways, pathway_gene
         where pathways.pathway_uid = pathway_gene.pathway_uid
         and pathways.pathway_uid = $id";
     $genes = mysqli_query($mysqli, $sql) or die("Error in show pathways");
