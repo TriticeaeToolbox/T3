@@ -169,6 +169,18 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
             Weather Data</a>
         <li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
       </ul>
+    <?php
+    $results = mysql_grab("SHOW tables like 'gene_annotations'");
+    if ($results == "gene_annotations") {
+      ?>
+      <li><a href="" title="">Browse</a>
+      <ul>
+      <li><a href="<?php echo $config['base_url']; ?>genes" title="Browse Genes">Genes</a>
+      <li><a href="<?php echo $config['base_url']; ?>pathways" title="Browse Pathways">Pathways</a>
+      </ul>
+      <?php
+    }
+    ?>
     <li><a href="" title="">Reports</a>
       <ul>
         <?php
@@ -272,15 +284,6 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
     <?php
     }
 
-/* //   if( authenticate( array( USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
-/*   if( authenticate( array( USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR ) ) ):  */
-/*     ?> */
-/*   <li> <a href="" title="Manage access to my data">Share data</a> */
-/*   <ul> */
-/*   <li><a href="<?php echo $config['base_url']; ?>sharegroup.php">Manage access to my data</a> */
-/*   </ul> */
-/*      <?php endif;  */
-
 ?>
 
   <li>
@@ -306,7 +309,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
     <?php if (isset($_SESSION['username']) && !isset($_REQUEST['logout'])) : ?>
     <li>
        <a title="Logout" href="<?php echo $config['base_url']; ?>logout.php">Logout <span style="font-size: 10px">(<?php echo $_SESSION['username'] ?>)</span></a>
-        <?php else : ?>
+    <?php else : ?>
     <li>
       <a title="Login" href="<?php echo $config['base_url_ssl']; ?>login.php"><strong>Login/Register</strong></a>
     <?php endif; ?>
