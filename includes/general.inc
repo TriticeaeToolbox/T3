@@ -189,7 +189,7 @@ function show_gene_annotations($id)
         die("Error: gene not found");
     }
     echo "<br>Pathways from Plant Reactome";
-    $sql = "SELECT pathways.pathway_uid, stableId, name, species
+    $sql = "SELECT pathways.pathway_uid, pathway_reference, pathway_name, species
         from pathways, pathway_gene
         where pathways.pathway_uid = pathway_gene.pathway_uid
         and pathway_gene.gene_id = \"$gene_id\"";
@@ -199,8 +199,7 @@ function show_gene_annotations($id)
             echo "<table><tr><td>Pathway<td>Species<td>Plant Reactome";
             $count++;
         }
-        echo "<tr><td><a href=\"view.php?table=pathways&uid=$row[0]\">$row[2]</a><td>$row[3]";
-        echo "<td><a href=\"http://plantreactome.gramene.org/PathwayBrowser/#/$row[1]\" target=\"_new\">$row[1]\n";
+        echo "<tr><td><a href=\"view.php?table=pathways&uid=$row[0]\">$row[2]</a><td>$row[3]<td>$row[1]\n";
     }
     if ($count > 0) {
         echo "</table><br>";
