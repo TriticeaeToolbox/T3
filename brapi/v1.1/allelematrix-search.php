@@ -154,15 +154,21 @@ if ($rest[0] == "status") {
             dieNice("Error", "invalid experiment $expid");
         }
 
-        //now get just those selected
+        //first query all data
         $sql = "select alleles from allele_byline_exp_ACTG where experiment_uid = $expid and line_record_uid = $lineuid";
+        $res = mysqli_query($mysqli, $sql);
+        $num_rows = mysqli_num_rows($res);
         if ($currentPage == 0) {
+            $sql .= " limit $pageSize";
         } else {
             $offset = $currentPage * $pageSize;
             if ($offset < 0) {
                 $offset = 0;
             }
+            $sql .= " limit $offset, $pageSize";
         }
+
+        //now get just those selected
         $found = 0;
         if ($res = mysqli_query($mysqli, $sql)) {
             while ($row = mysqli_fetch_row($res)) {
