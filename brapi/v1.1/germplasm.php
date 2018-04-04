@@ -72,7 +72,28 @@ if ($rest[1] == "pedigree") {
     $r['metadata']['pagination']['totalCount'] = 1;
     $r['metadata']['pagination']['totalPages'] = 1;
     $r['result'] = $response;
-    header("Access-Control-Allow-Origin: *");
+    echo json_encode($r);
+} elseif ($rest[1] == "progeny") {
+    $sql = "select line_record_name, pedigree_string from line_records where line_record_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "s", $lineuid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $line_record_name, $pedigree);
+        if (mysqli_stmt_fetch($stmt)) {
+            $response["germplasmDbId"] = $lineuid;
+            $response['defaultDisplayName'] = $line_record_name;
+            $response['progeny'] = array();
+        } else {
+            $response = null;
+            $r['metadata']['status'][] = array("code" => "not found", "message" => "germplasm id not found");
+        }
+        mysqli_stmt_close($stmt);
+    }
+    $r['metadata']['pagination']['pageSize'] = 1;
+    $r['metadata']['pagination']['currentPage'] = $currentPage;
+    $r['metadata']['pagination']['totalCount'] = 1;
+    $r['metadata']['pagination']['totalPages'] = 1;
+    $r['result'] = $response;
     echo json_encode($r);
     // Is there a requiest for line_record_uid?
 } elseif (isset($lineuid)) {
@@ -121,7 +142,6 @@ if ($rest[1] == "pedigree") {
     $r['metadata']['pagination']['totalCount'] = 1;
     $r['metadata']['pagination']['totalPages'] = 1;
     $r['result'] = $response;
-    header("Access-Control-Allow-Origin: *");
     echo json_encode($r);
 } elseif (!empty($_GET['germplasmName'])) {
     // "Germplasm ID by Name".  URI is germplasm?name={name}
@@ -196,7 +216,6 @@ if ($rest[1] == "pedigree") {
     $r['metadata']['pagination']['totalCount'] = $num_rows;
     $r['metadata']['pagination']['totalPages'] = ceil($num_rows / $pageSize);
     $r['result']['data'] = $response;
-    header("Access-Control-Allow-Origin: *");
     echo json_encode($r);
 } else {
     $sql = "select line_record_uid, line_record_name, pedigree_string from line_records";
@@ -253,6 +272,5 @@ if ($rest[1] == "pedigree") {
     $r['metadata']['pagination']['totalCount'] = $num_rows;
     $r['metadata']['pagination']['totalPages'] = ceil($num_rows / $pageSize);
     $r['result']['data'] = $response;
-    header("Access-Control-Allow-Origin: *");
     echo json_encode($r);
 }
