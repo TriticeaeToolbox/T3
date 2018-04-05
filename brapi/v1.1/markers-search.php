@@ -20,10 +20,16 @@ if (isset($rest[1]) && ($rest[1] == "table")) {
 $pageSize = 1000;
 $currentPage = 0;
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $request = json_decode(file_get_contents('php://input'), true);
+    $logFile = "/tmp/tht/request-log-marker-search.txt";
+    $fh = fopen($logFile, "a");
+    $request = file_get_contents('php://input');
+    fwrite($fh, $request);
+    $request = json_decode($request, true);
     foreach ($request as $key => $val) {
         if ($key == "type") {
             $type = $val;
+        } elseif ($key == "name") {
+            $name = $val;
         } elseif ($key == "markerDbIds") {
             $markerDbIds = implode(",", $val);
         } elseif ($key == "page") {
@@ -109,14 +115,14 @@ if ($currentPage == 0) {
     }
     $options = " limit $offset, $pageSize";
 }
-    $sql .= $options;
-    $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli) . "<br>$sql<br>");
-    while ($row = mysqli_fetch_row($res)) {
-        $data["markerDbId"] = $row[0];
-        $data["defaultDisplayName"] = $row[1];
-        $data["type"] = $row[2];
-        $temp[] = $data;
-    }
-    $linearray['result']['data'] = $temp;
-    $return = json_encode($linearray);
-    echo "$return";
+$sql .= $options;
+$res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli) . "<br>$sql<br>");
+while ($row = mysqli_fetch_row($res)) {
+    $data["markerDbId"] = $row[0];
+    $data["defaultDisplayName"] = $row[1];
+    $data["type"] = $row[2];
+    $temp[] = $data;
+}
+$linearray['result']['data'] = $temp;
+$return = json_encode($linearray);
+echo "$return";
