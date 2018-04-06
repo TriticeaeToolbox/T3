@@ -35,11 +35,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     fwrite($fh, $request);
     $request = json_decode($request, true);
     foreach ($request as $key => $val) {
-        fwrite($fh, "request key=$key\nval=$val\n");
+        fwrite($fh, "request key=$key  val=$val\n");
         if ($key == "markerprofileDbId") {
             if (is_array($val)) {
                 $profile_str = implode(",", $val);
-                $profile_list[] = $val;
+                $profile_list = $val;
             } else {
                 $profile_str = $val;
                 $profile_list[] = $val;
@@ -52,14 +52,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $pageSize = $val;
         }
     }
-    foreach ($_POST as $key => $val) {
+    /*foreach ($_POST as $key => $val) {
         fwrite($fh, "POST request key=$key\nval=$val\n");
         if ($key == "markerprofileDbId") {
             $profile_str = $val;
             $profile_list = explode(",", $val);
         }
         fwrite($fh, "key=$key\nval=$val\n");
-    }
+    }*/
 } elseif ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $fh = fopen($logFile, "a");
     fwrite($fh, "GET\n");
