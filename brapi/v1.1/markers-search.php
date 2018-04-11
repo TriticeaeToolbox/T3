@@ -5,6 +5,7 @@
  **/
 
 require '../../includes/bootstrap.inc';
+//ini_set('memory_limit', '4G');
 $mysqli = connecti();
 
 $self = $_SERVER['PHP_SELF'];
@@ -17,15 +18,19 @@ if (isset($rest[1]) && ($rest[1] == "table")) {
 } else {
     $outFormat = "json";
 }
+$type = "";
+$name = "";
+$markerDbIds = "";
 $pageSize = 1000;
 $currentPage = 0;
+$logFile = "/tmp/tht/request-log-marker-search.txt";
+$fh = fopen($logFile, "a");
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $logFile = "/tmp/tht/request-log-marker-search.txt";
-    $fh = fopen($logFile, "a");
     $request = file_get_contents('php://input');
-    fwrite($fh, $request);
+    fwrite($fh, "$request\n");
     $request = json_decode($request, true);
     foreach ($request as $key => $val) {
+        fwrite($fh, "request key=$key  val=$val\n");
         if ($key == "type") {
             $type = $val;
         } elseif ($key == "name") {
@@ -41,18 +46,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 } elseif ($_SERVER['REQUEST_METHOD'] == 'GET') {
     if (isset($_GET['type'])) {
         $type = $_GET['type'];
-    } else {
-        $type = "";
     }
     if (isset($_GET['name'])) {
         $name = $_GET['name'];
-    } else {
-        $name = "";
     }
     if (isset($_GET['markerDbIds'])) {
         $markerDbIds = $_GET['markerDbIds'];
-    } else {
-        $markerDbIds = "";
     }
     if (isset($_GET['pageSize'])) {
         $pageSize = $_GET['pageSize'];
@@ -105,6 +104,26 @@ $tot_pag = ceil($num_rows / $pageSize);
 $pageList = array( "pageSize" => $pageSize, "currentPage" => $currentPage, "totalCount" => $num_rows, "totalPages" => $tot_pag );
 $linearray['metadata']['pagination'] = $pageList;
 
+$temp2 = array();
+// get unique types for BrAPI genotyping Client
+if ($pageSize == 10000) {
+    $res = mysqli_query($mysqli, $sql, MYSQLI_USE_RESULT) or dieNice(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $type = $row[2];
+        $markerDbId = $row[0];
+        $data["markerDbId"] = $row[0];
+        $data["defaultDisplayName"] = $row[1];
+        $data["type"] = $row[2];
+        if (isset($unique[$type])) {
+        } else {
+            $uniqueMarker[$markerDbId] = $data;
+            $unique[$type] = 1;
+            $temp2[] = $data;
+        }
+    }
+    mysqli_free_result($res);
+}
+
 //now get just those selected
 if ($currentPage == 0) {
     $options = " limit $pageSize";
@@ -118,11 +137,21 @@ if ($currentPage == 0) {
 $sql .= $options;
 $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli) . "<br>$sql<br>");
 while ($row = mysqli_fetch_row($res)) {
+    $type = $row[2];
+    $markerDbId = $row[0];
     $data["markerDbId"] = $row[0];
     $data["defaultDisplayName"] = $row[1];
     $data["type"] = $row[2];
-    $temp[] = $data;
+    if (isset($uniqueMarker[$markerDbId])) {
+    } else {
+        $temp3[] = $data;
+    }
 }
-$linearray['result']['data'] = $temp;
+$count1 = count($temp2);
+$count2 = count($temp3);
+fwrite($fh, "count1= $count1, count2= $count2\n");
+$temp4 = array_merge($temp2, $temp3);
+
+$linearray['result']['data'] = $temp4;
 $return = json_encode($linearray);
 echo "$return";
