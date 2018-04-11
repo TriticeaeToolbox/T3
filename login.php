@@ -34,12 +34,13 @@ $mysqli = connecti();
  * @param string $answer      response to do you have password
  * @param string $institution institution
  *
- * @return registration form
+ * @return string registration form
  */
 function HTMLRegistrationForm($msg = "", $name = "", $email = "", $cemail = "", $answer = "no", $institution = "")
 {
     // ensure that we go back to home..
     global $mysqli;
+    $unique = md5(uniqid(time));
     $_SESSION['login_referer_override'] = '/';
     $c_no = "";
     $c_yes = "";
@@ -135,7 +136,7 @@ function HTMLRegistrationForm($msg = "", $name = "", $email = "", $cemail = "", 
   <br />
   <table border="0" cellspacing=="0" cellpadding="0"
 	 style="border: none; background: none">
-    <tr><td><img id="captcha" src="./securimage/securimage_show.php" alt="CAPTCHA image"/>
+    <tr><td><img id="captcha" src="./securimage/securimage_show.php?$unique" alt="CAPTCHA image">
             <a href="#" title="Refresh Image" onclick="document.getElementById('captcha').src = './securimage/securimage_show.php?sid=' + Math.random(); this.blur(); return false">
             <img height="32" width="32" src="./securimage/images/refresh.png" alt="Refresh Image" onclick="this.blur()" /></a>
     <tr><td>Type the text:
@@ -155,7 +156,7 @@ HTML;
  *
  * @param string $msg message to user
  *
- * @return registration form form
+ * @return string registration form form
  */
 function HTMLLoginForm($msg = "")
 {
@@ -224,15 +225,13 @@ HTML;
  */
 function HTMLLoginSuccess()
 {
-    // DEM jul2014: Don't return to the previous page.  It might be the "Access Denied"
-    //   page which would be confusing.
-    //$url = (isset($_SESSION['login_referer'])) ? $_SESSION['login_referer'] : 'index.php';
     global $config;
+    echo "User type: " . $_SESSION['usertype_name'] . "<br>\n";
     $url = $config['base_url']."index.php";
     return <<< HTML
 <p>You have been logged in. Welcome!
 <p><input type='Button' value='Proceed' onClick='window.location.assign("$url")'>
-<meta http-equiv="refresh" content="2;url=$url" />
+<meta http-equiv="refresh" content="3;url=$url" />
 HTML;
 }
 
@@ -382,12 +381,15 @@ function HTMLProcessLogin()
                 die("SQL Error hashing password\n");
             }
             // Store user_types_uid in $_SESSION.
-            $sql = "select users_uid, user_types_uid, name from users where users_name = SHA1('$email')";
+            $sql = "select users_uid, users.user_types_uid, user_types_name, name from users, user_types
+                where users.user_types_uid = user_types.user_types_uid
+                and users_name = SHA1('$email')";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             $row = mysqli_fetch_row($res);
             $_SESSION['userid'] = $row[0];
             $_SESSION['usertype'] = $row[1];
-            $_SESSION['name'] = $row[2];
+            $_SESSION['usertype_name'] = $row[2];
+            $_SESSION['name'] = $row[3];
             $sql = "update users set lastaccess = now() where
             users_name = '$email'";
             mysqli_query($mysqli, $sql) or die("<pre>" . mysqli_error($mysqli) . "\n\n\n$sql.</pre>");
@@ -521,26 +523,26 @@ if (isset($_POST['submit_login'])) {
         $error = true;
         $error_msg .= "- You must provide your e-mail addresses.\n";
     } else {
-           $safe_email = mysqli_real_escape_string($mysqli, $email);
-           $safe_password = mysqli_real_escape_string($mysqli, $password);
-           $safe_name = mysqli_real_escape_string($mysqli, $name);
-           $sql = "SELECT SHA1('$safe_password') AS password";
-           $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing password\n");
-           if ($row = mysqli_fetch_assoc($res)) {
-               $hash_password = $row['password'];
-           } else {
-               die("SQL Error hashing password\n");
-           }
-           $sql = "SELECT SHA1('$safe_email') AS email";
-           $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing email\n");
-           if ($row = mysqli_fetch_assoc($res)) {
-               $hash_email = $row['email'];
-           } else {
-               die("SQL Error hashing email\n");
-           }
-     $key = setting('encryptionkey');
-     $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-     send_email($email, "T3 registration in progress",
+        $safe_email = mysqli_real_escape_string($mysqli, $email);
+        $safe_password = mysqli_real_escape_string($mysqli, $password);
+        $safe_name = mysqli_real_escape_string($mysqli, $name);
+        $sql = "SELECT SHA1('$safe_password') AS password";
+        $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing password\n");
+        if ($row = mysqli_fetch_assoc($res)) {
+             $hash_password = $row['password'];
+        } else {
+            die("SQL Error hashing password\n");
+        }
+        $sql = "SELECT SHA1('$safe_email') AS email";
+        $res = mysqli_query($mysqli, $sql) or die("SQL Error hashing email\n");
+        if ($row = mysqli_fetch_assoc($res)) {
+            $hash_email = $row['email'];
+        } else {
+            die("SQL Error hashing email\n");
+        }
+        $key = setting('encryptionkey');
+        $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
+        send_email($email, "T3 registration in progress",
 "Thank you for requesting an account on T3.
 
 To complete your registration, please confirm that you requested it 
@@ -552,24 +554,24 @@ Your registration will be complete when you have performed this step.
 Sincerely,
 The Triticeae Toolbox Team
 ");
-   }
-   echo HTMLRegistrationSuccess($name, $email);
- } elseif (isset($_POST['submit_registration'])) {
-   $name = $_POST['name'];
-   $email = $_POST['email'];
-   $cemail = $_POST['cemail'];
-   $password = $_POST['password'];
-   $cpassword = $_POST['cpassword'];
-   $answer = $_POST['answer'];
-   $institution = $_POST['institution'];
+    }
+    echo HTMLRegistrationSuccess($name, $email);
+} elseif (isset($_POST['submit_registration'])) {
+    $name = $_POST['name'];
+    $email = $_POST['email'];
+    $cemail = $_POST['cemail'];
+    $password = $_POST['password'];
+    $cpassword = $_POST['cpassword'];
+    $answer = $_POST['answer'];
+    $institution = $_POST['institution'];
 
-   $error = false;
-   $error_msg = "";
+    $error = false;
+    $error_msg = "";
 
-   if (empty($name)) {
-     $error = true;
-     $error_msg .= "- You must provide your name.\n";
-   }
+    if (empty($name)) {
+        $error = true;
+        $error_msg .= "- You must provide your name.\n";
+    }
    if (empty($email)) {
      $error = true;
      $error_msg .= "- You must provide your e-mail addresses.\n";
