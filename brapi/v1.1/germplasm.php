@@ -48,24 +48,43 @@ if ($row = mysqli_fetch_array($res)) {
 }
 
 if ($rest[1] == "pedigree") {
-    $sql = "select line_record_name, pedigree_string from line_records where line_record_uid = ?";
+    /* first look in pedigree_relations*/
+    $sql = "select line_record_name, parent_id from pedigree_relations, line_records
+       where pedigree_relations.parent_id = line_records.line_record_uid
+       and pedigree_relations.line_record_uid = ?";
     if ($stmt = mysqli_prepare($mysqli, $sql)) {
         mysqli_stmt_bind_param($stmt, "s", $lineuid);
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $line_record_name, $pedigree);
-        if (mysqli_stmt_fetch($stmt)) {
-            $response["germplasmDbId"] = $lineuid;
-            $response['defaultDisplayName'] = $line_record_name;
-            $response['pedigree'] = $pedigree;
-        } else {
-            $response = null;
-            $r['metadata']['status'][] = array("code" => "not found", "message" => "germplasm id not found");
+        mysqli_stmt_bind_result($stmt, $line_record_name, $parent_id);
+        while (mysqli_stmt_fetch($stmt)) {
+            if (isset($response['parent1Id'])) {
+                $response['parent2DbId'] = $parent_id;
+                $response['parent2Name'] = $line_record_name;
+            } else {
+                $response['parent1DbId'] = $parent_id;
+                $response['parent1Name'] = $line_record_name;
+            }
         }
         mysqli_stmt_close($stmt);
     }
-    if (preg_match("/^([^\/]+)\/([^\/]+)/", $pedigree, $match)) {
-        $response['parent1Name'] = trim($match[1]);
-        $response['parent2Name'] = trim($match[2]);
+    /* if not found in pedigree_relations then look in line_records */
+    if (!isset($response['parent1Id'])) {
+        $sql = "select line_record_name, pedigree_string from line_records where line_record_uid = ?";
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
+            mysqli_stmt_bind_param($stmt, "s", $lineuid);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $line_record_name, $pedigree);
+            if (mysqli_stmt_fetch($stmt)) {
+                $response["germplasmDbId"] = $lineuid;
+                $response['defaultDisplayName'] = $line_record_name;
+                $response['pedigree'] = $pedigree;
+            }
+            mysqli_stmt_close($stmt);
+        }
+        if (preg_match("/^([^\/]+)\/([^\/]+)/", $pedigree, $match)) {
+            $response['parent1Name'] = trim($match[1]);
+            $response['parent2Name'] = trim($match[2]);
+        }
     }
     $r['metadata']['pagination']['pageSize'] = 1;
     $r['metadata']['pagination']['currentPage'] = $currentPage;
@@ -74,21 +93,20 @@ if ($rest[1] == "pedigree") {
     $r['result'] = $response;
     echo json_encode($r);
 } elseif ($rest[1] == "progeny") {
-    $sql = "select line_record_name, pedigree_string from line_records where line_record_uid = ?";
-    if ($stmt = mysqli_prepare($mysqli, $sql)) {
-        mysqli_stmt_bind_param($stmt, "s", $lineuid);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $line_record_name, $pedigree);
-        if (mysqli_stmt_fetch($stmt)) {
-            $response["germplasmDbId"] = $lineuid;
-            $response['defaultDisplayName'] = $line_record_name;
-            $response['progeny'] = array();
-        } else {
-            $response = null;
-            $r['metadata']['status'][] = array("code" => "not found", "message" => "germplasm id not found");
-        }
-        mysqli_stmt_close($stmt);
+    $response["germplasmDbId"] = $lineuid;
+    $response['defaultDisplayName'] = $line_record_name;
+    /* first look in pedigree_relations */
+    $sql = "select pedigree_relations.line_record_uid, parent_id, line_record_name from pedigree_relations, line_records
+       where pedigree_relations.parent_id = line_records.line_record_uid
+       and pedigree_relations.parent_id = $lineuid";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $temp['germplasmDbId'] = $row[0];
+        $temp['defaultDisplayName'] = $row[2];
+        $temp['parentType'] = "";
+        $response['progeny'][] = $temp;
     }
+    
     $r['metadata']['pagination']['pageSize'] = 1;
     $r['metadata']['pagination']['currentPage'] = $currentPage;
     $r['metadata']['pagination']['totalCount'] = 1;

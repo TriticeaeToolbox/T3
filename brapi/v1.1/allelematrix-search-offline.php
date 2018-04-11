@@ -57,7 +57,6 @@ if (preg_match("/,/", $markerProfile)) {
                     $line_index = implode("\t", $line_index);
                     fwrite($fh, "markerprofilesDbIds\t$line_index\n");
                 }
-                $sql2 = "select marker_uid, alleles from allele_bymarker_exp_ACTG where experiment_uid = $expid";
             } elseif ($format == "flapjack") {
                 $sql1 = "select marker_name_index from allele_byline_expidx where experiment_uid = $expid";
                 $res = mysqli_query($mysqli, $sql1) or die("Error mysqli_error($mysqli)\n");
@@ -71,8 +70,6 @@ if (preg_match("/,/", $markerProfile)) {
                 } else {
                     die("Error: $expid not found");
                 }
-                $sql2 = "select line_record_name, alleles from allele_byline_exp_ACTG where experiment_uid = $expid
-                     and line_record_uid = $lineuid";
             } else {
                 fwrite($fh, "Error: bad format $format\n");
                 die("Error: bad format\n");
@@ -80,10 +77,12 @@ if (preg_match("/,/", $markerProfile)) {
         } elseif ($previd != $expid) {
             dieNice("Error", "all marker profiles must have same experiment");
         }
-        if ($res = mysqli_query($mysqli, $sql2)) {
+        $sql = "select line_record_name, alleles from allele_byline_exp_ACTG where experiment_uid = $expid
+            and line_record_uid = $lineuid";
+        if ($res = mysqli_query($mysqli, $sql)) {
             while ($row = mysqli_fetch_row($res)) {
                 $found++;
-                $uid = $row[0];
+                $name = $row[0];
                 $alleles = $row[1];
                 $alleles_ary = explode(",", $alleles);
                 $alleles_fmt = "";
@@ -99,8 +98,11 @@ if (preg_match("/,/", $markerProfile)) {
                          $alleles_fmt .= "\t$v";
                     }
                 }
-                //$alleles = str_replace(",", "\t", $alleles);
-                fwrite($fh, "$uid\t$alleles_fmt\n");
+                if ($format = "tsv") {
+                    fwrite($fh, "$item\t$alleles_fmt\n");
+                } else {
+                    fwrite($fh, "$name\t$alleles_fmt\n");
+                }
             }
         } else {
             fwrite($fh, "mysqli_error($mysqli)");
