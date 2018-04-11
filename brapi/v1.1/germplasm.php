@@ -39,6 +39,16 @@ if (isset($_GET['page'])) {
 $r['metadata']['status'] = array();
 $r['metadata']['datafiles'] = array();
 
+function dieNice($msg)
+{
+    $linearray["metadata"]["pagination"] = null;
+    $linearray["metadata"]["status"] = array("code" => 1, "message" => "SQL Error: $msg");
+    $linearray["metadata"]["datafiles"] = array();
+    $linearray["result"] = null;
+    $return = json_encode($linearray);
+    die("$return");
+}
+
 $sql = "select value from settings where name = \"species\"";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 if ($row = mysqli_fetch_array($res)) {
@@ -48,7 +58,25 @@ if ($row = mysqli_fetch_array($res)) {
 }
 
 if ($rest[1] == "pedigree") {
-    /* first look in pedigree_relations*/
+    /* first get basic info */
+    $sql = "select line_record_name, pedigree_string from line_records where line_record_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "s", $lineuid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $line_record_name, $pedigree);
+        if (mysqli_stmt_fetch($stmt)) {
+            $response["germplasmDbId"] = $lineuid;
+            $response['defaultDisplayName'] = $line_record_name;
+            if (preg_match("/[A-Za-z0-9]/", $pedigree)) {
+                $response['pedigree'] = $pedigree;
+            } else {
+                $response['pedigree'] = "";
+            }
+        }
+        mysqli_stmt_close($stmt);
+    }
+ 
+    /* then look in pedigree_relations*/
     $sql = "select line_record_name, parent_id from pedigree_relations, line_records
        where pedigree_relations.parent_id = line_records.line_record_uid
        and pedigree_relations.line_record_uid = ?";
@@ -57,7 +85,7 @@ if ($rest[1] == "pedigree") {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $line_record_name, $parent_id);
         while (mysqli_stmt_fetch($stmt)) {
-            if (isset($response['parent1Id'])) {
+            if (isset($response['parent1DbId'])) {
                 $response['parent2DbId'] = $parent_id;
                 $response['parent2Name'] = $line_record_name;
             } else {
@@ -69,18 +97,6 @@ if ($rest[1] == "pedigree") {
     }
     /* if not found in pedigree_relations then look in line_records */
     if (!isset($response['parent1Id'])) {
-        $sql = "select line_record_name, pedigree_string from line_records where line_record_uid = ?";
-        if ($stmt = mysqli_prepare($mysqli, $sql)) {
-            mysqli_stmt_bind_param($stmt, "s", $lineuid);
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_bind_result($stmt, $line_record_name, $pedigree);
-            if (mysqli_stmt_fetch($stmt)) {
-                $response["germplasmDbId"] = $lineuid;
-                $response['defaultDisplayName'] = $line_record_name;
-                $response['pedigree'] = $pedigree;
-            }
-            mysqli_stmt_close($stmt);
-        }
         if (preg_match("/^([^\/]+)\/([^\/]+)/", $pedigree, $match)) {
             $response['parent1Name'] = trim($match[1]);
             $response['parent2Name'] = trim($match[2]);
@@ -93,13 +109,25 @@ if ($rest[1] == "pedigree") {
     $r['result'] = $response;
     echo json_encode($r);
 } elseif ($rest[1] == "progeny") {
-    $response["germplasmDbId"] = $lineuid;
-    $response['defaultDisplayName'] = $line_record_name;
+    /* first get basic info */
+    $sql = "select line_record_name, pedigree_string from line_records where line_record_uid = ?";
+    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        mysqli_stmt_bind_param($stmt, "s", $lineuid);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $line_record_name, $pedigree);
+        if (mysqli_stmt_fetch($stmt)) {
+            $response["germplasmDbId"] = $lineuid;
+            $response['defaultDisplayName'] = $line_record_name;
+        }
+        mysqli_stmt_close($stmt);
+    }
+
+    $response['progeny'] = array();
     /* first look in pedigree_relations */
     $sql = "select pedigree_relations.line_record_uid, parent_id, line_record_name from pedigree_relations, line_records
-       where pedigree_relations.parent_id = line_records.line_record_uid
+       where pedigree_relations.line_record_uid = line_records.line_record_uid
        and pedigree_relations.parent_id = $lineuid";
-    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $res = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
     while ($row = mysqli_fetch_row($res)) {
         $temp['germplasmDbId'] = $row[0];
         $temp['defaultDisplayName'] = $row[2];
