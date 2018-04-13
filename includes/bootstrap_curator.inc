@@ -1,15 +1,24 @@
 <?php
 
-# Function connect() below requires the connection information in
-# /data/tht_data/mysql_connections/T3wheat_writeaccess.inc
+/**
+  * Function connect() below requires the connection information in
+  * /data/tht_data/mysql_connections/T3wheat_writeaccess.inc
+  */
 
 if (!isset($dontconnect)) {
     $dontconnect = false;
 }
 
+date_default_timezone_set('America/Los_Angeles');
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
 session_start();
+/* protect against session fixation, xss */
+/* regerate again during login */
+if (!isset($_SESSION['stage1'])) {
+    session_regenerate_id();
+    $_SESSION['stage1'] = true;
+}
 /**
  * Site-wide maintenance switch
  *
@@ -23,23 +32,26 @@ $maintenance = false;
 
 /******************************************************************************/
 if (!isset($_SESSION['maintenance_override'])) {
-    if (isset($_GET['maintenance']) && $_GET['maintenance'] == 'override')
-	$_SESSION['maintenance_override'] = true;
-    else
-	$_SESSION['maintenance_override'] = false;
+    if (isset($_GET['maintenance']) && $_GET['maintenance'] == 'override') {
+        $_SESSION['maintenance_override'] = true;
+    } else {
+        $_SESSION['maintenance_override'] = false;
+    }
+} elseif ($_SESSION['maintenance_override'] === false) {
+    if (isset($_GET['maintenance']) && $_GET['maintenance'] == 'override') {
+        $_SESSION['maintenance_override'] = true;
+    }
 }
-else if ($_SESSION['maintenance_override'] === false)
-	if (isset($_GET['maintenance']) && $_GET['maintenance'] == 'override')
-		$_SESSION['maintenance_override'] = true;
-
-if ($maintenance && $_SESSION['maintenance_override'] !== true)
-	die("<h1>This site is currently undergoing maintenance. Please check back later. Thank you.</h1>");
-if (!$maintenance && isset($_SESSION['maintenance_override']))
-	unset($_SESSION['maintenance_override']);
+if ($maintenance && $_SESSION['maintenance_override'] !== true) {
+    die("<h1>This site is currently undergoing maintenance. Please check back later. Thank you.</h1>");
+}
+if (!$maintenance && isset($_SESSION['maintenance_override'])) {
+    unset($_SESSION['maintenance_override']);
+}
 /******************************************************************************/
 
 if (!(isset($config['base_url']) && isset($config['root_dir']))) {
-	require 'config.php';
+    require 'config.php';
 }
 
 /****************************************************
@@ -52,7 +64,6 @@ if (!(isset($config['base_url']) && isset($config['root_dir']))) {
     require('common.inc');
     require('error.inc');
     require('login.inc');
-    //require($config['root_dir'].'includes/model.inc');
 
     // specific libraries
     require('general.inc');
@@ -68,19 +79,12 @@ if (!(isset($config['base_url']) && isset($config['root_dir']))) {
  */
 
 //	Comment out if you want to get rid of the censoring.
-	censor();
+censor();
 
 //	Starting the Session, why? because everything uses the damn session array
-	if(session_test())
-	{
-		session_start();
-	}
-
-// 	Comment out if you don't want to set the memory limit
-//	ini_set("memory_limit","36M");
-
-
-
+if (session_test()) {
+    session_start();
+}
 
 /*
  *  End of Initialization
@@ -89,15 +93,15 @@ if (!(isset($config['base_url']) && isset($config['root_dir']))) {
 
 function array_merge_recursive_unique($array0, $array1)
 {
-   $arrays = func_get_args();
-   $remains = $arrays;
+    $arrays = func_get_args();
+    $remains = $arrays;
 
-   // We walk through each arrays and put value in the results (without
-   // considering previous value).
-   $result = array();
+    // We walk through each arrays and put value in the results (without
+    // considering previous value).
+    $result = array();
 
-   // loop available array
-   foreach($arrays as $array) {
+    // loop available array
+    foreach ($arrays as $array) {
 
        // The first remaining array is $array. We are processing it. So
        // we remove it from remaing arrays.
@@ -153,14 +157,14 @@ function connect() {
     parse_ini_file($ini_path, false):array();
   if ($dontconnect == true) return null;
   // Get $db_config = array(db_name,db_user,db_pass,db_host).
-  include('/data/tht_data/mysql_connections/T3wheat+_writeaccess.inc');
+  include('/data/tht_data/mysql_connections/T3wheat_writeaccess.inc');
   $db_config = array_merge_recursive_unique($db_config,
 					    $ini_config);
   extract($db_config);
   //$linkID = mysql_connect($db_host, $db_user, $db_pass);
-  //if(!$linkID)
+  //if (!$linkID) {
   //  die(mysql_error());
-  //else {
+  //} else {
   //  mysql_select_db($db_name, $linkID);
   //  mysql_query("set SESSION sql_mode='STRICT_ALL_TABLES'") or die(mysql_error());
   //}
@@ -169,9 +173,9 @@ function connect() {
 
 /*
  * MySQL improved extension, it is strongly recommended that you use this extension.
- * object-oriented, support for prepared statements, support for multiple statements, support for transactions, enhanced debug
+ * object-oriented, support for prepared statements, support for multiple statements, support for transactions, enhanced debugging
  *
- * @return $linkID
+ * @return $mysqli
  */
 function connecti() {
   global $dontconnect;
@@ -180,13 +184,13 @@ function connecti() {
     parse_ini_file($ini_path, false):array();
   if ($dontconnect == true) return null;
   // Get $db_config = array(db_name,db_user,db_pass,db_host).
-  include('/data/tht_data/mysql_connections/T3wheat+_writeaccess.inc');
+  include('/data/tht_data/mysql_connections/T3wheat_writeaccess.inc');
   $db_config = array_merge_recursive_unique($db_config,
                                             $ini_config);
   extract($db_config);
   $mysqli = new mysqli($db_host, $db_user, $db_pass, $db_name);
-  if ($mysqli->connect_errno) {
-    die($mysqli->connect_errno() . " " . $mysqli->connect_error);
+  if ($mysqli->connect_error) {
+    die('Connect Error: ' . $mysqli->connect_error);
   } else {
     $mysqli->query("set SESSION sql_mode='STRICT_ALL_TABLES'") or die($mysqli->error);
   }
@@ -205,7 +209,11 @@ function loginTest() {
 		session_start();
 	}
 	if(!isLoggedIn($_SESSION['username'], $_SESSION['password'])) {
-	  header("Location: ".$config['base_url']."403.php");
+          if (headers_sent()) {
+              echo "Error: Login required";
+          } else {
+	      header("Location: ".$config['base_url']."403.php");
+          }
 	  die();
 	}
 
@@ -319,14 +327,13 @@ function authenticate_redirect($allowed_user_types){
  * @author Gavin Monroe
  */
 function authenticate($allowed_user_types){
-	if(loginTest2()){
-		$row = loadUser($_SESSION['username']);
-		$user_type_id = $row['user_types_uid'];
-	}else{
-		$user_type_id = USER_TYPE_PUBLIC;
-	}
-	return in_array($user_type_id, $allowed_user_types);
+    if (loginTest2()) {
+        $row = loadUser($_SESSION['username']);
+        $user_type_id = $row['user_types_uid'];
+    } else {
+        $user_type_id = USER_TYPE_PUBLIC;
+    }
+    return in_array($user_type_id, $allowed_user_types);
 }
-
 
 define("ROOTURL", "http://localhost"); /* I'd like to rewrite some scripts so that they no longer depend on this */
