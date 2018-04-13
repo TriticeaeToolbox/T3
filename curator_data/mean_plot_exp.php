@@ -3,7 +3,6 @@
  * Plot level phenotype import
  *
  * PHP version 5.3
- * Prototype version 1.5.0
  *
  * @author  Clay Birkett <clb343@cornell.edu>
  * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
@@ -53,7 +52,7 @@ class Data_Check
     private function typeDatabase()
     {
         global $config;
-        include $config['root_dir'] . 'theme/admin_header.php';
+        include $config['root_dir'] . 'theme/admin_header2.php';
         echo "<h2>Calculate and load Plot Level Data</h2>";
         $this->typeDatabaseLoad();
         $footer_div = 1;
@@ -63,14 +62,14 @@ class Data_Check
     /**
      * Save calculated means to database
      *
-     *  @return NULL
+     * @return NULL
      */
     private function typeDatabaseLoad()
     {
         global $mysqli;
         $check_list = array();
-        $unique_str = $_POST['unique_str'];
-        $experiment_uid = $_POST['exper_uid'];
+        $unique_str = $_REQUEST['unique_str'];
+        $experiment_uid = $_REQUEST['exper_uid'];
 
         $sql = "select trial_code from experiments where experiment_uid = $experiment_uid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -126,7 +125,7 @@ class Data_Check
             }
             fclose($h);
 
-         //how many lines are check
+            //how many lines are check
             $check_list_str = "";
             foreach ($check_list as $key => $value) {
                 if ($check_list_str == "") {
@@ -139,68 +138,68 @@ class Data_Check
             if ($count > 0) {
                 echo "identified line $check_list_str as check<br>\n";
             }
-         if ($count == 0) {
-             echo "no lines identified as check<br>\n";
-         }
+            if ($count == 0) {
+                echo "no lines identified as check<br>\n";
+            }
        
-         $count = 1;
-         $h = fopen("/tmp/tht/$unique_str/mean-output.txt", "r");
-         echo "<table><tr><td><td>";
-         while ($line=fgetcsv($h, 0, " ")) {
-             if ($count == 1) {
-                 $count_item = 0;
-                 foreach ($line as $line_item) {
-                     echo "<td>$line_item<td>";
-                 }
-             } else {
-                 $count_item = 0;
-                 echo "<tr>";
-                 foreach ($line as $line_item) {
-                     if ($count_item == 0) {
-                         echo "<td>$line_item";
-                         if ($check_list[$line_item]) {
-                             echo " check";
-                         }
-                     } else {
-                         $line_uid = $line[0];
-                         if ($check_list[$line_uid]) {
-                             $sql_opt = " and check_line = 'yes'";
-                             $check_line = "yes";
-                         } else {
-                             $sql_opt = "";
-                             $check_line = "no";
-                         }
-                         $sql = "select tht_base_uid from tht_base where line_record_uid=$line_uid and experiment_uid=$experiment_uid $sql_opt";
-                         //echo "$sql<br>\n";
-                         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-                         if ($row = mysqli_fetch_array($res)) {
-                             $tht_base_uid = $row[0];
-                         } else {
-                             $sql = "insert into tht_base (line_record_uid, experiment_uid, check_line) values ($line_uid, $experiment_uid, '$check_line')";
-                             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-                             $tht_base_uid = mysqli_insert_id($mysqli);
-                             //echo "$sql<br>\n";
-                         }
-                         //echo "tht_base_uid = $tht_base_uid<br>\n";
-                         $phenotype_uid = $phenotype_list[$count_item];
-                         $trait = $phenotype_name[$count_item];
-                         //echo "phenotype_uid = $phenotype_uid $count_item<br>\n";
-                         $sql = "select phenotype_data_uid from phenotype_data where phenotype_uid = $phenotype_uid and tht_base_uid = $tht_base_uid";
-                         //echo "$sql<br>\n";
-                         $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql<br>$count_item");
-                         if ($row = mysqli_fetch_array($res)) {
-                             if (preg_match("/\d/", $line_item)) {
-                                 $sql = "update phenotype_data set phenotype_uid = $phenotype_uid, tht_base_uid = $tht_base_uid, value = '$line_item', updated_on = NOW() where phenotype_uid = $phenotype_uid and tht_base_uid = $tht_base_uid";
-                                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-                             } else {
-                                 $sql = "update phenotype_data set phenotype_uid = $phenotype_uid, tht_base_uid = $tht_base_uid, value = NULL, updated_on = NOW() where phenotype_uid = $phenotype_uid and tht_base_uid = $tht_base_uid";
-                                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
-                             }
-                             $msg = "update<td>$line_item\n";
+            $count = 1;
+            $h = fopen("/tmp/tht/$unique_str/mean-output.txt", "r");
+            echo "<table><tr><td><td>";
+            while ($line=fgetcsv($h, 0, " ")) {
+                if ($count == 1) {
+                    $count_item = 0;
+                    foreach ($line as $line_item) {
+                        echo "<td>$line_item<td>";
+                    }
+                } else {
+                    $count_item = 0;
+                    echo "<tr>";
+                    foreach ($line as $line_item) {
+                        if ($count_item == 0) {
+                            echo "<td>$line_item";
+                            if ($check_list[$line_item]) {
+                                echo " check";
+                            }
+                        } else {
+                            $line_uid = $line[0];
+                            if ($check_list[$line_uid]) {
+                                $sql_opt = " and check_line = 'yes'";
+                                $check_line = "yes";
+                            } else {
+                                $sql_opt = "";
+                                $check_line = "no";
+                            }
+                            $sql = "select tht_base_uid from tht_base where line_record_uid=$line_uid and experiment_uid=$experiment_uid $sql_opt";
+                            //echo "$sql<br>\n";
+                            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                            if ($row = mysqli_fetch_array($res)) {
+                                $tht_base_uid = $row[0];
+                            } else {
+                                $sql = "insert into tht_base (line_record_uid, experiment_uid, check_line) values ($line_uid, $experiment_uid, '$check_line')";
+                                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                                $tht_base_uid = mysqli_insert_id($mysqli);
+                                //echo "$sql<br>\n";
+                            }
+                            //echo "tht_base_uid = $tht_base_uid<br>\n";
+                            $phenotype_uid = $phenotype_list[$count_item];
+                            $trait = $phenotype_name[$count_item];
+                            //echo "phenotype_uid = $phenotype_uid $count_item<br>\n";
+                            $sql = "select phenotype_data_uid from phenotype_data where phenotype_uid = $phenotype_uid and tht_base_uid = $tht_base_uid";
+                            //echo "$sql<br>\n";
+                            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql<br>$count_item");
+                            if ($row = mysqli_fetch_array($res)) {
+                                if (preg_match("/\d/", $line_item)) {
+                                    $sql = "update phenotype_data set phenotype_uid = $phenotype_uid, tht_base_uid = $tht_base_uid, value = '$line_item', updated_on = NOW() where phenotype_uid = $phenotype_uid and tht_base_uid = $tht_base_uid";
+                                    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                                } else {
+                                    $sql = "update phenotype_data set phenotype_uid = $phenotype_uid, tht_base_uid = $tht_base_uid, value = NULL, updated_on = NOW() where phenotype_uid = $phenotype_uid and tht_base_uid = $tht_base_uid";
+                                    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                                }
+                                $msg = "update<td>$line_item\n";
                          } else {
                              if (preg_match("/\d/", $line_item)) {
                                  $sql = "insert into phenotype_data (phenotype_uid, tht_base_uid, value, updated_on, created_on) values ($phenotype_uid, $tht_base_uid, '$line_item', NOW(), NOW())";
-                                 $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                                 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
                                  $msg = "insert<td>$line_item\n";
                              } else {
                                  $msg = "ignore<td>NULL\n";
@@ -223,7 +222,7 @@ class Data_Check
          $count = 0;
          echo "<br>Trial summary<br>\n";
          echo "<table><tr><td>trait<td><td>mean<td>standard error<td>num of repl";
-         $h = fopen("/tmp/tht/$unique_str/metaData.txt","r");
+         $h = fopen("/tmp/tht/$unique_str/metaData.txt", "r");
          while ($line=fgetcsv($h, 0, " ")) {
              if ($count == 0) {
              } else {
@@ -294,7 +293,7 @@ private function typeExperimentCheck()
  */
 private function type_Experiment_Name() {
    global $mysqli;
-   if (empty($_POST['exper_uid'])) {
+   if (empty($_REQUEST['exper_uid'])) {
      echo "Error: invalid experiment uid<br>\n";
    } else {
      $unique_str = chr(rand(65,90)).chr(rand(65,90)).chr(rand(65,90)).chr(rand(65,90));
@@ -306,7 +305,7 @@ private function type_Experiment_Name() {
      $filename5 = "process_error.txt";
      $h = fopen("/tmp/tht/$unique_str/$filename1","w");
 
-     $uid = $_POST['exper_uid'];
+     $uid = $_REQUEST['exper_uid'];
      $sql = "select trial_code from experiments where experiment_uid = $uid";
      $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli) . "<br>$sql");
      if ($row = mysqli_fetch_array($res)) {
@@ -387,8 +386,7 @@ private function type_Experiment_Name() {
      fclose($h);
 
      //use R to calculate statistics
-     //exec("cat /tmp/tht/$unique_str/$filename3 ../R/mean-exp.R | R --vanilla > /dev/null 2> /tmp/tht/$unique_str/$filename5");
-     exec("cat /tmp/tht/$unique_str/$filename3 ../R/getTrialMeans.R | R --vanilla > /dev/null 2> /tmp/tht/$unique_str/$filename5");
+     exec("cat /tmp/tht/$unique_str/$filename3 ../R/getTrialMeans_NS.R | R --vanilla > /dev/null 2> /tmp/tht/$unique_str/$filename5");
 
      if (file_exists("/tmp/tht/$unique_str/$filename4")) {
          echo "Line means<br>\n";

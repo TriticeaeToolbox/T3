@@ -31,8 +31,9 @@ if (isset($_GET['page'])) {
 }
 
 /* Array of our supported calls */
-$ourcalls['allelematrices'] = ['datatypes' => ["flapjack"], 'methods' => ["GET"]];
-$ourcalls['allelematrix-search'] = ['datatypes' => ["json", "flapjack"], 'methods' => ["GET", "POST"]];
+$ourcalls['allelematrices'] = ['datatypes' => ["flapjack","csv"], 'methods' => ["GET"]];
+$ourcalls['allelematrix-search'] = ['datatypes' => ["json", "flapjack","tsv"], 'methods' => ["GET", "POST"]];
+$ourcalls['allelematrix-search/status'] = ['datatypes' => ["json" ], 'methods' => ["GET", "POST"]];
 $ourcalls['allelematrices/{studyDbId}'] = ['datatypes' => ["json"], 'methods' => ["GET"]];
 $ourcalls['markerprofiles'] = ['datatypes' => ["json"], 'methods' => ["GET"]];
 $ourcalls['markerprofiles/{markerprofileDbId}'] = ['datatypes' => ["json"], 'methods' => ["GET"]];
@@ -40,6 +41,9 @@ $ourcalls['markerprofiles/{germplasmDbId}'] = ['datatypes' => ["json"], 'methods
 $ourcalls['calls'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['germplasm-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['germplasm'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['germplasm/{germplasmDbId}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['germplasm/{germplasmDbId}/pedigree'] = ['datatypes' => ['json'], 'methods' => ['GET']];
+$ourcalls['germplasm/{germplasmDbId}/progeny'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['studies-search'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['studies-search/{studyType}'] = ['datatypes' => ['json'], 'methods' => ['GET']];
 $ourcalls['studies'] = ['datatypes' => ['json'], 'methods' => ['GET']];

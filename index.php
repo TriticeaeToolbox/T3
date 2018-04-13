@@ -4,9 +4,9 @@
  *
  * PHP version 5.3
  *
- * @author   Clay Birkett <clb343@cornell.edu>
- * @license  http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
- * @link     http://triticeaetoolbox.org/wheat/index.html
+ * @author  Clay Birkett <clb343@cornell.edu>
+ * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
+ * @link    http://triticeaetoolbox.org/wheat/index.html
  */
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
@@ -38,7 +38,7 @@ A Project Description, T3 Team, and Collaborators are <a href="about.php">descri
 Learn how to use the selection tools found under the "Select" menu, how to download this data and how to analyze it using one of the tools in the "Analyze" menu.
 </ul>
 <p><b>
-<a href="curator_data/instructions.php">Submit Data</a></b></a>
+<a href="curator_data/instructions.php">Submit Data</a></b></p>
 <ul>
 Find out how to upload data to T3 using the data submission templates.
 </ul>

@@ -330,22 +330,24 @@ while (($line = fgets($reader)) !== false) {
 
     $line_uid = get_lineuid($lineStr);
     if ($line_uid === false) {
-      exitFatal($errFile, "In Line Translation file, germplasm line '$lineStr' can not be found in the database.\nAborting.\n");
+        exitFatal($errFile, "In Line Translation file, germplasm line '$lineStr' can not be found in the database.\nAborting.\n");
     } else {
-      $line_uid = implode(",",$line_uid);
-      $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid= '$exp_uid' AND line_record_uid='$line_uid' ";
-      $res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: tht_base lookup - ". mysqli_error($mysqli) . ".\n\n$sql");
-      if ($row = mysqli_fetch_assoc($res)) {
-          $thtuid = $row['tht_base_uid'];
-          $thtuid_lookup[$line_uid] = $thtuid;
-      } else {
-          $thtuid = null;
-      }
-      echo "Line $lineStr, id $line_uid. Experiment $trialCodeStr, id $exp_uid.\n";
+        $line_uid = implode(",", $line_uid);
+        $sql = "SELECT tht_base_uid FROM tht_base WHERE experiment_uid= '$exp_uid' AND line_record_uid='$line_uid' ";
+        $res = mysqli_query($mysqli, $sql) or exitFatal($errFile, "Database Error: tht_base lookup - ". mysqli_error($mysqli) . ".\n\n$sql");
+        if ($row = mysqli_fetch_assoc($res)) {
+            $thtuid = $row['tht_base_uid'];
+            $thtuid_lookup[$line_uid] = $thtuid;
+        } else {
+            $thtuid = null;
+        }
+        echo "Line $lineStr, id $line_uid. Experiment $trialCodeStr, id $exp_uid.\n";
     }
-    if (feof($reader)) break;
-}    
-fclose($reader);   
+    if (feof($reader)) {
+        break;
+    }
+}
+fclose($reader);
 echo "Line translation file processing done. Number of experiments: $num\n";
 
 //send email so user can check on status of import
@@ -431,8 +433,9 @@ if (!$stmt2->bind_param('ssi', $allele1, $allele2, $gen_uid)) {
 
 //for imports that take a long time there may be a deadlock when the allele cache does its daily refresh
 //this statement causes the locks to be released earlier
-$sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED";
-$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
+//this does not work when using binlog
+//$sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED";
+//$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
     
 while ($inputrow= fgets($reader))  {
   // If we have too many errors stop processing - something is wrong

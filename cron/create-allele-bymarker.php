@@ -2,18 +2,18 @@
 /**
  * create-allele-bymarker.php
  * create 2D table where rows contain marker names and columns contain lines
+ * this script may take several hours so should not be run from web browser
  *
  * PHP version 5
  *
  * @author  Clay Birkett <clb343@cornell.edu>
  * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link    http://triticeaetoolbox.org/wheat/cron/create-allele-bymarker.php
-*/
+ */
 
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap_curator.inc';
 $mysqli = connecti();
-set_time_limit(7200);  /* allow script up to 2 hours */
 
 $exp_list = array();
 $marker_uid_list = array();

@@ -25,18 +25,25 @@ if (isset($_REQUEST['format'])) {
 } else {
     $format = "json";
 }
-$logFile = "/tmp/tht/request-log.txt";
+$logFile = "/tmp/tht/request-log-allelematrix-search.txt";
 
 $profile_list = array();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $fh = fopen($logFile, "w");
-    fwrite($fh, "POST $format\n");
-    $request = json_decode(file_get_contents('php://input'), true);
+    $fh = fopen($logFile, "a");
+    fwrite($fh, "POST\n");
+    $request = file_get_contents('php://input');
+    fwrite($fh, $request);
+    $request = json_decode($request, true);
     foreach ($request as $key => $val) {
-        fwrite($fh, "key=$key\nval=$val\n");
+        fwrite($fh, "request key=$key  val=$val\n");
         if ($key == "markerprofileDbId") {
-            $profile_str = implode(",", $val);
-            $profile_list = $val;
+            if (is_array($val)) {
+                $profile_str = implode(",", $val);
+                $profile_list = $val;
+            } else {
+                $profile_str = $val;
+                $profile_list[] = $val;
+            }
         } elseif ($key == "format") {
             $format = $val;
         } elseif ($key == "page") {
@@ -45,9 +52,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $pageSize = $val;
         }
     }
+    /*foreach ($_POST as $key => $val) {
+        fwrite($fh, "POST request key=$key\nval=$val\n");
+        if ($key == "markerprofileDbId") {
+            $profile_str = $val;
+            $profile_list = explode(",", $val);
+        }
+        fwrite($fh, "key=$key\nval=$val\n");
+    }*/
 } elseif ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $fh = fopen($logFile, "a");
-    fwrite($fh, "GET $format\n");
+    fwrite($fh, "GET\n");
     foreach ($_GET as $key => $val) {
         fwrite($fh, "key=$key val=$val\n");
         if ($key == "markerprofileDbId") {
@@ -67,7 +82,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 function dieNice($code, $msg)
 {
     global $results;
-    $results['metadata']['pagination'] = null;
+    $pageList = array( "pageSize" => 1000, "currentPage" => 0, "totalCount" => 1, "totalPages" => 1 );
+    $results['metadata']['pagination'] = $pageList;
     $results['metadata']['status'][] = array("code" => $code, "message" => "$msg");
     $results['result']['data'] = array();
     $return = json_encode($results);
@@ -138,15 +154,21 @@ if ($rest[0] == "status") {
             dieNice("Error", "invalid experiment $expid");
         }
 
-        //now get just those selected
+        //first query all data
         $sql = "select alleles from allele_byline_exp_ACTG where experiment_uid = $expid and line_record_uid = $lineuid";
+        $res = mysqli_query($mysqli, $sql);
+        $num_rows = mysqli_num_rows($res);
         if ($currentPage == 0) {
+            $sql .= " limit $pageSize";
         } else {
             $offset = $currentPage * $pageSize;
             if ($offset < 0) {
                 $offset = 0;
             }
+            $sql .= " limit $offset, $pageSize";
         }
+
+        //now get just those selected
         $found = 0;
         if ($res = mysqli_query($mysqli, $sql)) {
             while ($row = mysqli_fetch_row($res)) {
@@ -243,10 +265,14 @@ if ($rest[0] == "status") {
     }
 }
 
+header("Content-Type: application/json");
+$linearray['metadata']['pagination'] = "";
+$linearray['metadata']['status'] = array();
+$linearray['metadata']['datafiles'] = array();
 
 $tot_pag = ceil($num_rows / $pageSize);
 $pageList = array( "pageSize" => $pageSize, "currentPage" => $currentPage, "totalCount" => $num_rows, "totalPages" => $tot_pag );
-$results['metadata']['pagination'] = $pageList;
-$results['result']['data'] = $dataList;
-header("Content-Type: application/json");
-echo json_encode($results);
+$linearray['metadata']['pagination'] = $pageList;
+$linearray['result']['data'] = $dataList;
+$return = json_encode($linearray);
+echo $return;

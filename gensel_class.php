@@ -77,14 +77,14 @@ class Downloads
     {
         global $config;
         global $mysqli;
-        require_once $config['root_dir'].'theme/normal_header.php';
+        include_once $config['root_dir'].'theme/normal_header.php';
         $phenotype = "";
         $lines = "";
         $markers = "";
         $saved_session = "";
         $this->type1Checksession();
-        require_once 'downloads/select-map.php';
-        require_once $config['root_dir'].'theme/footer.php';
+        include_once 'downloads/select-map.php';
+        include_once $config['root_dir'].'theme/footer.php';
     }
 
     /**
@@ -206,7 +206,7 @@ class Downloads
             ?>
             <td>
             <form method="LINK" action="gensel.php">
-            <input type="hidden" value="step1gensel" name="function">
+            <input type="hidden" value="web" name="function">
             <input type="hidden" value="clear_p" name="cmd">
             <input type="submit" value="Clear Selection">
             </form>
@@ -332,19 +332,19 @@ class Downloads
             $row = mysqli_fetch_array($res);
             echo "<h3>Trait: $row[0]</h3>";
         }
-      if ($command == "save_t") {
-        if (!empty($_SESSION['selected_traits'])) {
-           $_SESSION['training_traits'] = $_SESSION['selected_traits'];
-           $_SESSION['training_trials'] = $_SESSION['selected_trials'];
-           $_SESSION['training_lines'] = $_SESSION['selected_lines'];
-           unset($_SESSION['selected_trials']);
-           unset($_SESSION['selected_lines']);
-           unset($_SESSION['filtered_lines']);
-           unset($_SESSION['filtered_markers']);
-           unset($_SESSION['clicked_buttons']);
-        } else {
-          echo "error - no selection found";
-        }
+        if ($command == "save_t") {
+            if (!empty($_SESSION['selected_traits'])) {
+                $_SESSION['training_traits'] = $_SESSION['selected_traits'];
+                $_SESSION['training_trials'] = $_SESSION['selected_trials'];
+                $_SESSION['training_lines'] = $_SESSION['selected_lines'];
+                unset($_SESSION['selected_trials']);
+                unset($_SESSION['selected_lines']);
+                unset($_SESSION['filtered_lines']);
+                unset($_SESSION['filtered_markers']);
+                unset($_SESSION['clicked_buttons']);
+            } else {
+                echo "error - no selection found";
+            }
       } elseif ($command == "save_p") {
            $_SESSION['predict_traits'] = $_SESSION['selected_traits'];
            $_SESSION['predict_trials'] = $_SESSION['selected_trials'];
@@ -426,7 +426,7 @@ class Downloads
         ?>
         <td>
         <form method="LINK" action="gensel.php">
-        <input type="hidden" value="step1gensel" name="function">
+        <input type="hidden" value="web" name="function">
         <input type="hidden" value="clear" name="cmd">
         <input type="submit" value="Clear Selection">
         </form>
@@ -542,7 +542,7 @@ class Downloads
           <td>
           </table><br>
           <form action="gensel.php">
-          <input type="hidden" value="step1gensel" name="function">
+          <input type="hidden" value="web" name="function">
           <input type="hidden" value="save_t" name="cmd">
           <input type="submit" value="Save Training Set">
           then continue to select prediction set
