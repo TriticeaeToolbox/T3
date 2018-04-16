@@ -226,7 +226,6 @@ HTML;
 function HTMLLoginSuccess()
 {
     global $config;
-    echo "User type: " . $_SESSION['usertype_name'] . "<br>\n";
     $url = $config['base_url']."index.php";
     return <<< HTML
 <p>You have been logged in. Welcome!
