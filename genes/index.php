@@ -11,4 +11,4 @@ require_once $config['root_dir'].'genes/genes_class.php';
 // connect to database
 $mysqli = connecti();
 
-displayGenes();
+new Genes($_GET['function']);
