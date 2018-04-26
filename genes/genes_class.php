@@ -7,8 +7,13 @@ class Genes
     public function __construct($function = null)
     {
         switch ($function) {
+            case 'displayQuery':
+                $assembly = $_GET['assembly'];
+                $this->displayQuery($assembly);
+                break;
             case 'displayGenes':
-                $this->displayGenes();
+                $assembly = $_GET['assembly'];
+                $this->displayGenes($assembly);
                 break;
             default:
                 $this->step1();
@@ -44,6 +49,9 @@ class Genes
             }
         }
 
+        if (isset($_GET['assembly'])) {
+            $assembly = $_GET['assembly'];
+        }
         //display list of assemblies
         echo "<br><form><table><tr><td>Genome Assembly<td>Description";
         foreach ($assemblyList as $key => $ver) {
@@ -61,24 +69,36 @@ class Genes
                 echo "<tr><td><a href=\"login.php\">Login</a><td>To access additional assemblies";
             }
         }
-        if (isset($_GET['search'])) {
-            $query = $_GET['search'];
-        } else {
-            $query = "";
-        }
         ?>
         </table></form><br>
-        <form>
-        Search Gene Id, Name, or Description:
-        <input type="text" name="search" value=<?php echo $query ?>>
-        <input type="submit" value="Search">
-        </form>
+        <div id="step1">
+        <?php
+        $this->displayQuery($assembly);
+        ?>
+        </div>
         <div id="step2">
         <script type="text/javascript" src="genes/genes.js"></script>
         <?php
         $this->displayGenes($assembly);
         echo "</div></div>";
         include $config['root_dir'].'theme/footer.php';
+    }
+
+    private function displayQuery($assembly)
+    {
+        if (isset($_GET['search'])) {
+            $query = $_GET['search'];
+        } else {
+            $query = "";
+        }
+        ?>
+        <form>
+        Search Gene Id, Name, or Description:
+        <input type="hidden" name="assembly" value=<?php echo $assembly ?>>
+        <input type="text" name="search" value=<?php echo $query ?>>
+        <input type="submit" value="Search">
+        </form>
+        <?php
     }
 
     private function displayGenes($assembly)
@@ -92,10 +112,6 @@ class Genes
             $query = "name";
         }
 
-        if (isset($_GET['assembly'])) {
-            $assembly = $_GET['assembly'];
-        }
-
         if (isset($_GET['page'])) {
             $pageNum = intval($_GET['page']);
             $offset = ($pageNum - 1) * 10;
@@ -107,17 +123,31 @@ class Genes
         //echo "Index to genes<br>\n";
         if (isset($_GET['search'])) {
             $query = $_GET['search'];
+            $param = "%" . $query . "%";
             $sql = "select gene_annotation_uid, gene_id, type, gene_name, description, bin from gene_annotations
                 where assembly_name = \"$assembly\"
                 and (description like \"%$query%\" OR gene_name like \"%$query%\" or gene_id like \"%$query%\")";
-            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-            $count_rows = mysqli_num_rows($res);
+            $sql = "select gene_annotation_uid, gene_id, type, gene_name, description, bin from gene_annotations
+                where assembly_name = ? 
+                and (description like ? OR gene_name like ? or gene_id like ?)";
+            $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
+            $stmt->bind_param("ssss", $assembly, $param, $param, $param) or die(mysqli_error($mysqli));
+            $stmt->execute();
+            $stmt->store_result();
+            $count_rows = $stmt->num_rows;
+            $sql .= " limit 10 offset $offset";
+            $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
+            $stmt->bind_param("ssss", $assembly, $param, $param, $param) or die(mysqli_error($mysqli));
         } else {
             $sql = "select gene_annotation_uid, gene_id, type, gene_name, description, bin from gene_annotations
                 where assembly_name = \"$assembly\"
                 and type = \"gene\" order by if(gene_name = '' or gene_name is null, 1, 0), gene_name";
-            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-            $count_rows = mysqli_num_rows($res);
+            $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
+            $stmt->execute();
+            $stmt->store_result();
+            $count_rows = $stmt->num_rows;
+            $sql .= " limit 10 offset $offset";
+            $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
         }
         echo "<br>$count_rows found\n";
         if ($count_rows > 10) {
@@ -133,31 +163,20 @@ class Genes
         }
    
         $count = 0;
-        $sql .= " limit 10 offset $offset";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-        while ($row = mysqli_fetch_array($res)) {
+        $stmt->execute();
+        $stmt->bind_result($uid, $gene_id, $type, $gene_name, $desc, $bin);
+        while ($stmt->fetch()) {
             if ($count == 0) {
                 echo "<table><tr><td>Gene Id<td>Type<td>Name<td>Bin<td>Description\n";
             }
             $count++;
-            $uid = $row[0];
-            $gene_id = $row[1];
-            $type = $row[2];
-            $gene_name = $row[3];
-            $desc = urldecode($row[4]);
-            $bin = $row[5];
-            $anchor = substr($row[3], 0, 1);
-            $anchor = strtoupper($anchor);
-            if ($anchor != $prev) {
-                echo "<a id=\"$anchor\"></a> ";
-                $prev = $anchor;
-            }
             echo "<tr><td><a href=\"view.php?table=gene_annotations&uid=$uid\">$gene_id</a><td>$type<td>$gene_name<td>$bin<td>$desc\n";
         }
+        $stmt->close();
         if ($count > 0) {
             echo "</table><br>";
         } else {
-            echo "No matches found<br>$sql\n";
+            echo "No matches found<br>\n";
         }
     }
 }
