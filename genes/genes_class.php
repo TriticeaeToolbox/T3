@@ -65,8 +65,12 @@ class Genes
         $sql = "select * from assemblies where data_public_flag = 0";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         if ($row = mysqli_fetch_row($result)) {
-            if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+            if (!isset($_SESSION['username'])) {
                 echo "<tr><td><a href=\"login.php\">Login</a><td>To access additional assemblies";
+            } elseif (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+                $type_name = $_SESSION['usertype_name'];
+                echo "<tr><td><a href=\"feedback.php\">Request project participant status</a><td>To access additional assemblies";
+                echo ", your current status is $type_name";
             }
         }
         ?>
@@ -141,7 +145,7 @@ class Genes
         } else {
             $sql = "select gene_annotation_uid, gene_id, type, gene_name, description, bin from gene_annotations
                 where assembly_name = \"$assembly\"
-                and type = \"gene\" order by if(gene_name = '' or gene_name is null, 1, 0), gene_name";
+                order by if(gene_name = '' or gene_name is null, 1, 0), gene_name";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
             $stmt->execute();
             $stmt->store_result();
