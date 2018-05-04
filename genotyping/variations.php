@@ -28,8 +28,10 @@ if (isset($_SESSION['clicked_buttons'])) {
         $selected_markers = json_decode($row[0], true);
         $selected_markers_count = count($selected_markers);
         if ($selected_markers_count > 1000) {
-            echo "<br>Warning: $count markers selected. Truncating to 1000 markers.<br>\n";
+            echo "<br>Warning: $selected_markers_count markers selected. Truncating to 1000 markers.<br>\n";
             $selected_markers = array_slice($selected_markers, 0, 1000);
+        } else {
+            echo "<br>Found: $selected_markers_count markers in genotype experiment.<br>\n";
         }
     } else {
         die("Genotype experiment not found\n");
@@ -92,18 +94,31 @@ echo "</select>";
 $sql = "select * from assemblies where data_public_flag = 0";
 $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 if ($row = mysqli_fetch_row($result)) {
-    if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+    if (!isset($_SESSION['username'])) {
         echo "  To access additional assemblies <a href=\"login.php\">Login</a>.<br>";
+    } elseif (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+        $type_name = $_SESSION['usertype_name'];
+        echo "<tr><td><a href=\"feedback.php\">Request project participant status</a><td>To access additional assemblies";
+        echo ", your current status is $type_name";
     }
 }
 echo "<br><br>";
 
-$sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"$assembly\"";
+$sql = "select marker_name, gene from qtl_annotations where assembly_name = \"$assembly\"";
 $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 while ($row = mysqli_fetch_row($result)) {
     $marker_name = $row[0];
     $gene = $row[1];
-    $geneFound[$marker_name] = "<a target=\"_new\" href=" . $varLink[$assembly] . "?g=$gene>$gene</a>";
+    $geneFound[$marker_name] = $gene;
+}
+
+$sql = "select gene_id, description from gene_annotations where assembly_name = \"$assembly\"";
+echo "$sql<br>\n";
+$result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+while ($row = mysqli_fetch_row($result)) {
+    $gene = $row[0];
+    $desc = $row[1];
+    $geneDesc[$gene] = $desc;
 }
 
 $linkOutIdx = array();
@@ -120,7 +135,8 @@ foreach ($selected_markers as $marker_uid) {
         $a_allele = $row[1];
         $b_allele = $row[2];
     } else {
-        die("Error: invalid marker\n");
+        echo "Error: invalid marker id $marker_uid<br>\n";
+        continue;
     }
     if (isset($_SESSION['geno_exps'])) {
         $sql = "select marker_name, chrom, pos from allele_bymarker_exp_ACTG where experiment_uid = $geno_exp and marker_uid = $marker_uid";
@@ -141,7 +157,10 @@ foreach ($selected_markers as $marker_uid) {
             }
             $linkOut = "<tr><td><a href=\"" . $config['base_url'] . "view.php?table=markers&name=$marker_name\">$marker_name</a><td>$jbrowse";
             if (isset($geneFound[$marker_name])) {
-                $linkOut .= "<td>$geneFound[$marker_name]\n";
+                $gene = $geneFound[$marker_name];
+                $desc = $geneDesc[$gene];
+                $link = "<a target=\"_new\" href=" . $varLink[$assembly] . "?g=$gene>$gene</a>";
+                $linkOut .= "<td>$link<td>$desc\n";
             } else {
                 $linkOut .= "<td><td>\n";
             }
@@ -187,7 +206,10 @@ foreach ($selected_markers as $marker_uid) {
             }
             $linkOut = "<tr><td><a href=\"" . $config['base_url'] . "view.php?table=markers&name=$marker_name\">$marker_name</a><td>$jbrowse";
             if (isset($geneFound[$marker_name])) {
-                $linkOut .= "<td>$geneFound[$marker_name]\n";
+                $gene = $geneFound[$marker_name];
+                $desc = $geneDesc[$gene];
+                $link = "<a target=\"_new\" href=" . $varLink[$assembly] . "?g=$gene>$gene</a>";
+                $linkOut .= "<td>$link<td>$desc\n";
             } else {
                 $linkOut .= "<td><td>\n";
             }
@@ -214,14 +236,14 @@ if ($count > 0) {
                 onclick="javascript:window.open('<?php echo $filename ?>');"><br><br>
         <?php
         $h = fopen($filename, "w");
-        fwrite($h, "<html lang=\"en\"><table><tr><td>marker<td>region<td>gene\n");
+        fwrite($h, "<html lang=\"en\"><table><tr><td>marker<td>region<td>gene<td>description\n");
         foreach ($linkOutIndx as $key => $val) {
             fwrite($h, $linkOutSort[$key]);
         }
         fwrite($h, "</table>");
         fclose($h);
     } else {
-        echo "<table><tr><td>marker<td>region<td>gene\n";
+        echo "<table><tr><td>marker<td>region<td>gene<td>description\n";
         foreach ($linkOutIndx as $key => $val) {
             echo "$linkOutSort[$key]\n";
         }
