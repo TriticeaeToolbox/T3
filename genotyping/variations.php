@@ -113,7 +113,7 @@ while ($row = mysqli_fetch_row($result)) {
 }
 
 $sql = "select gene_id, description from gene_annotations where assembly_name = \"$assembly\"";
-echo "$sql<br>\n";
+//echo "$sql<br>\n";
 $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 while ($row = mysqli_fetch_row($result)) {
     $gene = $row[0];
