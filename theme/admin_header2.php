@@ -169,17 +169,27 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
             Weather Data</a>
         <li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
       </ul>
+    <li><a href="" title="">Browse</a><ul>
     <?php
     $results = mysql_grab("SHOW tables like 'gene_annotations'");
     if ($results == "gene_annotations") {
         ?>
-        <li><a href="" title="">Browse</a>
-        <ul>
         <li><a href="<?php echo $config['base_url']; ?>genes" title="Browse Genes">Genes</a>
-        <li><a href="<?php echo $config['base_url']; ?>pathways" title="Browse Pathways">Pathways</a>
-        </ul>
         <?php
     }
+    $results = mysql_grab("SHOW tables like 'pathways'");
+    if ($results == "pathways") {
+        ?>
+        <li><a href="<?php echo $config['base_url']; ?>pathways" title="Browse Pathways">Pathways</a>
+        <?php
+    }
+    $results = mysql_grab("SHOW tables like 'compounds'");
+    if ($results == "compounds") {
+        ?>
+        <li><a href="<?php echo $config['base_url']; ?>compounds" title="Browse Compounds">Compounds</a>
+        <?php
+    }
+    echo "</ul>";
     ?>
     <li><a href="" title="">Reports</a>
       <ul>
