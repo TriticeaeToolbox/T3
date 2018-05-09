@@ -28,7 +28,7 @@ class Compounds
         include $config['root_dir'].'theme/admin_header2.php';
 
         echo "<h2>Compounds</h2>";
-        echo "The compounds list on this page were measured using LC-MS Phenyl-Hexyl Analysis and GC-MS Non-targeted Analysis. "
+        echo "The compounds listed on this page were measured using LC-MS Phenyl-Hexyl Analysis or GC-MS Non-targeted Analysis. ";
         echo "GC-MS profiling analyses uses extracts that are chemically converted, i.e. derivatized into less polar and volatile compounds, to analytes. ";
         echo "The link in the <b>Analyte Name</b> shows experiments in which this analyte has been measured. ";
         echo "The link in the <b>Analyte Reference</b> shows more details of the analyte including links to the corresponding metabolite. ";
