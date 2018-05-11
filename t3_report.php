@@ -301,6 +301,37 @@ if ($query == 'geno') {
         print "<tr><td><a href='".$config['base_url']."display_genotype.php?trial_code=$trial_code'>$trial_code</a><td>$short_name<td>$type<td>$date\n";
     }
     print "</table>";
+} elseif ($query == 'metabolite') {
+    include $config['root_dir'].'theme/admin_header2.php';
+    print "Metabolite trials ordered by creation date<br><br>\n";
+    print "<table border=0>";
+    print "<tr><td>Trial Code<td>Experiment Name<td>Plot Level data<td>created on\n";
+    $sql = "select distinct(experiment_uid) from phenotype_plot_data";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $uid = $row[0];
+        $plot_level[$uid] = 1;
+    }
+    $sql = "select trial_code, experiment_short_name, date_format(experiments.created_on, '%m-%d-%y'), experiment_uid from experiments, experiment_types
+    where experiments.experiment_type_uid = experiment_types.experiment_type_uid and experiment_types.experiment_type_name = 'metabolite'";
+    if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+        $sql .= " and data_public_flag > 0";
+    }
+    $sql .= " order by experiments.created_on desc";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $trial_code = $row[0];
+        $short_name = $row[1];
+        $date = $row[2];
+        $uid = $row[3];
+        if (isset($plot_level[$uid])) {
+            $type = "Yes";
+        } else {
+            $type = "";
+        }
+        print "<tr><td><a href='".$config['base_url']."display_metabolite.php?trial_code=$trial_code'>$trial_code</a><td>$short_name<td>$type<td>$date\n";
+    }
+    print "</table>";
 } elseif ($query == 'cache') {
     echo "Cache slow queries\n";
     $sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED";
@@ -561,19 +592,19 @@ if ($query == 'geno') {
         print "<tr><td>Lines with annotation links<td>$count2<td><a href='".$config['base_url']."t3_report.php?query=lineant'>List lines with annotation</a>\n";
         print "<tr><td>Species<td>";
     }
-  $count = "";
-  $sql = "select pv.value from property_values pv, properties p 
+    $count = "";
+    $sql = "select pv.value from property_values pv, properties p 
           where p.name = 'species' 
           and p.properties_uid = pv.property_uid";
-  $res = mysqli_query($mysqli,$sql) or die(mysqli_error($mysqli));
-  while ($row = mysqli_fetch_row($res)) {
-    $count = $count . "$row[0] ";
-  }
-  if ($output == "excel") {
-    $worksheet->write(11, 1, $count);
-  } elseif ($output == "") {
-    print "$count\t";
-  }
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $count = $count . "$row[0] ";
+    }
+    if ($output == "excel") {
+        $worksheet->write(11, 1, $count);
+    } elseif ($output == "") {
+        print "$count\t";
+    }
 
   $index = 12;
   $sql = "select date_format(max(created_on),'%m-%d-%Y') from line_records";
