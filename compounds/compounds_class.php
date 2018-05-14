@@ -88,7 +88,7 @@ class Compounds
         if (isset($_GET['search'])) {
             $query = $_GET['search'];
             $param = "%" . $query . "%";
-            $sql = "select compound_uid, compound_name, compound_reference, formula from compounds
+            $sql = "select compound_uid, compound_name, retention, compound_reference, formula from compounds
                 where compound_name like ?";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
             $stmt->bind_param("s", $param) or die(mysqli_error($mysqli));
@@ -99,7 +99,7 @@ class Compounds
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
             $stmt->bind_param("s", $param) or die(mysqli_error($mysqli));
         } else {
-            $sql = "select compound_uid, compound_name, compound_reference, formula from compounds order by compound_name";
+            $sql = "select compound_uid, compound_name, retention, compound_reference, formula from compounds order by compound_name";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
             $stmt->execute();
             $stmt->store_result();
@@ -122,11 +122,11 @@ class Compounds
 
         $count = 0;
         $stmt->execute();
-        $stmt->bind_result($uid, $compound_name, $ref, $form);
-        echo "<table><tr><td>Analyte Name<td>Analyte Reference<td>Formula\n";
+        $stmt->bind_result($uid, $compound_name, $retention, $ref, $form);
+        echo "<table><tr><td>Analyte Name<td>Retention Time<td>Analyte Reference<td>Formula\n";
         while ($stmt->fetch()) {
             $count++;
-            echo "<tr><td><a href=\"view.php?table=compounds&uid=$uid\">$compound_name</a><td>$ref<td>$form\n";
+            echo "<tr><td><a href=\"view.php?table=compounds&uid=$uid\">$compound_name</a><td>$retention<td>$ref<td>$form\n";
         }
         $stmt->close();
         if ($count > 0) {

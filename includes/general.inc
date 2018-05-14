@@ -153,7 +153,7 @@ function show_experiments($id)
     echo "</div>";
 
     //in addition to the show_general() output, we want to show associated lines
-    echo "<div style=\"margin-left: 300px;\">";
+    echo "<div style=\"clear: both; float: left: 300px;\"><br>";
 
     $lines = mysqli_query($mysqli, "SELECT DISTINCT line_records.line_record_uid, line_record_name 
 		FROM line_records, tht_base
@@ -258,6 +258,55 @@ function show_pathways($id)
         echo "<tr><td><a href=\"view.php?table=gene_annotations&uid=$gene_list[$gene]\">$gene</a>\n";
     }
     echo "</table></div>";
+}
+
+/**
+ * This is a special case function used in view.php to view the compounds table. This will show trials
+ * in which compound has been measured
+ */
+function show_compounds($id)
+{
+    global $mysqli;
+    global $config;
+    echo "<div style=\"float: left;\"><br /><br />";
+
+    //To simply things, just refer to this function.
+    show_general("compounds", $id);
+
+    $fndExp = array();
+    echo "<table><br>";
+    echo "<tr><td>Datasets for this Analyte<td>Download";
+    $sql = "select experiment_uid, spectra from spectra_merged_idx";
+    $res = mysqli_query($mysqli, $sql) or die("Error in show compounds");
+    while ($row = mysqli_fetch_row($res)) {
+        $uid = $row[0];
+        $spectra = json_decode($row[1], true);
+        if (in_array($id, $spectra)) {
+            $fndExp[$uid] = $key;
+            $sql = "select trial_code, input_data_file_name from experiments where experiment_uid = $uid";
+            $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            if ($row2 = mysqli_fetch_row($res2)) {
+                $trial_code = $row2[0];
+                $file_name = $row2[1];
+            } else {
+                $trial_code = "unknown";
+                $file_name = "unknown";
+            }
+            echo "<tr><td><a href=\"view.php?table=experiments&uid=$uid\">$trial_code</a><td><a href=\"" . $config['base_url'] . "raw/phenotype/$file_name\">$file_name</a>\n";
+        }
+    }
+    echo "</table><br>";
+
+    foreach ($fndExp as $uid => $idx) {
+        $sql = "select line_record_uid, spectra from spectra_merged";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_row($res)) {
+            $spectra = explode(",", $row[1]);
+            $abund = number_format($spectra[$idx], 1);
+            //echo "$abund<br>";
+        }
+    }
+    echo "</div>";
 }
 
 /**
