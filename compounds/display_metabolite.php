@@ -20,7 +20,7 @@ require $config['root_dir'].'theme/normal_header.php';
 $delimiter = "\t";
 $mysqli = connecti();
 ?>
-<script type="text/javascript" src="display_metabolite.js"></script>
+<script type="text/javascript" src="compounds/display_metabolite.js"></script>
 <?php
 
 $trial_code=strip_tags($_GET['trial_code']);
