@@ -329,7 +329,7 @@ if ($query == 'geno') {
         } else {
             $type = "";
         }
-        print "<tr><td><a href='".$config['base_url']."display_metabolite.php?trial_code=$trial_code'>$trial_code</a><td>$short_name<td>$type<td>$date\n";
+        print "<tr><td><a href='".$config['base_url']."compounds/display_metabolite.php?trial_code=$trial_code'>$trial_code</a><td>$short_name<td>$type<td>$date\n";
     }
     print "</table>";
 } elseif ($query == 'cache') {
