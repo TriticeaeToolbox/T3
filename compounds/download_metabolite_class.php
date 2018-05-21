@@ -52,7 +52,7 @@ class Downloads
 
         header('Content-type: application/vnd.ms-excel');
         header('Content-Disposition: attachment;filename="trial_data_plot.csv"');
-        $sql = "select spectra from spectra_merged_idx where experiment_uid = ?";
+        $sql = "select spectra from spectra_index where experiment_uid = ?";
         if ($stmt = mysqli_prepare($mysqli, $sql)) {
             mysqli_stmt_bind_param($stmt, "i", $uid);
             mysqli_stmt_execute($stmt);

@@ -276,7 +276,7 @@ function show_compounds($id)
     $fndExp = array();
     echo "<table><br>";
     echo "<tr><td>Datasets for this Analyte<td>Download";
-    $sql = "select experiment_uid, spectra from spectra_merged_idx";
+    $sql = "select experiment_uid, spectra from spectra_index";
     $res = mysqli_query($mysqli, $sql) or die("Error in show compounds");
     while ($row = mysqli_fetch_row($res)) {
         $uid = $row[0];

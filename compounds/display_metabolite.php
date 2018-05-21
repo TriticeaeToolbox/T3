@@ -111,7 +111,7 @@ if (($data_public_flag == 0) and
     $num_lines = count($linerecord_uid);
 
     $num_phenotypes = 0;
-    $sql="SELECT spectra from spectra_merged_idx
+    $sql="SELECT spectra from spectra_index
           where experiment_uid = $experiment_uid";
     $result_thtbase=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     if ($row_thtbase=mysqli_fetch_array($result_thtbase)) {
