@@ -174,23 +174,27 @@ if (count($found) < 1) {
         $expttype = mysql_grab("select experiment_type_uid from experiments where experiment_uid = $line[2]");
         if ($expttype == 1) {
             echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."display_phenotype.php?trial_code=$trialcode\">";
-        } else {
+        } elseif ($expttype == 2) {
             echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."display_genotype.php?trial_code=$trialcode\">";
+        } elseif ($expttype == 3) {
+            echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."compounds/display_metabolite.php?trial_code=$trialcode\">";
+        } else {
+            echo "Error: invalid experiment type\n";
         }
-    } else 
-    echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."view.php?table=".urlencode($line[0])."&uid=$line[2]\">";
-}
+    } else {
+        echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."view.php?table=".urlencode($line[0])."&uid=$line[2]\">";
+    }
 // There is more than one hit.
-else {
-  if ($_REQUEST['table']) {
-    // We have requested a specific table (in includes/search.inc:displayTermSearchResults()).
-    $table = $_REQUEST['table'];
-    $columnlist = implode(',', $searchTree[$table]);
-    echo "<meta http-equiv=\"refresh\" content=\"0;url=browse.php?table=$table&cols=$columnlist&keywords=$keywords\">";
-  }
-  else   
-    // There is more than one hit and we haven't requested a particular table yet.
-    displayTermSearchResults($found, $keywords);
+} else {
+    if ($_REQUEST['table']) {
+        // We have requested a specific table (in includes/search.inc:displayTermSearchResults()).
+        $table = $_REQUEST['table'];
+        $columnlist = implode(',', $searchTree[$table]);
+        echo "<meta http-equiv=\"refresh\" content=\"0;url=browse.php?table=$table&cols=$columnlist&keywords=$keywords\">";
+    } else {
+        // There is more than one hit and we haven't requested a particular table yet.
+        displayTermSearchResults($found, $keywords);
+    }
 }
 
 
@@ -198,38 +202,39 @@ else {
 /* Haplotype Search */
 /* DEM june 2013: Currently unused?  Replaced by haplotype_search.php? */
 /* identify the lines with all the specified allele values */
-if(isset($_POST['haplotype'])) {
-  /* Get the Marker Uids */
-  $markers = array();
-  foreach($_POST as $k=>$v) {
-    if(strpos(strtolower($k), "marker") !== FALSE) {
-      $tm = explode("_", $k);
-      $markers[$tm[1]] = $v;
+if (isset($_POST['haplotype'])) {
+    /* Get the Marker Uids */
+    $markers = array();
+    foreach ($_POST as $k => $v) {
+        if (strpos(strtolower($k), "marker") !== false) {
+            $tm = explode("_", $k);
+            $markers[$tm[1]] = $v;
+        }
     }
-  }
-  $marker_instr=implode("," , array_keys($markers));
-  if(count($markers) < 1) 
-    error(1, "No Markers Selected");
-  $query_str="select A.line_record_name, A.line_record_uid, D.marker_uid, 
+    $marker_instr=implode(",", array_keys($markers));
+    if (count($markers) < 1) {
+        error(1, "No Markers Selected");
+    }
+    $query_str="select A.line_record_name, A.line_record_uid, D.marker_uid, 
 	      concat(allele_1,allele_2) as value 
 	      from line_records as A, tht_base as B, genotyping_data as C, markers as D, alleles as E 
 	      where A.line_record_uid=B.line_record_uid and B.tht_base_uid=C.tht_base_uid and 
 	      C.marker_uid=D.marker_uid and C.genotyping_data_uid=E.genotyping_data_uid and 
   	      D.marker_uid in (".$marker_instr.")";
-  $result=mysqli_query($mysqli, $query_str);
-  $lines = array();
-  $line_uids=array();
-  $line_names=array();
-  while ($row=mysqli_fetch_assoc($result)) {
-    $linename=$row['line_record_name'];
-    $lineuid=$row['line_record_uid'];
-    $mkruid=$row['marker_uid'];
-    $alleleval=$row['value'];
-    $line_uids[$linename]=$lineuid;
-    $line_names[$lineuid]=$linename;
-    if (! isset($lines[$linename])) $lines[$linename]=array();
-    if (! isset($lines[$linename][$mkruid])) $lines[$linename][$mkruid]=$alleleval;	 
-  }
+    $result=mysqli_query($mysqli, $query_str);
+    $lines = array();
+    $line_uids=array();
+    $line_names=array();
+    while ($row=mysqli_fetch_assoc($result)) {
+        $linename=$row['line_record_name'];
+        $lineuid=$row['line_record_uid'];
+        $mkruid=$row['marker_uid'];
+        $alleleval=$row['value'];
+        $line_uids[$linename]=$lineuid;
+        $line_names[$lineuid]=$linename;
+        if (! isset($lines[$linename])) $lines[$linename]=array();
+        if (! isset($lines[$linename][$mkruid])) $lines[$linename][$mkruid]=$alleleval;	 
+    }
   $selLines=array();
   foreach ($lines as $lnm=>$lmks) {
     $flag=0;
@@ -297,12 +302,11 @@ if(isset($_POST['haplotype'])) {
   }
 
 /*****************************************************************************************/
-		
 ?>
-	    </div>
+</div>
 </div>
 </div>
 
 <?php
 mysqli_close($mysqli);
-include("theme/footer.php");
+include "theme/footer.php";
