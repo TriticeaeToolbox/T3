@@ -128,8 +128,12 @@ for ($rw = 0; $rw < $numrows; $rw++) {
                 $expttype = $record[0];
                 if ($expttype == 1) {
                     print "<td><a href='display_phenotype.php?trial_code=$name'>$name</a>";
-                } else {
+                } elseif ($expttype == 2) {
                     print "<td><a href='display_genotype.php?trial_code=$name'>$name</a>";
+                } elseif ($expttype == 3) {
+                    print "<td><a href='compounds/display_metabolite.php?trial_code=$name'>$name</a>";
+                } else {
+                    print "Error: invalid experiment type\n";
                 }
             } elseif ($table == "qtl_annotations") {
                 if ($rw == 0) {
@@ -168,12 +172,13 @@ if ($numrecords > $pagesize) {
         $upperleft = $i * $lumpsize * $pagesize;
         $lumpname = $records[$upperleft][1];
         $lumppage = $i * $lumpsize + 1;
-        if ($lumppage == $page)
+        if ($lumppage == $page) {
             print "<option value=$lumppage selected>$lumpname ...</option>";
-        else
+        } else {
             print "<option value=$lumppage>$lumpname ...</option>";
+        }
     }
-  print "</select><p>";
+    print "</select><p>";
 }
 
 print "</div>";
