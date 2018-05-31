@@ -315,7 +315,7 @@ $sources=$sourcerow['input_data_file_name'];
 if ($sources)
   echo "<p><b>Means file:</b> $sources";
 
-echo "<p><b>Raw data files:</b> ";
+echo "<p><b>Raw data files:</b><br>";
 $rawsql="SELECT name, directory from rawfiles where experiment_uid = $experiment_uid";
 $rawres=mysqli_query($mysqli, $rawsql) or die(mysqli_error($mysqli));
 while ($rawrow = mysqli_fetch_assoc($rawres)) {

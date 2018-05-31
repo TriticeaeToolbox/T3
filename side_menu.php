@@ -1,6 +1,10 @@
 <?php
 
 require_once 'config.php';
+if (isset($mysqli)) {
+} else {
+    require $config['root_dir'].'includes/bootstrap.inc';
+}
 session_start();
 
 ?>
@@ -34,15 +38,23 @@ if (isset($_SESSION['clicked_buttons'])) {
     echo "All";
 }
 echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Traits</a>: ";
-if (isset($_WESSION['selected_traits'])) {
+if (isset($_SESSION['selected_traits'])) {
     echo count($_SESSION['selected_traits']);
 } elseif (isset($_SESSION['phenotype'])) {
     echo count($_SESSION['phenotype']);
 } else {
     echo "0";
 }
-echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Phenotype Trials</a>";
 if (isset($_SESSION['selected_trials'])) {
+    $expr = $_SESSION['selected_trials'];
+    $sql = "select experiment_type_name from experiments, experiment_types
+              where experiments.experiment_type_uid = experiment_types.experiment_type_uid
+              and experiment_uid = $expr[0]";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_row($res)) {
+        $type_name = ucfirst($row[0]);
+        echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>$type_name Trials</a>";
+    }
     echo ": " . count($_SESSION['selected_trials']);
 }
 echo "<li><a href='".$config['base_url']."genotyping/genotype_selection.php'>Genotype Experiments</a>";
