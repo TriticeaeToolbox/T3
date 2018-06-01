@@ -363,46 +363,46 @@ echo "\nProcessing genotype data file...\n";
 
 /* Read the file */
 if (($reader = fopen($gDataFile, "r")) == false) {
-  exitFatal($errFile, "Unable to access genotype data file.");
+    exitFatal($errFile, "Unable to access genotype data file.");
 }
         
 //Advance to data header area
-while (!feof($reader))  {
-  $inputrow = fgets($reader);
-  if (preg_match("/^SNP\t/", $inputrow)) {
-    echo "Header line found.\n";
-    break;
-  } else {
-    exitFatal($errFile, "Could not find the header information in file \n$gDataFile\n, line 1. The first line must begin with 'SNP'.\n");    
-  }
+while (!feof($reader)) {
+    $inputrow = fgets($reader);
+    if (preg_match("/^SNP\t/", $inputrow)) {
+        echo "Header line found.\n";
+        break;
+    } else {
+        exitFatal($errFile, "Could not find the header information in file \n$gDataFile\n, line 1. The first line must begin with 'SNP'.\n");
+    }
 }
         
 if (feof($reader)) {
-  exitFatal($errFile, "Unable to locate genotype header line.");
+    exitFatal($errFile, "Unable to locate genotype header line.");
 }
 
-//Get column location  
-$header = str_getcsv($inputrow,"\t");
+//Get column location
+$header = str_getcsv($inputrow, "\t");
 $num = count($header);
 for ($x = 0; $x < $num; $x++) {
-  $line_name = $header[$x];
-  switch ($line_name) {
-  case 'SNP':
-    $nameIdx = $x;
-    $dataIdx = $x + 1;
-    break;
-  default:
-    $line_uid = get_lineuid($line_name);
-    if ($line_uid === false) {
-      $colnum = $x + 1; // Human-oriented column numbering.
-      $msg = "In file $gDataFile,\ncolumn $colnum:\nLine name '$header[$x]' is not in the database.\nUpload aborted.\n";
-      exitFatal($errFile, $msg);
-    } else {
-      $line_uid = implode(",",$line_uid);
-      $lineuid_lookup[$line_name] = $line_uid;
+    $line_name = $header[$x];
+    switch ($line_name) {
+        case 'SNP':
+            $nameIdx = $x;
+            $dataIdx = $x + 1;
+            break;
+        default:
+            $line_uid = get_lineuid($line_name);
+            if ($line_uid === false) {
+                $colnum = $x + 1; // Human-oriented column numbering.
+                $msg = "In file $gDataFile,\ncolumn $colnum:\nLine name '$header[$x]' is not in the database.\nUpload aborted.\n";
+                exitFatal($errFile, $msg);
+            } else {
+                $line_uid = implode(",", $line_uid);
+                $lineuid_lookup[$line_name] = $line_uid;
+            }
+            break;
     }
-    break;
-  }
 }
                      
 $rowNum = 0;
@@ -433,9 +433,8 @@ if (!$stmt2->bind_param('ssi', $allele1, $allele2, $gen_uid)) {
 
 //for imports that take a long time there may be a deadlock when the allele cache does its daily refresh
 //this statement causes the locks to be released earlier
-//this does not work when using binlog
-//$sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED";
-//$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
+$sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED";
+$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
     
 while ($inputrow= fgets($reader))  {
   // If we have too many errors stop processing - something is wrong
