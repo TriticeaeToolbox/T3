@@ -292,7 +292,7 @@ function show_compounds($id)
                 $trial_code = "unknown";
                 $file_name = "unknown";
             }
-            echo "<tr><td><a href=\"view.php?table=experiments&uid=$uid\">$trial_code</a><td><a href=\"" . $config['base_url'] . "raw/phenotype/$file_name\">$file_name</a>\n";
+            echo "<tr><td><a href=\"compounds/display_metabolite.php?trial_code=$trial_code\">$trial_code</a><td><a href=\"" . $config['base_url'] . "raw/phenotype/$file_name\">$file_name</a>\n";
         }
     }
     echo "</table><br>";
@@ -488,44 +488,44 @@ function show_phenotypes($id)
 
 function show_experiment_set($id)
 {
-  global $mysqli;
-  $sql="select distinct e.trial_code, e.experiment_year, pei.location
+    global $mysqli;
+    $sql="select distinct e.trial_code, e.experiment_year, pei.location
         from experiments as e, 
              phenotype_experiment_info as pei
         where experiment_set_uid = $id
         and e.experiment_uid = pei.experiment_uid";
-  // Authenticate, or hide private trials.
-  if (!authenticate(array(USER_TYPE_PARTICIPANT,
+    // Authenticate, or hide private trials.
+    if (!authenticate(array(USER_TYPE_PARTICIPANT,
                           USER_TYPE_CURATOR,
                           USER_TYPE_ADMINISTRATOR))) {
-    $sql .= " and e.data_public_flag > 0";
-  }
-  $sql .= " order by experiment_year, location asc";
-  $res=mysqli_query($mysqli, $sql) or die("Error in show experiment set");
-  if (mysqli_num_rows($res) > 0) {
-    ?>
-<h3>Trials in this Experiment</h3>
-<p>
-  <table cellpadding="0" cellspacing="0" style="text-align: left;">
+        $sql .= " and e.data_public_flag > 0";
+    }
+    $sql .= " order by experiment_year, location asc";
+    $res=mysqli_query($mysqli, $sql) or die("Error in show experiment set");
+    if (mysqli_num_rows($res) > 0) {
+        ?>
+    <h3>Trials in this Experiment</h3>
+    <p>
+    <table cellpadding="0" cellspacing="0" style="text-align: left;">
     <tr>
       <th>Year</th>
       <th>Location</th>
       <th>Trial</th>
     </tr>
-<?php
-    while ($row = mysqli_fetch_array($res)) {
-      $trial=$row['trial_code'];
-      $year=$row['experiment_year'];
-      $loc=$row['location'];
-       echo( "<tr> 
+        <?php
+        while ($row = mysqli_fetch_array($res)) {
+            $trial=$row['trial_code'];
+            $year=$row['experiment_year'];
+            $loc=$row['location'];
+            echo( "<tr> 
                 <td>$year</td> 
                 <td>$loc</td>
                 <td><a href='display_phenotype.php?trial_code=$trial'>$trial</a></td>
               </tr>");
-      /* echo "$year, $loc, $trial<br>"; */
+            /* echo "$year, $loc, $trial<br>"; */
+        }
+        echo "</table>";
     }
-    echo "</table>";
-  }
 }
 
 // Need a special function only because the foreign key is named 'category_uid'
