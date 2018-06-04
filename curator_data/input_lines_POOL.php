@@ -472,39 +472,45 @@ print "Next available GID is <b>$nextgid</b>.<p>";
 
 		// Validate the parents' names.
 		if (!empty($parent1)) {
-		  $t3parent1 = t3ize($parent1);
-		  $lid = mysql_grab("select line_record_uid from line_records where line_record_name = '$t3parent1'");
-		  if (!$lid)
-		    // Not in T3 and also not already seen in this file as a line to add?
-		    // UNKNOWN is a special case.  Ignore it.
-		    if (!in_array($t3parent1, $line_inserts) AND $t3parent1 != 'UNKNOWN')
-		      die_nice("Row $irow: Parent $t3parent1 is not in T3.");
-		  $query = $cnx->prepare("select GID from names where NVAL = BINARY :nm and NSTAT = 1");
-		  $query->bindvalue(":nm", $parent1);
-		  $query->execute() OR die("Row $irow: Fatal query error.");   
-		  $res = $query->fetch(PDO::FETCH_BOTH);
-		  if (!$res[0])
-		    // Not in POOL and also not already seen in this file?
-		    if (!in_array($parent1, array_keys($gids)))
-		      die_nice("Row $irow: Parent $parent1 is not in POOL as a Preferred Name.");
+            $t3parent1 = t3ize($parent1);
+            $lid = mysql_grab("select line_record_uid from line_records where line_record_name = '$t3parent1'");
+            if (!$lid)
+                // Is the name present as a Synonym?
+                $lid = mysql_grab("select line_record_uid from line_synonyms where line_synonym_name = '$t3parent1'");
+            // Not in T3 and also not already seen in this file as a line to add?
+            if (!$lid) 
+                // UNKNOWN is a special case.  Ignore it.
+                if (!in_array($t3parent1, $line_inserts) AND $t3parent1 != 'UNKNOWN')
+                    die_nice("Row $irow: Parent $t3parent1 is not in T3.");
+            $query = $cnx->prepare("select GID from names where NVAL = BINARY :nm and NSTAT = 1");
+            $query->bindvalue(":nm", $parent1);
+            $query->execute() OR die("Row $irow: Fatal query error.");   
+            $res = $query->fetch(PDO::FETCH_BOTH);
+            if (!$res[0])
+                // Not in POOL and also not already seen in this file?
+                if (!in_array($parent1, array_keys($gids)))
+                    die_nice("Row $irow: Parent $parent1 is not in POOL as a Preferred Name.");
 		}
 		if (!empty($parent2)) {
-		  $t3parent2 = t3ize($parent2);
-		  $lid = mysql_grab("select line_record_uid from line_records where line_record_name = '$t3parent2'");
-		  if (!$lid)
+            $t3parent2 = t3ize($parent2);
+            $lid = mysql_grab("select line_record_uid from line_records where line_record_name = '$t3parent2'");
+            if (!$lid)
+                // Is the name present as a Synonym?
+                $lid = mysql_grab("select line_record_uid from line_synonyms where line_synonym_name = '$t3parent2'");
 		    // Not in T3 and also not already seen in this file as a line to add?
-		    if (!in_array($t3parent2, $line_inserts) AND $t3parent2 != 'UNKNOWN')
-		      die_nice("Row $irow: Parent $t3parent2 is not in T3.");
-		  $query = $cnx->prepare("select GID from names where NVAL = BINARY :nm and NSTAT = 1");
-		  $query->bindvalue(":nm", $parent2);
-		  $query->execute() OR die("Row $irow: Fatal query error.");   
-		  $res = $query->fetch(PDO::FETCH_BOTH);
-		  if (!$res[0]) 
-		    // Not in POOL and also not already seen in this file?
-		    if (!in_array($parent2, array_keys($gids)))
-		      die_nice("Row $irow: Parent $parent2 is not in POOL as a Preferred Name.");
-          if ($t3parent1 == $t3parent2)
-              die_nice("Row $irow: Parents 1 and 2 are the same.");
+            if (!$lid)
+                if (!in_array($t3parent2, $line_inserts) AND $t3parent2 != 'UNKNOWN')
+                    die_nice("Row $irow: Parent $t3parent2 is not in T3.");
+            $query = $cnx->prepare("select GID from names where NVAL = BINARY :nm and NSTAT = 1");
+            $query->bindvalue(":nm", $parent2);
+            $query->execute() OR die("Row $irow: Fatal query error.");   
+            $res = $query->fetch(PDO::FETCH_BOTH);
+            if (!$res[0]) 
+                // Not in POOL and also not already seen in this file?
+                if (!in_array($parent2, array_keys($gids)))
+                    die_nice("Row $irow: Parent $parent2 is not in POOL as a Preferred Name.");
+            if ($t3parent1 == $t3parent2)
+                die_nice("Row $irow: Parents 1 and 2 are the same.");
 		}
 		// Validate references, $refother and $reference.
 		if (!empty($refother)) {
@@ -917,6 +923,9 @@ print "Next available GID is <b>$nextgid</b>.<p>";
                   $parent1t3 = t3ize(mysqli_real_escape_string($mysqli, $parent1));
                   if ($parent1t3 != "UNKNOWN") {
                       $parent_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$parent1t3'");
+                      // Accept Synonyms too.
+                      if (!$parent_uid)
+                          $parent_uid = mysql_grab("select line_record_uid from line_synonyms where line_synonym_name = '$parent1t3'");
                       $sql = "insert into pedigree_relations (line_record_uid,parent_id,contribution,updated_on, created_on) values ($line_uid,$parent_uid,'0.5',NOW(),NOW())";
                       $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
                   }
@@ -925,6 +934,8 @@ print "Next available GID is <b>$nextgid</b>.<p>";
                   $parent2t3 = t3ize(mysqli_real_escape_string($mysqli, $parent2));
                   if ($parent2t3 != "UNKNOWN") {
                       $parent_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$parent2t3'");
+                      if (!$parent_uid) 
+                          $parent_uid = mysql_grab("select line_record_uid from line_synonyms where line_synonym_name = '$parent2t3'");
                       $sql = "insert into pedigree_relations (line_record_uid,parent_id,contribution,updated_on, created_on) values ($line_uid,$parent_uid,'0.5',NOW(),NOW())";
                       $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
                   }
@@ -976,18 +987,23 @@ print "Next available GID is <b>$nextgid</b>.<p>";
 	    if (!empty($parent2)) {
 	      $parent2t3 = t3ize(mysqli_real_escape_string($mysqli, $parent2));
 	      if ($parent2t3 != "UNKNOWN") {
-		$parent_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$parent2t3'");
-		if (!empty($parentage[1]))
-		  $sql = "update pedigree_relations set parent_id = $parent_uid, contribution = '0.5', updated_on = NOW() where pedigree_relation_uid = $parentage[1]";
-		else
-		  $sql = "insert into pedigree_relations (line_record_uid,parent_id,contribution,updated_on, created_on) values ($line_uid,$parent_uid,'0.5',NOW(),NOW())";
-		$res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
+              $parent_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$parent2t3'");
+              if (!$parent_uid)
+                  // Accept Synonyms too.
+                  $parent_uid = mysql_grab("select line_record_uid from line_synonyms where line_synonym_name = '$parent2t3'");
+              if (!empty($parentage[1]))
+                  $sql = "update pedigree_relations set parent_id = $parent_uid, contribution = '0.5', updated_on = NOW() where pedigree_relation_uid = $parentage[1]";
+              else
+                  $sql = "insert into pedigree_relations (line_record_uid,parent_id,contribution,updated_on, created_on) values ($line_uid,$parent_uid,'0.5',NOW(),NOW())";
+              $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
 	      }
 	    }
 	    if (!empty($parent1)) {
 	      $parent1t3 = t3ize(mysqli_real_escape_string($mysqli, $parent1));
 	      if ($parent1t3 != "UNKNOWN") {
 		$parent_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$parent1t3'");
+        if (!$parent_uid) 
+            $parent_uid = mysql_grab("select line_record_uid from line_synonyms where line_synonym_name = '$parent1t3'");
 		if (!empty($parentage[0]))
 		  $sql = "update pedigree_relations set parent_id = $parent_uid, contribution = '0.5', updated_on = NOW() where pedigree_relation_uid = $parentage[0]";
 		else
