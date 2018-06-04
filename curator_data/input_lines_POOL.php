@@ -412,8 +412,10 @@ print "Next available GID is <b>$nextgid</b>.<p>";
 		    $realname = $rn[0];
 		    // It's okay for a synonym to be the same as the name except for UPPER/Mixed case.
 		    if ($realname != $line)
+                {
                 // 30may18: Do we have to die? Can we just use $realname instead? Let's try it.
                 /* die_nice("Line Name $line is a synonym for $realname in T3. Please use $realname instead."); */
+                }
 		  }
 		  else {
 		    // Mark the line record for updating.
