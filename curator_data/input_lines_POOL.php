@@ -412,8 +412,8 @@ print "Next available GID is <b>$nextgid</b>.<p>";
 		    $realname = $rn[0];
 		    // It's okay for a synonym to be the same as the name except for UPPER/Mixed case.
 		    if ($realname != $line)
-                // 30may18: Do we have to die? Can we just use $realname instead?
-                die_nice("Line Name $line is a synonym for $realname in T3. Please use $realname instead.");
+                // 30may18: Do we have to die? Can we just use $realname instead? Let's try it.
+                /* die_nice("Line Name $line is a synonym for $realname in T3. Please use $realname instead."); */
 		  }
 		  else {
 		    // Mark the line record for updating.
@@ -502,7 +502,7 @@ print "Next available GID is <b>$nextgid</b>.<p>";
 		    if (!in_array($parent2, array_keys($gids)))
 		      die_nice("Row $irow: Parent $parent2 is not in POOL as a Preferred Name.");
           if ($t3parent1 == $t3parent2)
-              die_nice("$Row $irow: Parents 1 and 2 are the same.");
+              die_nice("Row $irow: Parents 1 and 2 are the same.");
 		}
 		// Validate references, $refother and $reference.
 		if (!empty($refother)) {
@@ -875,55 +875,59 @@ print "Next available GID is <b>$nextgid</b>.<p>";
 	  /* Write to the databases. First, T3: */
 	  $line_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$line'");
 	  if (!$line_uid) {
-	    // It's a new line. Insert it into T3.
-	    $sql_beg = "INSERT INTO line_records (line_record_name,";
-	    $sql_mid = "updated_on, created_on) VALUES('$line', ";
-	    $sql_end = "NOW(),NOW())";
-	    if (!empty($mybp)) {
-	      $sql_beg .= "breeding_program_code,";
-	      $mybp = mysqli_real_escape_string($mysqli, $mybp);
-	      $sql_mid .= "'$mybp', ";
-	    }
-	    // For numbers, "0" is empty.
-	    if (isset($generation) AND $generation != "") {
-	      $sql_beg .= "generation,";
-	      $generation = mysqli_real_escape_string($mysqli, $generation);
-	      $sql_mid .= "'$generation', ";
-	    }
-	    if (!empty($comments)) {
-	      $sql_beg .= "description,";
-	      $comments = mysqli_real_escape_string($mysqli, $comments);
-	      $sql_mid .= "'$comments', ";
-	    }
-	    $sql = $sql_beg.$sql_mid.$sql_end;
-	    $rlinsyn=mysqli_query($mysqli, $sql) or $linesuccess = errmsg($sql, mysqli_error($mysqli));
-	    $line_uid = mysqli_insert_id($mysqli);
-	    // $line_uid is no longer = NULL, cf. above, it's an int. So we can use it to load the other tables.
-	    if (!empty($species) AND !empty($line_uid)) {
-	      // Insert property 'Species' value in table line_properties.
-	      $species = mysqli_real_escape_string($mysqli, $species);
-	      $propuid = mysql_grab("select properties_uid from properties where name = 'Species'");
-	      $propvaluid = mysql_grab("select property_values_uid from property_values 
+          // 1jun18: Check first if $line is a synonym, and if so use that $line_uid.
+          $line_uid = mysql_grab("select line_record_uid from line_synonyms where line_synonym_name = '$line'");
+          if (!$line_uid) {
+              // It's a new line. Insert it into T3.
+              $sql_beg = "INSERT INTO line_records (line_record_name,";
+              $sql_mid = "updated_on, created_on) VALUES('$line', ";
+              $sql_end = "NOW(),NOW())";
+              if (!empty($mybp)) {
+                  $sql_beg .= "breeding_program_code,";
+                  $mybp = mysqli_real_escape_string($mysqli, $mybp);
+                  $sql_mid .= "'$mybp', ";
+              }
+              // For numbers, "0" is empty.
+              if (isset($generation) AND $generation != "") {
+                  $sql_beg .= "generation,";
+                  $generation = mysqli_real_escape_string($mysqli, $generation);
+                  $sql_mid .= "'$generation', ";
+              }
+              if (!empty($comments)) {
+                  $sql_beg .= "description,";
+                  $comments = mysqli_real_escape_string($mysqli, $comments);
+                  $sql_mid .= "'$comments', ";
+              }
+              $sql = $sql_beg.$sql_mid.$sql_end;
+              $rlinsyn=mysqli_query($mysqli, $sql) or $linesuccess = errmsg($sql, mysqli_error($mysqli));
+              $line_uid = mysqli_insert_id($mysqli);
+              // $line_uid is no longer = NULL, cf. above, it's an int. So we can use it to load the other tables.
+              if (!empty($species) AND !empty($line_uid)) {
+                  // Insert property 'Species' value in table line_properties.
+                  $species = mysqli_real_escape_string($mysqli, $species);
+                  $propuid = mysql_grab("select properties_uid from properties where name = 'Species'");
+                  $propvaluid = mysql_grab("select property_values_uid from property_values 
                                           where property_uid = $propuid and value = '$species'");
-	      $sql = "insert into line_properties (line_record_uid, property_value_uid) values ($line_uid, $propvaluid)";
-	      $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
-	    }
-	    if (!empty($parent1)) {
-	      $parent1t3 = t3ize(mysqli_real_escape_string($mysqli, $parent1));
-	      if ($parent1t3 != "UNKNOWN") {
-		$parent_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$parent1t3'");
-		$sql = "insert into pedigree_relations (line_record_uid,parent_id,contribution,updated_on, created_on) values ($line_uid,$parent_uid,'0.5',NOW(),NOW())";
-		$res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
-	      }
-	    }
-	    if (!empty($parent2)) {
-	      $parent2t3 = t3ize(mysqli_real_escape_string($mysqli, $parent2));
-	      if ($parent2t3 != "UNKNOWN") {
-		$parent_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$parent2t3'");
-		$sql = "insert into pedigree_relations (line_record_uid,parent_id,contribution,updated_on, created_on) values ($line_uid,$parent_uid,'0.5',NOW(),NOW())";
-		$res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
-	      }
-	    }
+                  $sql = "insert into line_properties (line_record_uid, property_value_uid) values ($line_uid, $propvaluid)";
+                  $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
+              }
+              if (!empty($parent1)) {
+                  $parent1t3 = t3ize(mysqli_real_escape_string($mysqli, $parent1));
+                  if ($parent1t3 != "UNKNOWN") {
+                      $parent_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$parent1t3'");
+                      $sql = "insert into pedigree_relations (line_record_uid,parent_id,contribution,updated_on, created_on) values ($line_uid,$parent_uid,'0.5',NOW(),NOW())";
+                      $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
+                  }
+              }
+              if (!empty($parent2)) {
+                  $parent2t3 = t3ize(mysqli_real_escape_string($mysqli, $parent2));
+                  if ($parent2t3 != "UNKNOWN") {
+                      $parent_uid = mysql_grab("select line_record_uid from line_records where line_record_name = '$parent2t3'");
+                      $sql = "insert into pedigree_relations (line_record_uid,parent_id,contribution,updated_on, created_on) values ($line_uid,$parent_uid,'0.5',NOW(),NOW())";
+                      $res = mysqli_query($mysqli, $sql) or errmsg($sql, mysqli_error($mysqli));
+                  }
+              }
+          }
 	  } // end of if (!$line_uid) 
 
 	  elseif (count($line_uid) == 1) { 	      
