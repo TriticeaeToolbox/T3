@@ -7,7 +7,7 @@
  * DEM 7dec10: Revised updateTable() to handle enum and longtext columns. */
 
 /*
- * Generic / Common functions are stored here. 
+ * Generic / Common functions are stored here.
  */
 
 /* Check whether the curator is submitting data using the current version
@@ -31,7 +31,7 @@ function check_version($submitted, $file)
 }
 
 /* Shorthand MySQL query for a single value. Returns the value.
-   Dies if there's more than one result or a MySQL error. 
+   Dies if there's more than one result or a MySQL error.
    No result is okay, returns empty string, ''.
 */
 function mysql_grab($querystring)
@@ -176,29 +176,28 @@ function get_pkey($tablename)
  */
 function get_unique_name($table)
 {
-  global $mysqli;
-  // dem feb13: ugly special case:
-  if ($table == "experiments")
-    return "trial_code";
-  // dem may15: another special case:
-  if ($table == "barley_pedigree_catalog_ref")
-    return "barley_ref_number";
-  // dem jul15: another special case:
-  if ($table == "marker_synonyms")
-    return "value";
-  else {
-    $q = mysqli_query($mysqli, "SHOW CREATE TABLE $table") or die("Error in function get_unique_name():<br>");
-    $row = mysqli_fetch_row($q);
-    $parts = explode("\n", $row[1]);
-    for($i = 2; $i<count($parts); $i++) {
-      // dem nov10: Sometimes the column name is just "name", e.g. marker_synonym_types.
-      // if(preg_match("/_name/", $parts[$i], $matches)) {
-      if(preg_match("/name/", $parts[$i], $matches)) {
-	$line = explode("`", $parts[$i]);
-	return $line[1];
-      }
+    global $mysqli;
+    if ($table == "gene_annotations") {
+        return "gene_id";
+    } elseif ($table == "experiments") {
+        return "trial_code";
+    } elseif ($table == "barley_pedigree_catalog_ref") {
+        return "barley_ref_number";
+    } elseif ($table == "marker_synonyms") {
+        return "value";
+    } else {
+        $q = mysqli_query($mysqli, "SHOW CREATE TABLE $table") or die("Error in function get_unique_name():<br>");
+        $row = mysqli_fetch_row($q);
+        $parts = explode("\n", $row[1]);
+        for ($i = 2; $i<count($parts); $i++) {
+            // dem nov10: Sometimes the column name is just "name", e.g. marker_synonym_types.
+            // if(preg_match("/_name/", $parts[$i], $matches)) {
+            if (preg_match("/name/", $parts[$i], $matches)) {
+                $line = explode("`", $parts[$i]);
+                return $line[1];
+            }
+        }
     }
-  }
 }
 
 /**
