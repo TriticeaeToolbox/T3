@@ -148,18 +148,21 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
     }
 
     //get header
-    $sql = "select line_index from allele_bymarker_expidx where experiment_uid = $geno_exp";
+    $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid = $geno_exp";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_array($res)) {
         $uid_list = json_decode($row[0], true);
+        $name_list = json_decode($row[1], true);
     }
-    foreach ($uid_list as $uid) {
+    foreach ($uid_list as $key => $uid) {
         $sql = "select line_record_name from line_records where line_record_uid = $uid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         if ($row = mysqli_fetch_array($res)) {
             $name[] = $row[0];
+        } elseif (isset($name_list[$key])) {
+            $name[] = $name_list[$key];
         } else {
-            $name[] = "unknown";
+            die("Error: no name for $uid $key\n");
         }
     }
     $outputheader = implode("\t", $name);
@@ -178,7 +181,8 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
         'NA' => './.',   //--
         '' => './.'
     );
-    $pos_index = 0;
+    $unk_loc = "";
+    $dup_loc = "";
     $sql = "select markers.marker_uid, markers.marker_name, A_allele, B_allele, chrom, pos, alleles
         from allele_bymarker_exp_101, markers 
         where allele_bymarker_exp_101.marker_uid = markers.marker_uid
@@ -201,9 +205,8 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
         }
         if (isset($marker_lookup[$marker_uid])) {
             if (empty($chrom)) {
-                $chrom = 'UNK';
-                $pos = $pos_index;
-                $pos_index += 10;
+                $unk_loc .= " $marker_name";
+                continue;
             }
             $allele_ary = explode(",", $alleles);
             $allele_ary2 = array();
@@ -211,10 +214,27 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
                 $allele_ary2[] = $lookup[$allele];
             }
             $allele_str = implode("\t", $allele_ary2);
-            fwrite($fh1, "$chrom\t$pos\t$marker_name\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n");
+            $index = $chrom . $pos;
+            if (isset($unique[$index])) {
+                $dup_loc .= " $marker_name";
+                continue;
+            }
+            $out_list[] = "$chrom\t$pos\t$marker_name\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n";
+            $out_indx[] = $index;
+            $unique[$index] = 1;
         }
     }
+    asort($out_indx, SORT_NATURAL);
+    foreach ($out_indx as $key => $val) {
+        fwrite($fh1, $out_list[$key]);
+    }
     fclose($fh1);
+    if (!empty($unk_loc)) {
+        echo "location not defined in map: $unk_loc<br>\n";
+    }
+    if (!empty($dup_loc)) {
+        echo "duplicate location in map: $dup_loc<br>\n";
+    }
 }
 
 /** used to create VCF file from genotype experiment selection for Beagle **/
