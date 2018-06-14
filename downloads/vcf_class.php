@@ -80,7 +80,7 @@ function filterVCF()
 
 /** used to create VCF file from genotype experiment selection for TASSEL **/
 /** does not sort by position and does not work for large exeriments **/
-function createVcfDownload($unique_str, $min_maf, $max_missing)
+function createVcfDownload($unique_str, $min_maf, $max_missing, $impute = false)
 {
     global $config;
     global $mysqli;
@@ -125,8 +125,10 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
         $mapset_name = "NoMapSelected";
     }
 
-    $filename1 = "genotype.vcf";
-    $fh1 = fopen("$tmpdir/download_$unique_str/$filename1", "w");
+    $filename1 = "$tmpdir/download_$unique_str/genotype.vcf";
+    $filename2 = "$tmpdir/download_$unique_str/genotype_imputed";
+    $logfile1 = "$tmpdir/download_$unique_str/process_error1.txt";
+    $fh1 = fopen("$filename1", "w");
 
     //get filtered markers
     $sql = "SELECT marker_uid, maf, missing, total from allele_frequencies where experiment_uid = $geno_exp";
@@ -215,25 +217,32 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
             }
             $allele_str = implode("\t", $allele_ary2);
             $index = $chrom . $pos;
+            
+            //can not find a way sort chrom, pos, marker that it will not cause and error in TASSEL so we have to remove them
             if (isset($unique[$index])) {
                 $dup_loc .= " $marker_name";
                 continue;
+            } else {
+                $index_list[] = $index;
+                $out_list[] = "$chrom\t$pos\t$marker_name\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n";
             }
-            $out_list[] = "$chrom\t$pos\t$marker_name\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n";
-            $out_indx[] = $index;
             $unique[$index] = 1;
         }
     }
-    asort($out_indx, SORT_NATURAL);
-    foreach ($out_indx as $key => $val) {
+    asort($index_list, SORT_NATURAL);
+    foreach ($index_list as $key => $val) {
         fwrite($fh1, $out_list[$key]);
     }
     fclose($fh1);
     if (!empty($unk_loc)) {
-        echo "location not defined in map: $unk_loc<br>\n";
+        echo "location not defined in map: $unk_loc<br><br>\n";
     }
     if (!empty($dup_loc)) {
         echo "duplicate location in map: $dup_loc<br>\n";
+    }
+    if ($impute) {
+        $cmd = "java -jar /usr/local/bin/beagle.10Jun18.811.jar window=500 overlap=50 gt=$filename1 out=$filename2 > /dev/null 2> $logfile1";
+        exec($cmd);
     }
 }
 
