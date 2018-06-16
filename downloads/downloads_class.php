@@ -989,7 +989,7 @@ class Downloads
              ?>
              <table border=0>
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v4');">
-             <td>SNP data coded as {A,C,T,G,N,+,-}<br>tab delimited<br>used by <b>TASSEL</b><td>file type "Hapmap"
+             <td>SNP data coded as {A,C,T,G,N,+,-}<br>tab delimited<br>used by <b>TASSEL</b><td>file type "Hapmap"<br>For genetic map the values in position column are multiplied by 1000
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v5');">
              <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}<br>comma delimited<br>used by <b>rrBLUP</b>
              <td>read.table("snpfile.txt", header=TRUE, check.names=FALSE)<br>read.table("genotyp.hmp.txt", header=TRUE, check.names=FALSE)
@@ -1002,7 +1002,7 @@ class Downloads
                  <td><b>VCF</b> format<br>used by <b>TASSEL</b>
                  <tr><td><input type="button" value="Create file" onclick="javascript:use_session('vcfb');">
                  <td><b>VCF</b> format<br>Impute missing genotypes using <a target="_new" href="https://faculty.washington.edu/browning/beagle/beagle.html">Beagle</a>
-                 <td>using beagle.10Jun18.811.jar (version 5.0) window=500 bases overlap=50 bases.
+                 <td>using beagle.10Jun18.811.jar (version 5.0)
                  <?php
              }
              echo "</table>";
