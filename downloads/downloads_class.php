@@ -989,7 +989,7 @@ class Downloads
              ?>
              <table border=0>
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v4');">
-             <td>SNP data coded as {A,C,T,G,N,+,-}<br>tab delimited<br>used by <b>TASSEL</b><td>file type "Hapmap", the values in pos column are multiplied by 1000 for compatibility with TASSEL
+             <td>SNP data coded as {A,C,T,G,N,+,-}<br>tab delimited<br>used by <b>TASSEL</b><td>file type "Hapmap"<br>for genetic maps the value in pos column is multiplied by 1000 and converted to integer
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v5');">
              <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}<br>comma delimited<br>used by <b>rrBLUP</b>
              <td>read.table("snpfile.txt", header=TRUE, check.names=FALSE)<br>read.table("genotyp.hmp.txt", header=TRUE, check.names=FALSE)
