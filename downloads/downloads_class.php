@@ -1616,36 +1616,36 @@ class Downloads
   
     /**
      * build genotype data files for tassel and rrBLUP using consensus genotype
-         *
-	 * @param unknown_type $lines
-	 * @param unknown_type $markers
-	 * @param unknown_type $dtype
-	 */
-	function type3BuildMarkersDownload($lines,$markers,$dtype,$h)
-	{
-         global $mysqli;
-	 $output = '';
-	 $outputheader = '';
-	 $delimiter ="\t";
-	
-         if (isset($_SESSION['selected_map'])) {
-           $selected_map = $_SESSION['selected_map'];
-         } else {
-           $selected_map = "";
-           echo "<font color=red>Warning - no marker location will be given</font>";
-         }
-	
-	 if (count($markers)>0) {
-	  $markers_str = implode(",", $markers);
-	 } else {
-	  die("<font color=red>Error - markers should be selected before download</font>");
-	 }
-	 if (count($lines)>0) {
-	  $lines_str = implode(",", $lines);
-	 } else {
-	  die("<br><font color=red>Error: no lines selected</font>");
-	 }
-	 
+     *
+     * @param unknown_type $lines
+     * @param unknown_type $markers
+     * @param unknown_type $dtype
+     */
+    function type3BuildMarkersDownload($lines, $markers, $dtype, $h)
+    {
+        global $mysqli;
+        $output = '';
+        $outputheader = '';
+        $delimiter ="\t";
+
+        if (isset($_SESSION['selected_map'])) {
+            $selected_map = $_SESSION['selected_map'];
+        } else {
+            $selected_map = "";
+            echo "<font color=red>Warning - no marker location will be given</font>";
+        }
+
+        if (count($markers)>0) {
+            $markers_str = implode(",", $markers);
+        } else {
+             die("<font color=red>Error - markers should be selected before download</font>");
+        }
+        if (count($lines)>0) {
+            $lines_str = implode(",", $lines);
+        } else {
+            die("<br><font color=red>Error: no lines selected</font>");
+        }
+ 
          //generate an array of selected lines that can be used with isset statement
          foreach ($lines as $temp) {
            $line_lookup[$temp] = 1;
@@ -1666,25 +1666,40 @@ class Downloads
              $marker_list_mapped = array();
              $marker_list_chr = array();
          } else {
-	 $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
-	 where markers.marker_uid IN ($markers_str)
-	 AND mim.marker_uid = markers.marker_uid
-	 AND mim.map_uid = map.map_uid
-	 AND map.mapset_uid = mapset.mapset_uid
-	 AND mapset.mapset_uid = $selected_map 
-	 order by mim.chromosome, CAST(1000*mim.start_position as UNSIGNED), BINARY markers.marker_name";
-	 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-	 while ($row = mysqli_fetch_array($res)) {
-           $marker_uid = $row[0];
-           $pos = $row[1];
-           $chr = $row[2];
-	   $marker_list_mapped[$marker_uid] = $pos;
-           $marker_list_chr[$marker_uid] = $chr;
-	 }
+             $sql = "select map_type from mapset where mapset_uid = $selected_map";
+             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+             if ($row = mysqli_fetch_row($res)) {
+                 $map_type = $row[0];
+             }
+             if ($map_type == "Physical") {
+                 $sql = "select markers.marker_uid, CAST(mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
+	         where markers.marker_uid IN ($markers_str)
+	         AND mim.marker_uid = markers.marker_uid
+	         AND mim.map_uid = map.map_uid
+	         AND map.mapset_uid = mapset.mapset_uid
+	         AND mapset.mapset_uid = $selected_map 
+	         order by mim.chromosome, CAST(mim.start_position as UNSIGNED), BINARY markers.marker_name";
+             } else {
+             $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
+             where markers.marker_uid IN ($markers_str)
+             AND mim.marker_uid = markers.marker_uid
+             AND mim.map_uid = map.map_uid
+             AND map.mapset_uid = mapset.mapset_uid
+             AND mapset.mapset_uid = $selected_map 
+             order by mim.chromosome, CAST(1000*mim.start_position as UNSIGNED), BINARY markers.marker_name";
+             }
+	     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	     while ($row = mysqli_fetch_array($res)) {
+               $marker_uid = $row[0];
+               $pos = $row[1];
+               $chr = $row[2];
+	       $marker_list_mapped[$marker_uid] = $pos;
+               $marker_list_chr[$marker_uid] = $chr;
+             }
          }
 
-         $marker_list_all = $marker_list_mapped;	
-	 //generate an array of selected markers and add map position if available
+         $marker_list_all = $marker_list_mapped;
+         //generate an array of selected markers and add map position if available
          $sql = "select marker_uid, marker_name, A_allele, B_allele, marker_type_name from markers, marker_types
          where marker_uid IN ($markers_str)
          AND markers.marker_type_uid = marker_types.marker_type_uid
