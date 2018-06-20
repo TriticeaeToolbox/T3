@@ -4,6 +4,15 @@ require $config['root_dir'].'includes/bootstrap_curator.inc';
 require $config['root_dir'].'theme/admin_header.php';
 require_once $config['root_dir'] . 'includes/email.inc';
 $mysqli = connecti();
+loginTest();
+ob_start();
+if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
+    $type_name = $_SESSION['usertype_name'];
+    echo "<tr><td><a href=\"feedback.php\">Request project participant status</a><td> to submit data for loading";
+    echo ", your current status is $type_name";
+    die();
+}
+ob_end_flush();
 ?>
 
 <style type=text/css>
@@ -95,24 +104,24 @@ $comments
         }
     }
 } else {
-// Nothing submitted yet.
-// Require that the user be signed in.
-$user = $_SESSION['username'];
-if (empty($user)) {
-  ?>
+    // Nothing submitted yet.
+    // Require that the user be signed in.
+    $user = $_SESSION['username'];
+    if (empty($user)) {
+    ?>
         Please sign in before sending data files to the curator
         for loading into the production database.<br>
         <input type="Button" value="Sign in" onclick="window.open('<?php echo $config['base_url']?>login.php','_self')">
-  <?php
-} else if ($user == "t3user@graingenes.org") {
-  ?>
+        <?php
+    } elseif ($user == "t3user@graingenes.org") {
+        ?>
         Please sign out and login as yourself instead of the public 't3user'.<br>
         <input type="Button" value="Sign out" onclick="window.open('<?php echo $config['base_url']?>logout.php','_self')">
-  <?php
-} else {
-  echo "Please submit a data file for the curator to load
+        <?php
+    } else {
+        echo "Please submit a data file for the curator to load
         into the production database. File names should not contain spaces.";
-  ?>
+    ?>
 
 <h3>Data Type</h3>
 <form action="<?php echo $_SERVER['PHP_SELF'] ?>" method="post" enctype="multipart/form-data">
@@ -120,13 +129,13 @@ if (empty($user)) {
     <li><input type=radio name=dtype value=lines> <b>Germplasm lines</b>
     <li><b>Phenotyping</b>
       <ul>
-  	<li><input type=radio name=dtype value=pannot> Experiment annotation
-  	<li><input type=radio name=dtype value=presult> Results
+      <li><input type=radio name=dtype value=pannot> Experiment annotation
+      <li><input type=radio name=dtype value=presult> Results
       </ul>
     <li><b>Genotyping</b>
       <ul>
-  	<li><input type=radio name=dtype value=gannot> Experiment annotation
-  	<li><input type=radio name=dtype value=gresult> Results
+      <li><input type=radio name=dtype value=gannot> Experiment annotation
+      <li><input type=radio name=dtype value=gresult> Results
       </ul>
   </ul>
   <b>Comments</b><br>
@@ -135,7 +144,7 @@ if (empty($user)) {
   <input type=radio name=tested value='0'> Yes 
   <input type=radio name=tested value='1' checked> No
   <br><input type=checkbox name=private onclick="document.getElementById('info').style.visibility = 
-					     this.checked ? 'visible' : 'hidden'"> 
+      this.checked ? 'visible' : 'hidden'"> 
   This file contains phenotype data private to project members only.
   <!-- If box is checked, show Toronto link. -->
   <div id="info" style="visibility:hidden">
@@ -148,7 +157,7 @@ if (empty($user)) {
 </form>
 
 <?php
-     }
+    }
 }
 echo "</div>";
 $footer_div=1;
