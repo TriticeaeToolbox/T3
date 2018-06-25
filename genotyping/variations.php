@@ -45,8 +45,8 @@ $notFound = "";
 $geneFound = "";
 
 //get list of assemblies
-$sql = "select distinct(qtl_annotations.assembly_name), data_public_flag from qtl_annotations, assemblies
-    where qtl_annotations.assembly_name = assemblies.assembly_name  order by assembly_name";
+$sql = "select distinct(qtl_annotations.assembly_name), data_public_flag, created_on from qtl_annotations, assemblies
+    where qtl_annotations.assembly_name = assemblies.assembly_name order by created_on";
 $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 while ($row = mysqli_fetch_row($result)) {
     //pick latest assembly as default
@@ -121,6 +121,21 @@ while ($row = mysqli_fetch_row($result)) {
     $geneDesc[$gene] = $desc;
 }
 
+$sql = "select marker_name, feature, consequence, impact from vep_annotations where assembly_name = \"$assembly\"";
+$result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+while ($row = mysqli_fetch_row($result)) {
+    $marker_name = $row[0];
+    if (isset($vep_list[$marker_name])) {
+        $vep_list[$marker_name] .= "<tr><td><td><td><td><td>$row[1]<td>$row[2]<td>$row[3]";
+    } else {
+        $vep_list[$marker_name] = "$row[1]<td>$row[2]<td>$row[3]";
+    }
+}
+$count = count($vep_list);
+if ($count == 0) {
+    echo "Warning: no VEP for $assembly<br>\n";
+}
+
 $linkOutIdx = array();
 $vepList = array();
 //echo "using assembly $assembly<br>\n";
@@ -138,6 +153,7 @@ foreach ($selected_markers as $marker_uid) {
         echo "Error: invalid marker id $marker_uid<br>\n";
         continue;
     }
+
     if (isset($_SESSION['geno_exps'])) {
         $sql = "select marker_name, chrom, pos from allele_bymarker_exp_ACTG where experiment_uid = $geno_exp and marker_uid = $marker_uid";
         //echo "$sql<br>\n";
@@ -161,8 +177,6 @@ foreach ($selected_markers as $marker_uid) {
                 $desc = $geneDesc[$gene];
                 $link = "<a target=\"_new\" href=" . $varLink[$assembly] . "?g=$gene>$gene</a>";
                 $linkOut .= "<td>$link<td>$desc\n";
-            } else {
-                $linkOut .= "<td><td>\n";
             }
             if (preg_match("/[0-9]/", $chrom) && preg_match("/[0-9]/", $pos)) {
                 $found = 1;
@@ -209,12 +223,18 @@ foreach ($selected_markers as $marker_uid) {
                 $gene = $geneFound[$marker_name];
                 $desc = $geneDesc[$gene];
                 $link = "<a target=\"_new\" href=" . $varLink[$assembly] . "?g=$gene>$gene</a>";
-                $linkOut .= "<td>$link<td>$desc\n";
             } else {
-                $linkOut .= "<td><td>\n";
+                $gene = "";
+                $desc = "";
             }
-            $linkOutSort[] = $linkOut;
-            $linkOutIndx[] = $chrom . $pos;
+            $count = count($vep_list[$marker_name]);
+            if ($count > 0) {
+                $linkOutSort[] = "$linkOut<td>$link<td>$desc<td>$vep_list[$marker_name]";
+                $linkOutIndx[] = $chrom . $pos;
+            } else {
+                $linkOutSort[] = "$linkOut<td>$link<td><td><td><td>$desc";
+                $linkOutIndx[] = $chrom . $pos;
+            }
         } else {
             $notFound .= "$marker_name<br>\n";
         }
@@ -236,14 +256,14 @@ if ($count > 0) {
                 onclick="javascript:window.open('<?php echo $filename ?>');"><br><br>
         <?php
         $h = fopen($filename, "w");
-        fwrite($h, "<html lang=\"en\"><table><tr><td>marker<td>region<td>gene<td>description\n");
+        fwrite($h, "<html lang=\"en\"><table><tr><td>marker<td>region<td>gene<td>description<td>feature<td>consequence<td>impact\n");
         foreach ($linkOutIndx as $key => $val) {
             fwrite($h, $linkOutSort[$key]);
         }
         fwrite($h, "</table>");
         fclose($h);
     } else {
-        echo "<table><tr><td>marker<td>region<td>gene<td>description\n";
+        echo "<table><tr><td>marker<td>region<td>gene<td>description<td>feature<td>consequence<td>impact\n";
         foreach ($linkOutIndx as $key => $val) {
             echo "$linkOutSort[$key]\n";
         }
