@@ -14,7 +14,7 @@ if (!isset($varLink)) {
 }
 
 echo "<h2>Variant Effects</h2>\n";
-echo "This page provides links to Sorting Intolerant From Tolerant (SIFT) and Variant Effect Predictor (VEP) to predict whether an amino aid substitution affects protein function.<br>";
+echo "This page provides links to Sorting Intolerant From Tolerant (SIFT) and Variant Effect Predictor (VEP) to predict whether an amino acid substitution affects protein function.<br>";
 echo "SIFT missense predictions for genomes: <a target=\"_new\" href=\"http://www.nature.com/nprot/journal/v11/n1/abs/nprot.2015.123.html\">Nature Protocols 2016; 11:1-9</a>. ";
 echo "The Ensembl Variant Effect Predictor: Genome Biology Jun 6;17(1):122. (2016) <a target=\"_new\" href=\"https://genomebiology.biomedcentral.com/articles/10.1186/s13059-016-0974-4\">doi:10.1186/s13059-016-0974-4</a>.<br><br>";
 
@@ -133,7 +133,7 @@ while ($row = mysqli_fetch_row($result)) {
 }
 $count_vep_list = count($vep_list);
 if ($count_vep_list == 0) {
-    echo "Warning: no local VEP calculations for $assembly, use the link in the gene column to show a table with known vairations.<br>\n";
+    echo "Warning: no local VEP calculations for $assembly, use the link in the gene column to show a table with known variations.<br>\n";
 }
 
 $linkOutIdx = array();
