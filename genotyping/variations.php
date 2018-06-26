@@ -131,9 +131,9 @@ while ($row = mysqli_fetch_row($result)) {
         $vep_list[$marker_name] = "$row[1]<td>$row[2]<td>$row[3]";
     }
 }
-$count = count($vep_list);
-if ($count == 0) {
-    echo "Warning: no VEP for $assembly<br>\n";
+$count_vep_list = count($vep_list);
+if ($count_vep_list == 0) {
+    echo "Warning: no local VEP calculations for $assembly, use the link in the gene column to show a table with known vairations.<br>\n";
 }
 
 $linkOutIdx = array();
@@ -232,7 +232,7 @@ foreach ($selected_markers as $marker_uid) {
                 $linkOutSort[] = "$linkOut<td>$link<td>$desc<td>$vep_list[$marker_name]";
                 $linkOutIndx[] = $chrom . $pos;
             } else {
-                $linkOutSort[] = "$linkOut<td>$link<td><td><td><td>$desc";
+                $linkOutSort[] = "$linkOut<td>$link<td>$desc";
                 $linkOutIndx[] = $chrom . $pos;
             }
         } else {
@@ -241,12 +241,18 @@ foreach ($selected_markers as $marker_uid) {
     }
 }
 
+if ($count_vep_list > 0) {
+    $header = "<tr><td>marker<td>region<td>gene<td>description<td>feature<td>consequence<td>impact";
+} else {
+    $header = "<tr><td>marker<td>region<td>gene<td>description";
+}
+
 $count = count($linkOutIndx);
 //echo "$count matches found<br><br>\n";
 $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
 if ($count > 0) {
     asort($linkOutIndx);
-    echo "The links in the region column show known variations in a genome browser and their effects. The region is 1000 bases to either side of marker. ";
+    echo "The links in the region column show known variations in a genome browser and their effects. The region is 1000 bases to either side of marker.<br>";
     echo "The links in the gene column show a table with known variations, consequence type, and SIFT score.<br>\n";
     if ($selected_markers_count > 1000) {
         $dir = "/tmp/tht/";
@@ -256,14 +262,14 @@ if ($count > 0) {
                 onclick="javascript:window.open('<?php echo $filename ?>');"><br><br>
         <?php
         $h = fopen($filename, "w");
-        fwrite($h, "<html lang=\"en\"><table><tr><td>marker<td>region<td>gene<td>description<td>feature<td>consequence<td>impact\n");
+        fwrite($h, "<html lang=\"en\"><table>$header\n");
         foreach ($linkOutIndx as $key => $val) {
             fwrite($h, $linkOutSort[$key]);
         }
         fwrite($h, "</table>");
         fclose($h);
     } else {
-        echo "<table><tr><td>marker<td>region<td>gene<td>description<td>feature<td>consequence<td>impact\n";
+        echo "<table>$header\n";
         foreach ($linkOutIndx as $key => $val) {
             echo "$linkOutSort[$key]\n";
         }
