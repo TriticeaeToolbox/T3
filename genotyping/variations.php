@@ -176,12 +176,14 @@ foreach ($selected_markers as $marker_uid) {
                 $gene = $geneFound[$marker_name];
                 $desc = $geneDesc[$gene];
                 $link = "<a target=\"_new\" href=" . $varLink[$assembly] . "?g=$gene>$gene</a>";
-                $linkOut .= "<td>$link<td>$desc\n";
+            } else {
+                $gene = "";
+                $desc = "";
             }
             if (preg_match("/[0-9]/", $chrom) && preg_match("/[0-9]/", $pos)) {
                 $found = 1;
                 $vepList[] = "<tr><td>$row[1] $pos $pos $a_allele/$b_allele + $marker_name\n";
-                $linkOutSort[] = $linkOut;
+                $linkOutSort[] = "$linkOut<td>$link<td>$desc<td>$vep_list[$marker_name]";
                 $linkOutIndx[] = $chrom . $pos;
             }
         }
