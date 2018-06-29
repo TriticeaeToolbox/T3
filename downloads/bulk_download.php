@@ -36,7 +36,7 @@ if (isset($_GET['query'])) {
 } else {
     include $config['root_dir'].'theme/admin_header2.php';
     echo "<h2>Bulk Download</h2>";
-    echo "Downloads all records in the database into CSV formated file<br><br>";
+    echo "Downloads all records in the database into CSV formatted file<br><br>";
     $url = $config['base_url'] . "downloads/bulk_download.php?query=lines";
     echo "<a href=\"$url\">Line Records</a>";
 
