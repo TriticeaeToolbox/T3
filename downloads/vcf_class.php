@@ -80,7 +80,7 @@ function filterVCF()
 
 /** used to create VCF file from genotype experiment selection for TASSEL **/
 /** does not sort by position and does not work for large exeriments **/
-function createVcfDownload($unique_str, $min_maf, $max_missing)
+function createVcfDownload($unique_str, $min_maf, $max_missing, $impute = false)
 {
     global $config;
     global $mysqli;
@@ -125,8 +125,10 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
         $mapset_name = "NoMapSelected";
     }
 
-    $filename1 = "genotype.vcf";
-    $fh1 = fopen("$tmpdir/download_$unique_str/$filename1", "w");
+    $filename1 = "$tmpdir/download_$unique_str/genotype.vcf";
+    $filename2 = "$tmpdir/download_$unique_str/genotype_imputed";
+    $logfile1 = "$tmpdir/download_$unique_str/process_error1.txt";
+    $fh1 = fopen("$filename1", "w");
 
     //get filtered markers
     $sql = "SELECT marker_uid, maf, missing, total from allele_frequencies where experiment_uid = $geno_exp";
@@ -148,18 +150,21 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
     }
 
     //get header
-    $sql = "select line_index from allele_bymarker_expidx where experiment_uid = $geno_exp";
+    $sql = "select line_index, line_name_index from allele_bymarker_expidx where experiment_uid = $geno_exp";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_array($res)) {
         $uid_list = json_decode($row[0], true);
+        $name_list = json_decode($row[1], true);
     }
-    foreach ($uid_list as $uid) {
+    foreach ($uid_list as $key => $uid) {
         $sql = "select line_record_name from line_records where line_record_uid = $uid";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         if ($row = mysqli_fetch_array($res)) {
             $name[] = $row[0];
+        } elseif (isset($name_list[$key])) {
+            $name[] = $name_list[$key];
         } else {
-            $name[] = "unknown";
+            die("Error: no name for $uid $key\n");
         }
     }
     $outputheader = implode("\t", $name);
@@ -178,7 +183,8 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
         'NA' => './.',   //--
         '' => './.'
     );
-    $pos_index = 0;
+    $unk_loc = "";
+    $dup_loc = "";
     $sql = "select markers.marker_uid, markers.marker_name, A_allele, B_allele, chrom, pos, alleles
         from allele_bymarker_exp_101, markers 
         where allele_bymarker_exp_101.marker_uid = markers.marker_uid
@@ -201,9 +207,8 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
         }
         if (isset($marker_lookup[$marker_uid])) {
             if (empty($chrom)) {
-                $chrom = 'UNK';
-                $pos = $pos_index;
-                $pos_index += 10;
+                $unk_loc .= " $marker_name";
+                continue;
             }
             $allele_ary = explode(",", $alleles);
             $allele_ary2 = array();
@@ -211,10 +216,34 @@ function createVcfDownload($unique_str, $min_maf, $max_missing)
                 $allele_ary2[] = $lookup[$allele];
             }
             $allele_str = implode("\t", $allele_ary2);
-            fwrite($fh1, "$chrom\t$pos\t$marker_name\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n");
+            $index = $chrom . $pos;
+            
+            //can not find a way sort chrom, pos, marker that it will not cause and error in TASSEL so we have to remove them
+            if (isset($unique[$index])) {
+                $dup_loc .= " $marker_name";
+                continue;
+            } else {
+                $index_list[] = $index;
+                $out_list[] = "$chrom\t$pos\t$marker_name\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n";
+            }
+            $unique[$index] = 1;
         }
     }
+    asort($index_list, SORT_NATURAL);
+    foreach ($index_list as $key => $val) {
+        fwrite($fh1, $out_list[$key]);
+    }
     fclose($fh1);
+    if (!empty($unk_loc)) {
+        echo "location not defined in map: $unk_loc<br><br>\n";
+    }
+    if (!empty($dup_loc)) {
+        echo "duplicate location in map: $dup_loc<br>\n";
+    }
+    if ($impute) {
+        $cmd = "java -jar /usr/local/bin/beagle.10Jun18.811.jar window=500 overlap=50 gt=$filename1 out=$filename2 > /dev/null 2> $logfile1";
+        exec($cmd);
+    }
 }
 
 /** used to create VCF file from genotype experiment selection for Beagle **/

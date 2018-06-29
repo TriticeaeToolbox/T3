@@ -80,6 +80,9 @@ class Downloads
             case 'download_session_vcf':
                 $this->type1Session('vcf');
                 break;
+            case 'download_session_vcfb':
+                $this->type1Session('vcfb');
+                break;
             case 'refreshtitle':
                 $this->refreshTitle();
                 break;
@@ -145,8 +148,6 @@ class Downloads
             }
             if (isset($_SESSION['geno_exps'])) {
                 $download_genoe = "checked";
-            } else {
-                $download_geno = "checked";
             }
         }
         if (isset($_SESSION['clicked_buttons'])) {
@@ -317,7 +318,7 @@ class Downloads
         if (isset($_SESSION['selected_map'])) {
             $filename = "geneticMap.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
-            $output = $this->type1_build_geneticMap($lines, $markers, $dtype);
+            $output = $this->type1_build_geneticMap($markers, $dtype);
             fwrite($h, $output);
             fclose($h);
         }
@@ -380,7 +381,11 @@ class Downloads
             }
             $filename = "snpfile.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
-            $this->type2_build_markers_download($lines, $markers, $dtype, $h);
+            if ($typeGE == "true") {
+                $this->markerDownloadExpFlapjack($geno_str, $lines, $h);
+            } else {
+                $this->type2_build_markers_download($lines, $markers, $dtype, $h);
+            }
             fclose($h);
         } elseif ($version == "V7") {  //Download for synbreed
             $dtype = "AB";
@@ -404,7 +409,17 @@ class Downloads
                 fclose($h);
             }
             $tmpdir = "/tmp/tht/download_$unique_str";
-            createVcfDownload($unique_str, $min_maf, $max_missing);
+            createVcfDownload($unique_str, $min_maf, $max_missing, 0);
+        } elseif ($version = "vcfb") {
+            if (isset($_SESSION['phenotype']) && isset($_SESSION['selected_trials'])) {
+                $filename = "traits.txt";
+                $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+                $output = $this->type1_build_tassel_traits_download($experiments_t, $phenotype, $datasets_exp, $subset, $dtype);
+                fwrite($h, $output);
+                fclose($h);
+            }
+            $tmpdir = "/tmp/tht/download_$unique_str";
+            createVcfDownload($unique_str, $min_maf, $max_missing, 1);
         }
         if ($typeG == "true") {
             $filename = "allele_conflict.txt";
@@ -974,22 +989,20 @@ class Downloads
              ?>
              <table border=0>
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v4');">
-             <td>SNP data coded as {A,C,T,G,N,+,-}<br>tab delimited<br>used by <b>TASSEL</b><td>file type "Hapmap"
+             <td>SNP data coded as {A,C,T,G,N,+,-}<br>tab delimited<br>used by <b>TASSEL</b><td>file type "Hapmap"<br>for genetic maps the value in pos column is multiplied by 1000 and converted to integer
              <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v5');">
              <td>genotype coded as {AA=1, BB=-1, AB=0, missing=NA}<br>comma delimited<br>used by <b>rrBLUP</b>
              <td>read.table("snpfile.txt", header=TRUE, check.names=FALSE)<br>read.table("genotyp.hmp.txt", header=TRUE, check.names=FALSE)
+             <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v6');">
+             <td>genotype coded as {AA, AB, BB}<br>used by <b>Flapjack</b>
              <?php 
              if ($typeGE == "true") {
                  ?>
                  <tr><td><input type="button" value="Create file" onclick="javascript:use_session('vcf');">
                  <td><b>VCF</b> format<br>used by <b>TASSEL</b>
-                 <?php
-             } else {
-                 ?>
-                 <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v6');">
-                 <td>genotype coded as {AA, AB, BB}<br>used by <b>Flapjack</b>
-                 <tr><td><input type="button" value="Create file" onclick="javascript:use_session('v7');">
-                 <td>genotype coded as {AA, AB, BB}<br>used by <b>synbreed</b>
+                 <tr><td><input type="button" value="Create file" onclick="javascript:use_session('vcfb');">
+                 <td><b>VCF</b> format<br>Impute missing genotypes using <a target="_new" href="https://faculty.washington.edu/browning/beagle/beagle.html">Beagle</a>
+                 <td>using beagle.10Jun18.811.jar (version 5.0)
                  <?php
              }
              echo "</table>";
@@ -1400,6 +1413,7 @@ class Downloads
 	function type2_build_markers_download($lines,$markers,$dtype, $h)
 	{
             global $mysqli;
+            global $config;
 		$output = '';
 		$doneheader = false;
 		$delimiter ="\t";
@@ -1419,6 +1433,25 @@ class Downloads
                 //generate an array of selected markers that can be used with isset statement
                 foreach ($markers as $temp) {
                   $marker_lookup[$temp] = 1;
+                }
+
+                //get ref and alt alleles
+                $sql = "select marker_uid, A_allele, B_allele from markers";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                while ($row = mysqli_fetch_array($res)) {
+                    $a_allele = $row[1];
+                    $b_allele = $row[2];
+                    if (preg_match("/([A-Z])/", $a_allele, $match)) {
+                        $a_allele = $match[1];
+                    } else {
+                        $a_allele = "-";
+                    }
+                    if (preg_match("/([A-Z])/", $b_allele, $match)) {
+                        $b_allele = $match[1]; 
+                    } else { 
+                        $b_allele = "-"; 
+                    } 
+                    $marker_alleles[$row[0]] = $a_allele . "/" . $b_allele;
                 }
 	
 		$sql = "select marker_uid, marker_name from allele_byline_idx order by marker_uid";
@@ -1447,7 +1480,10 @@ class Downloads
                 if ($dtype =='qtlminer')  {
                     fwrite($h, "$outputheader\n");
                 } elseif ($dtype == 'FJ') {
-                    fwrite($h, "# fjFile = GENOTYPE\n".$delimiter.$outputheader."\n");
+                    fwrite($h, "# fjFile = GENOTYPE\n");
+                    fwrite($h, "# fjDatabaseLineSearch = https:" . $config['base_url'] . "view.php?table=line_records&name=\$LINE\n");
+                    fwrite($h, "# fjDatabaseMarkerSearch = https:" . $config['base_url'] . "view.php?table=markers&name=\$MARKER\n");
+                    fwrite($h, "\t$outputheader\n");
                 } else {
                     fwrite($h, "$num_lines.$delimiter.$nelem.:2\n".$outputheader."\n");
                 }
@@ -1487,8 +1523,30 @@ class Downloads
 		    $outarray = explode(',',$alleles);
 		    foreach ($outarray as $key=>$allele) {
 		  	$marker_id = $marker_list[$key];
+                        if ($dtype=='FJ') {
+                          /*if (isset($marker_alleles[$marker_id])) {
+                            $snp = $marker_alleles[$marker_id];
+                            $lookup = array(
+                            'AA' => substr($snp,0,1),
+                            'BB' => substr($snp,2,1),
+                            '--' => 'N',
+                            'AB' => substr($snp,0,1) . "/" . substr($snp,2,1),
+                            'BA' => substr($snp,2,1) . "/" . substr($snp,0,1),
+                            '' => 'N'
+                            );
+                          } else {
+                            $lookup = array(
+                            'AA' => "unk",
+                            'BB' => "unk",
+                            '--' => "unk",
+                            'AB' => "unk",
+                            'BA' => "unk",
+                            '' => "unk"
+                            );
+                          }*/
+                        }
 		  	if (isset($marker_lookup[$marker_id])) {
-		  	  $outarray2[]=$lookup[$allele];
+		  	    $outarray2[]=$lookup[$allele];
                         }
 		    }
                   } else {
@@ -1509,42 +1567,85 @@ class Downloads
                   fwrite($h, "$line_name\t$allele_str\n");
 		}
 		if ($nelem == 0) {
-		   die("error - no genotype or marker data for this selection");
-		}
-	}
+		    die("error - no genotype or marker data for this selection");
+        }
+    }
+
+    private function markerDownloadExpFlapjack($geno_exp, $lines, $h)
+    {
+        global $mysqli;
+        global $config;
+        $sql = "select marker_index from allele_byline_expidx where experiment_uid = $geno_exp";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        echo "<br>$sql<br>\n";
+        if ($row = mysqli_fetch_array($res)) {
+            $marker_uid_list = json_decode($row[0], true);
+        } else {
+            echo "Error: $geno_exp not found\n";
+            return;
+        }
+        $count = count($marker_uid_list);
+        echo "$count markers found<br>\n";
+
+        foreach ($lines as $uid) {
+            $line_lookup[$uid] = 1;
+        }
+        $sql = "select marker_uid, marker_name from markers";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        while ($row = mysqli_fetch_array($res)) {
+            $marker_list[$row[0]] = $row[1];
+        } 
+        $outputheader = "# fjFile = GENOTYPE\n";
+        $outputheader .= "# fjDatabaseLineSearch = https:" . $config['base_url'] . "view.php?table=line_records&name=\$LINE\n";
+        $outputheader .= "# fjDatabaseMarkerSearch = https:" . $config['base_url'] . "view.php?table=markers&name=\$MARKER\n\t";
+        foreach ($marker_uid_list as $uid) {
+            $outputheader .= "$marker_list[$uid]\t";
+        }
+        fwrite($h, "$outputheader\n");
+
+        $sql = "select line_record_uid, line_record_name, alleles from allele_byline_exp where experiment_uid = $geno_exp";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_array($res)) {
+            $line_record_uid = $row[0];
+            $line_record_name = $row[1];
+            $alleles = $row[2];
+            $alleles = preg_replace("/,/", "\t", $alleles);
+            fwrite($h, "$line_record_name\t$alleles\n");
+        }
+    }
   
-	/**
-	 * build genotype data files for tassel and rrBLUP using consensus genotype
-         * 
-	 * @param unknown_type $lines
-	 * @param unknown_type $markers
-	 * @param unknown_type $dtype
-	 */
-	function type3BuildMarkersDownload($lines,$markers,$dtype,$h)
-	{
-         global $mysqli;
-	 $output = '';
-	 $outputheader = '';
-	 $delimiter ="\t";
-	
-         if (isset($_SESSION['selected_map'])) {
-           $selected_map = $_SESSION['selected_map'];
-         } else {
-           $selected_map = "";
-           echo "<font color=red>Warning - no marker location will be given</font>";
-         }
-	
-	 if (count($markers)>0) {
-	  $markers_str = implode(",", $markers);
-	 } else {
-	  die("<font color=red>Error - markers should be selected before download</font>");
-	 }
-	 if (count($lines)>0) {
-	  $lines_str = implode(",", $lines);
-	 } else {
-	  die("<br><font color=red>Error: no lines selected</font>");
-	 }
-	 
+    /**
+     * build genotype data files for tassel and rrBLUP using consensus genotype
+     *
+     * @param unknown_type $lines
+     * @param unknown_type $markers
+     * @param unknown_type $dtype
+     */
+    function type3BuildMarkersDownload($lines, $markers, $dtype, $h)
+    {
+        global $mysqli;
+        $output = '';
+        $outputheader = '';
+        $delimiter ="\t";
+
+        if (isset($_SESSION['selected_map'])) {
+            $selected_map = $_SESSION['selected_map'];
+        } else {
+            $selected_map = "";
+            echo "<font color=red>Warning - no marker location will be given</font>";
+        }
+
+        if (count($markers)>0) {
+            $markers_str = implode(",", $markers);
+        } else {
+             die("<font color=red>Error - markers should be selected before download</font>");
+        }
+        if (count($lines)>0) {
+            $lines_str = implode(",", $lines);
+        } else {
+            die("<br><font color=red>Error: no lines selected</font>");
+        }
+ 
          //generate an array of selected lines that can be used with isset statement
          foreach ($lines as $temp) {
            $line_lookup[$temp] = 1;
@@ -1565,25 +1666,40 @@ class Downloads
              $marker_list_mapped = array();
              $marker_list_chr = array();
          } else {
-	 $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
-	 where markers.marker_uid IN ($markers_str)
-	 AND mim.marker_uid = markers.marker_uid
-	 AND mim.map_uid = map.map_uid
-	 AND map.mapset_uid = mapset.mapset_uid
-	 AND mapset.mapset_uid = $selected_map 
-	 order by mim.chromosome, CAST(1000*mim.start_position as UNSIGNED), BINARY markers.marker_name";
-	 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-	 while ($row = mysqli_fetch_array($res)) {
-           $marker_uid = $row[0];
-           $pos = $row[1];
-           $chr = $row[2];
-	   $marker_list_mapped[$marker_uid] = $pos;
-           $marker_list_chr[$marker_uid] = $chr;
-	 }
+             $sql = "select map_type from mapset where mapset_uid = $selected_map";
+             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . $sql);
+             if ($row = mysqli_fetch_row($res)) {
+                 $map_type = $row[0];
+             }
+             if ($map_type == "Physical") {
+                 $sql = "select markers.marker_uid, CAST(mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
+	         where markers.marker_uid IN ($markers_str)
+	         AND mim.marker_uid = markers.marker_uid
+	         AND mim.map_uid = map.map_uid
+	         AND map.mapset_uid = mapset.mapset_uid
+	         AND mapset.mapset_uid = $selected_map 
+	         order by mim.chromosome, CAST(mim.start_position as UNSIGNED), BINARY markers.marker_name";
+             } else {
+             $sql = "select markers.marker_uid, CAST(1000*mim.start_position as UNSIGNED), mim.chromosome from markers, markers_in_maps as mim, map, mapset
+             where markers.marker_uid IN ($markers_str)
+             AND mim.marker_uid = markers.marker_uid
+             AND mim.map_uid = map.map_uid
+             AND map.mapset_uid = mapset.mapset_uid
+             AND mapset.mapset_uid = $selected_map 
+             order by mim.chromosome, CAST(1000*mim.start_position as UNSIGNED), BINARY markers.marker_name";
+             }
+	     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+	     while ($row = mysqli_fetch_array($res)) {
+               $marker_uid = $row[0];
+               $pos = $row[1];
+               $chr = $row[2];
+	       $marker_list_mapped[$marker_uid] = $pos;
+               $marker_list_chr[$marker_uid] = $chr;
+             }
          }
 
-         $marker_list_all = $marker_list_mapped;	
-	 //generate an array of selected markers and add map position if available
+         $marker_list_all = $marker_list_mapped;
+         //generate an array of selected markers and add map position if available
          $sql = "select marker_uid, marker_name, A_allele, B_allele, marker_type_name from markers, marker_types
          where marker_uid IN ($markers_str)
          AND markers.marker_type_uid = marker_types.marker_type_uid
@@ -1930,7 +2046,7 @@ class Downloads
          * @param string $dtype
 	 * @return string
 	 */
-    function type1_build_geneticMap($lines, $markers, $dtype)
+    function type1_build_geneticMap($markers, $dtype)
     {
         global $mysqli;
         $delimiter ="\t";
