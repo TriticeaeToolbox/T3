@@ -156,20 +156,15 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
       <ul>
       <li><a href="<?php echo $config['base_url']; ?>downloads/downloads.php" title="Tassel format">
             Genotype and Phenotype Data</a>
-        <?php
-        if (file_exists($config['root_dir']."downloads/impute.php")) {
-            ?><li><a href="<?php echo $config['base_url']; ?>downloads/impute.php" title="Download imputed">Imputed Genotype Data</a>
-            <?php
-        }
-        ?>
-        <li><a href="<?php echo $config['base_url']; ?>snps.php" title="Context sequences and A/B => nucleotide translation">
+      <li><a href="<?php echo $config['base_url']; ?>snps.php" title="Context sequences and A/B => nucleotide translation">
             SNP Alleles and Sequences</a> 
-        <li><a href="<?php echo $config['base_url']; ?>downloads/marker_annotation.php">Marker Annotation</a>
-        <li><a href="<?php echo $config['base_url']; ?>downloads/tablet_export.php" title="Tablet export">
+      <li><a href="<?php echo $config['base_url']; ?>downloads/marker_annotation.php">Marker Annotation</a>
+      <li><a href="<?php echo $config['base_url']; ?>downloads/bulk_download.php" title="Bulk Download">Bulk Download</a>
+      <li><a href="<?php echo $config['base_url']; ?>downloads/tablet_export.php" title="Tablet export">
             Android Field Book</a>
-        <li><a href="<?php echo $config['base_url']; ?>maps/weather.php" title="Weather data">
+      <li><a href="<?php echo $config['base_url']; ?>maps/weather.php" title="Weather data">
             Weather Data</a>
-        <li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
+      <li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
       </ul>
     <li><a href="" title="">Browse</a><ul>
     <?php
