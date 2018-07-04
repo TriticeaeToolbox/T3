@@ -31,8 +31,8 @@ class Genes
         echo "The <b>Gene Id</b> link provides information on markers in T3 and external links to protein, expression, and pathway information.<br>\n";
 
         //get list of assemblies
-        $sql = "select distinct(assemblies.assembly_name), data_public_flag, assemblies.description, created_on from gene_annotations, assemblies
-            where gene_annotations.assembly_name = assemblies.assembly_name  order by created_on";
+        $sql = "select distinct(assemblies.assembly_name), data_public_flag, assemblies.description, assemblies.created_on from gene_annotations, assemblies
+            where gene_annotations.assembly_name = assemblies.assembly_name  order by assemblies.created_on";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($result)) {
             //pick latest assembly as default
