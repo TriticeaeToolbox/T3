@@ -41,8 +41,7 @@ if (isset($_GET['query'])) {
     $url = $config['base_url'] . "downloads/bulk_download.php?query=lines";
     echo "<a href=\"$url\">Line Records</a> in $result";
     if (preg_match("/Oat/i", $result)) {
-        $url = "/POOL/bulk_download.php";
-        echo "<br><a href=\"$url\">Line Records</a> in <a href=/POOL><b>P</b>edigrees <b>Of</b> <b>O</b>at <b>L</b>ines</a></a>";
+        echo "<br><a href=\"/POOL/bulk_download.php\">Line Records</a> in <a href=/POOL><b>P</b>edigrees <b>Of</b> <b>O</b>at <b>L</b>ines</a></a>";
     }
 
     echo "</div>";
