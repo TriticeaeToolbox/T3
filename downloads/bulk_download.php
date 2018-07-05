@@ -39,6 +39,11 @@ if (isset($_GET['query'])) {
     echo "Downloads all records in the database into CSV formatted file<br><br>";
     $url = $config['base_url'] . "downloads/bulk_download.php?query=lines";
     echo "<a href=\"$url\">Line Records</a>";
+    $result = mysql_grab("select database");
+    if (preg_match("/Oat/", $result)) {
+        $url = "/var/www/t3/POOL/bulk_download.php";
+        echo "<br><a href=\"$url\">Line Records POOL</a>";
+    }
 
     echo "</div>";
     include $config['root_dir'].'theme/footer.php';
