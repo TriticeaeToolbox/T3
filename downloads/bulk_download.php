@@ -37,12 +37,12 @@ if (isset($_GET['query'])) {
     include $config['root_dir'].'theme/admin_header2.php';
     echo "<h2>Bulk Download</h2>";
     echo "Downloads all records in the database into CSV formatted file<br><br>";
+    $result = mysql_grab("select database()");
     $url = $config['base_url'] . "downloads/bulk_download.php?query=lines";
-    echo "<a href=\"$url\">Line Records</a>";
-    $result = mysql_grab("select database");
-    if (preg_match("/Oat/", $result)) {
+    echo "<a href=\"$url\">Line Records</a> in $result";
+    if (preg_match("/Oat/i", $result)) {
         $url = "/var/www/t3/POOL/bulk_download.php";
-        echo "<br><a href=\"$url\">Line Records POOL</a>";
+        echo "<br><a href=\"$url\">Line Records</a> in <a href=/POOL><b>P</b>edigrees <b>Of</b> <b>O</b>at <b>L</b>ines</a></a>";
     }
 
     echo "</div>";
