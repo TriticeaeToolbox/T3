@@ -232,35 +232,40 @@ if (isset($_POST['haplotype'])) {
         $alleleval=$row['value'];
         $line_uids[$linename]=$lineuid;
         $line_names[$lineuid]=$linename;
-        if (! isset($lines[$linename])) $lines[$linename]=array();
-        if (! isset($lines[$linename][$mkruid])) $lines[$linename][$mkruid]=$alleleval;	 
+        if (! isset($lines[$linename])) {
+            $lines[$linename]=array();
+        }
+        if (! isset($lines[$linename][$mkruid])) {
+            $lines[$linename][$mkruid]=$alleleval;
+        }
     }
-  $selLines=array();
-  foreach ($lines as $lnm=>$lmks) {
-    $flag=0;
-    foreach ($markers as $mkr=>$val) {
-      if (strtolower($lmks[$mkr])!==strtolower($val)) {
-	// print strtolower($lmks[$mkr])."***".strtolower($val)."<br>";
-	$flag++;
-      }
+    $selLines=array();
+    foreach ($lines as $lnm => $lmks) {
+        $flag=0;
+        foreach ($markers as $mkr => $val) {
+            if (strtolower($lmks[$mkr])!==strtolower($val)) {
+                // print strtolower($lmks[$mkr])."***".strtolower($val)."<br>";
+                $flag++;
+            }
+        }
+        if ($flag==0) {
+             array_push($selLines, $line_uids[$lnm]);
+        }
     }
-    if ($flag==0) 
-      array_push($selLines, $line_uids[$lnm]);
-  }
-  if(count($selLines) > 0) {
-    $_SESSION['selected_lines']=$selLines;
-    sort($selLines);
-    print "<p><a href=\"pedigree/pedigree_markers.php\">Display the lines and markers</a>";
-    print "<table class='tableclass1'><thead><tr><td>Line names</td></tr></thead><tbody>";
-    foreach ($selLines as $luid) {
-      print "<tr><td>";
-      print "<a href=\"pedigree/show_pedigree.php?line=$luid\">".$line_names[$luid]."</a>";
-      print "</td></tr>";
+    if (count($selLines) > 0) {
+        $_SESSION['selected_lines']=$selLines;
+        sort($selLines);
+        print "<p><a href=\"pedigree/pedigree_markers.php\">Display the lines and markers</a>";
+        print "<table class='tableclass1'><thead><tr><td>Line names</td></tr></thead><tbody>";
+        foreach ($selLines as $luid) {
+            print "<tr><td>";
+            print "<a href=\"" . $config['base_url'] . "pedigree/show_pedigree.php?line=$luid\">".$line_names[$luid]."</a>";
+            print "</td></tr>";
+        }
+        print "</tbody></table>";
+    } else {
+        echo "<p>Sorry, no records found<p>";
     }
-    print "</tbody></table>";
-  }
-  else 
-    echo "<p>Sorry, no records found<p>";
 }
 
 /*****************************************************************************************/
