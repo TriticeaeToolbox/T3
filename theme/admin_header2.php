@@ -26,6 +26,7 @@
 <script src="//code.jquery.com/jquery-2.2.4.min.js"></script>
 <script src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script src="theme/jquery.smartmenus.min.js" type="text/javascript"></script>
+<script src='https://www.google.com/recaptcha/api.js'></script>
 
 <link href="theme/sm-core-css.css" rel="stylesheet" type="text/css">
 <link href="theme/sm-cleant3.css" rel="stylesheet" type="text/css">
