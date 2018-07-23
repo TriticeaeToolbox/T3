@@ -31,22 +31,16 @@ class Genes
         echo "The <b>Gene Id</b> link provides information on markers in T3 and external links to protein, expression, and pathway information.<br>\n";
 
         //get list of assemblies
-        $sql = "select distinct(assemblies.assembly_name), data_public_flag, assemblies.description, assemblies.created_on from gene_annotations, assemblies
-            where gene_annotations.assembly_name = assemblies.assembly_name  order by assemblies.created_on";
+        $sql = "select distinct(assemblies.assembly_uid), assemblies.assembly_name, data_public_flag, assemblies.description, assemblies.created_on
+            from gene_annotations, assemblies
+            where gene_annotations.assembly_name = assemblies.assembly_uid order by assemblies.created_on";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($result)) {
             //pick latest assembly as default
-            if ($row[1] == 1) {
-                $assembly = $row[0];
-                $assembly = $row[0];
-                $assemblyList[] = $row[0];
-                $assemblyDesc[] = $row[2];
-                // do not show ones that are private
-            } elseif (($row[1] == 0) && authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
-                $assembly = $row[0];
-                $assemblyList[] = $row[0];
-                $assemblyDesc[] = $row[2];
-            }
+            $uid = $row[0];
+            $assembly = $uid;
+            $assemblyList[$uid] = $row[1];
+            $assemblyDesc[$uid] = $row[3];
         }
 
         if (isset($_GET['assembly'])) {
@@ -55,12 +49,12 @@ class Genes
         //display list of assemblies
         echo "<br><form><table><tr><td>Genome Assembly<td>Description";
         foreach ($assemblyList as $key => $ver) {
-            if ($ver == $assembly) {
+            if ($key == $assembly) {
                 $selected = "checked";
             } else {
                 $selected = "";
             }
-            echo "<tr><td nowrap><input type=\"radio\" name=\"assembly\" id=\"assembly\" value=\"$ver\" $selected> $ver<td>$assemblyDesc[$key]\n";
+            echo "<tr><td nowrap><input type=\"radio\" name=\"assembly\" id=\"assembly\" value=\"$key\" $selected> $ver<td>$assemblyDesc[$key]\n";
         }
         $sql = "select * from assemblies where data_public_flag = 0";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -118,6 +112,9 @@ class Genes
 
         if (isset($_GET['page'])) {
             $pageNum = intval($_GET['page']);
+            if ($pageNum < 1) {
+                $pageNum = 1;
+            }
             $offset = ($pageNum - 1) * 10;
         } else {
             $pageNum = 1;
@@ -153,17 +150,13 @@ class Genes
             $sql .= " limit 10 offset $offset";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
         }
-        echo "<br>$count_rows found\n";
         if ($count_rows > 10) {
             $next = $pageNum + 1;
             $prev = $pageNum -1;
-            echo ", Page = $pageNum";
-            if ($pageNum == 1) {
-                echo " <button type=\"button\" onclick=\"javascript: nextPage($next)\">Next Page</button><br>";
-            } else {
-                echo " <button type=\"button\" onclick=\"javascript: nextPage($prev)\">Prev Page</button>";
-                echo " <button type=\"button\" onclick=\"javascript: nextPage($next)\">Next Page</button><br>";
-            }
+            echo "<br>$count_rows found, Page = $pageNum ";
+            echo "<button type=\"button\" onclick=\"javascript: nextPage($prev)\">Prev Page</button>";
+            echo "<button type=\"button\" onclick=\"javascript: nextPage($next)\">Next Page</button>";
+            echo "<br>";
         }
    
         $count = 0;
