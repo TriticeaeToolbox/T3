@@ -177,34 +177,27 @@ function show_gene_annotations($id)
     //To simply things, just refer to this function.
     show_general("gene_annotations", $id);
 
-    $count = 0;
-    $sql = "select gene_id, start, stop, bin from gene_annotations where gene_annotation_uid = $id";
-    $res = mysqli_query($mysqli, $sql) or die("Error in show gene annotation<br>$sql");
-    if ($row = mysqli_fetch_row($res)) {
-        $gene_id = $row[0];
-        $start = $row[1];
-        $stop = $row[2];
-        $bin = $row[3];
-    } else {
-        die("Error: gene not found");
-    }
-    echo "<br>Pathways from Plant Reactome";
-    $sql = "SELECT pathways.pathway_uid, pathway_reference, pathway_name, species
-        from pathways, pathway_gene
+    $results = mysql_grab("SHOW tables like 'pathways'");
+    if ($results == "pathways") {
+        echo "<br>Pathways from Plant Reactome";
+        $count = 0;
+        $sql = "SELECT pathways.pathway_uid, pathway_reference, pathway_name, species
+            from pathways, pathway_gene
         where pathways.pathway_uid = pathway_gene.pathway_uid
         and pathway_gene.gene_id = \"$gene_id\"";
-    $res = mysqli_query($mysqli, $sql) or die("Error in show gene annotation<br>$sql");
-    while ($row = mysqli_fetch_row($res)) {
-        if ($count == 0) {
-            echo "<table><tr><td>Pathway<td>Species<td>Plant Reactome";
-            $count++;
+        $res = mysqli_query($mysqli, $sql) or die("Error in show gene annotation<br>$sql");
+        while ($row = mysqli_fetch_row($res)) {
+            if ($count == 0) {
+                echo "<table><tr><td>Pathway<td>Species<td>Plant Reactome";
+                $count++;
+            }
+            echo "<tr><td><a href=\"view.php?table=pathways&uid=$row[0]\">$row[2]</a><td>$row[3]<td>$row[1]\n";
         }
-        echo "<tr><td><a href=\"view.php?table=pathways&uid=$row[0]\">$row[2]</a><td>$row[3]<td>$row[1]\n";
-    }
-    if ($count > 0) {
-        echo "</table><br>";
-    } else {
-        echo " - none<br><br>";
+        if ($count > 0) {
+            echo "</table><br>";
+        } else {
+            echo " - none<br><br>";
+        }
     }
 
     $count = 0;
@@ -532,44 +525,44 @@ function show_experiment_set($id)
 // instead of 'phenotype_category_uid'.
 function show_properties($id)
 {
-  global $mysqli;
-  $sql = "select name, description from properties where properties_uid = $id";
-  $res = mysqli_query($mysqli, $sql) or die("Error in show properties");
-  while ($r = mysqli_fetch_row($res)) {
-    $name = $r[0];
-    $desc = $r[1];
-  }
-  $cat = mysql_grab("select phenotype_category_name from phenotype_category, properties
+    global $mysqli;
+    $sql = "select name, description from properties where properties_uid = $id";
+    $res = mysqli_query($mysqli, $sql) or die("Error in show properties");
+    while ($r = mysqli_fetch_row($res)) {
+        $name = $r[0];
+        $desc = $r[1];
+    }
+    $cat = mysql_grab("select phenotype_category_name from phenotype_category, properties
                      where phenotype_category_uid = category_uid and properties_uid = $id");
-  echo "<table>";
-  echo "<tr><td>Name<td>$name";
-  echo "<tr><td>Description<td>$desc";
-  echo "<tr><td>Category<td>$cat";
-  echo "</table>";
+    echo "<table>";
+    echo "<tr><td>Name<td>$name";
+    echo "<tr><td>Description<td>$desc";
+    echo "<tr><td>Category<td>$cat";
+    echo "</table>";
 }
 
-// DEM apr2015: Need a special function to avert trying to show the users name, since we now 
+// DEM apr2015: Need a special function to avert trying to show the users name, since we now
 // disallow access to table 'users'.
 function show_rawfiles($id)
 {
-  global $mysqli;
-  $sql = "select experiment_uid, name, description, directory, updated_on from rawfiles where rawfile_uid = $id";
-  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-  while ($r = mysqli_fetch_row($res)) {
-    $exptid = $r[0];
-    $trialcode = mysql_grab("select trial_code from experiments where experiment_uid = $exptid");
-    $name = $r[1];
-    $desc = $r[2];
-    $dir = $r[3];
-    $updt = $r[4];
-  }
-  echo "<table>";
-  echo "<tr><td><b>Filename</b><td>$name";
-  echo "<tr><td><b>Trial</b><td><a href='display_phenotype.php?trial_code=$trialcode'>$trialcode</a>";
-  echo "<tr><td><b>Description</b><td>$desc";
-  echo "<tr><td><b>Directory</b><td>$dir";
-  echo "<tr><td><b>Date</b><td>$updt";
-  echo "</table>";
+    global $mysqli;
+    $sql = "select experiment_uid, name, description, directory, updated_on from rawfiles where rawfile_uid = $id";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($r = mysqli_fetch_row($res)) {
+        $exptid = $r[0];
+        $trialcode = mysql_grab("select trial_code from experiments where experiment_uid = $exptid");
+        $name = $r[1];
+        $desc = $r[2];
+        $dir = $r[3];
+        $updt = $r[4];
+    }
+    echo "<table>";
+    echo "<tr><td><b>Filename</b><td>$name";
+    echo "<tr><td><b>Trial</b><td><a href='display_phenotype.php?trial_code=$trialcode'>$trialcode</a>";
+    echo "<tr><td><b>Description</b><td>$desc";
+    echo "<tr><td><b>Directory</b><td>$dir";
+    echo "<tr><td><b>Date</b><td>$updt";
+    echo "</table>";
 }
 
 /**
@@ -633,24 +626,24 @@ function show_general($tabl, $id, $resource = "")
                     echo "\t</tr>\n";
                 }
             }
-      }
-    echo "</table>";
-    // Display the associated tables
-    foreach ($foreign_tables as $table) {
-      $fpkey = $foreign_keys[$table];
-      $qstring = getQueryJoin($table, $tabl, $fpkey, $id);
-      $q = mysqli_query($mysqli, $qstring) or die(mysqli_error($mysqli));
-      //Display the table
-      echo viewTable($q, $table);
+        }
+        echo "</table>";
+        // Display the associated tables
+        foreach ($foreign_tables as $table) {
+            $fpkey = $foreign_keys[$table];
+            $qstring = getQueryJoin($table, $tabl, $fpkey, $id);
+            $q = mysqli_query($mysqli, $qstring) or die(mysqli_error($mysqli));
+            //Display the table
+            echo viewTable($q, $table);
+        }
     }
-  }
 }
 
 /**
  * This is a helper function for the show_general(). This function will grab the name of
- * a foreign key field for a particular row. It uses the get_pkey and get_unique_name 
+ * a foreign key field for a particular row. It uses the get_pkey and get_unique_name
  * functions for easy maintainability. This function has been tested and only works
- * IF the foreign key is stored in the calling table. 
+ * IF the foreign key is stored in the calling table.
  *
  * That's complicated but it does work. Debugging this could possibily give you a headache.
  *
@@ -659,54 +652,58 @@ function show_general($tabl, $id, $resource = "")
  * @param $foreign_key - we have to know what the foreign key is, this key is the common key between both tables
  * @param $main_id - this is a unique identifier for the row in the $main table, without this we won't know
  *                   which row to use in the main table to find the appropriate foreign key value to link
- *                   to the specific row in the foreign_table.  Make sense? 
+ *                   to the specific row in the foreign_table.  Make sense?
  * @return the SQL query string that will fetch the appropriate results.
  */
-function getQueryJoin($foreign_table, $main_table, $foreign_key, $main_id) {
+function getQueryJoin($foreign_table, $main_table, $foreign_key, $main_id)
+{
 
-	$pkey = get_pkey($main_table);
+    $pkey = get_pkey($main_table);
 
-	$name = get_unique_name($foreign_table);
+    $name = get_unique_name($foreign_table);
 
-	if(!chk_tbl_field($foreign_table, $name)) {	//we're in a many to one situation
-		error(1, "Many to Many relationship has been improperly implemented between $main_table and $foreign_table");
-	}
+    if (!chk_tbl_field($foreign_table, $name)) { //we're in a many to one situation
+        error(1, "Many to Many relationship has been improperly implemented between $main_table and $foreign_table");
+    }
 
-	return "SELECT $foreign_table.$foreign_key, $foreign_table.$name
-		FROM $main_table, $foreign_table
-		WHERE $main_table.$pkey = '$main_id'
-			AND $main_table.$foreign_key = $foreign_table.$foreign_key";
+    return "SELECT $foreign_table.$foreign_key, $foreign_table.$name
+	FROM $main_table, $foreign_table
+	WHERE $main_table.$pkey = '$main_id'
+	AND $main_table.$foreign_key = $foreign_table.$foreign_key";
 }
 
 /**
  * This function is like the display_table() function except this one includes a "view" link to
  * the primary key. Essentially display_table() will simply dump the contents of a mysql resouce.
- * This function is specifically designed to dump the contents of a mysql_query AND deal with 
+ * This function is specifically designed to dump the contents of a mysql_query AND deal with
  * foreign keys.
  *
  * @param $resource - the result of a mysql_query()
  * @param $table - the table in question, this is used to get the primary key for the view link.
  * @return a string containing the HTML table. This does not echo its result.
  */
-function viewTable($resource, $table) {
+function viewTable($resource, $table)
+{
     $pkey = get_pkey($table);
     // DEM 9dec10: Uncomment to get "Associated Marker Synonyms (4)".
     //$ret = "\n<h3>Associated " . beautifulTableName($table, 1) . " (" . mysql_num_rows($resource) . ")</h3><br />";
     $ret = "\n<h3>" . beautifulTableName($table, 1) . "</h3>";
-    if(mysqli_num_rows($resource) < 1) 
-      return $ret  .=  "<p>No Records Found </p>";
-    $first = TRUE;
-    /* dem aug2013: Change style of all tables controlled by this function! Hope it's okay. */  
-    /* $ret .= "\n<table class=\"tableclass1\">\n<thead>\n\t<tr>\n"; */                         
-    $ret .= "<table><thead><tr>";                                                               
-    while($row = mysqli_fetch_assoc($resource)) {
-        if($first) {
-          foreach($row as $k=>$v) {
-	    if($k != $pkey)
-	      $ret .= "<th>" . ucwords(str_replace("_", " ", $k)) . "</th>";
-          }
-          $ret.= "<th></tr></thead><tbody>";
-          $first = FALSE;
+    if (mysqli_num_rows($resource) < 1) {
+        return $ret  .=  "<p>No Records Found </p>";
+    }
+    $first = true;
+    /* dem aug2013: Change style of all tables controlled by this function! Hope it's okay. */
+    /* $ret .= "\n<table class=\"tableclass1\">\n<thead>\n\t<tr>\n"; */
+    $ret .= "<table><thead><tr>";
+    while ($row = mysqli_fetch_assoc($resource)) {
+        if ($first) {
+            foreach ($row as $k => $v) {
+                if ($k != $pkey) {
+                    $ret .= "<th>" . ucwords(str_replace("_", " ", $k)) . "</th>";
+                }
+            }
+            $ret.= "<th></tr></thead><tbody>";
+            $first = false;
         }
         $ret .= "\t<tr>\n";
         foreach ($row as $k => $v) {
