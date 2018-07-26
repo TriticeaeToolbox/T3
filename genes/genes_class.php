@@ -125,10 +125,7 @@ class Genes
         if (isset($_GET['search'])) {
             $query = $_GET['search'];
             $param = "%" . $query . "%";
-            $sql = "select gene_annotation_uid, gene_id, type, gene_name, description, bin from gene_annotations
-                where assembly_name = \"$assembly\"
-                and (description like \"%$query%\" OR gene_name like \"%$query%\" or gene_id like \"%$query%\")";
-            $sql = "select gene_annotation_uid, gene_id, type, gene_name, description, bin from gene_annotations
+            $sql = "select gene_annotation_uid, gene_id, transcript, gene_name, description, bin from gene_annotations
                 where assembly_name = ? 
                 and (description like ? OR gene_name like ? or gene_id like ?)";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
@@ -140,7 +137,7 @@ class Genes
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
             $stmt->bind_param("ssss", $assembly, $param, $param, $param) or die(mysqli_error($mysqli));
         } else {
-            $sql = "select gene_annotation_uid, gene_id, type, gene_name, description, bin from gene_annotations
+            $sql = "select gene_annotation_uid, gene_id, transcript, gene_name, description, bin from gene_annotations
                 where assembly_name = \"$assembly\"
                 order by if(gene_name = '' or gene_name is null, 1, 0), gene_name";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
@@ -161,13 +158,13 @@ class Genes
    
         $count = 0;
         $stmt->execute();
-        $stmt->bind_result($uid, $gene_id, $type, $gene_name, $desc, $bin);
+        $stmt->bind_result($uid, $gene_id, $transcript, $gene_name, $desc, $bin);
         while ($stmt->fetch()) {
             if ($count == 0) {
-                echo "<table><tr><td>Gene Id<td>Type<td>Name<td>Bin<td>Description\n";
+                echo "<table><tr><td>Gene Id<td>Transcript<td>Name<td>Bin<td>Description\n";
             }
             $count++;
-            echo "<tr><td><a href=\"view.php?table=gene_annotations&uid=$uid\">$gene_id</a><td>$type<td>$gene_name<td>$bin<td>$desc\n";
+            echo "<tr><td><a href=\"view.php?table=gene_annotations&uid=$uid\">$gene_id</a><td>$transcript<td>$gene_name<td>$bin<td>$desc\n";
         }
         $stmt->close();
         if ($count > 0) {
