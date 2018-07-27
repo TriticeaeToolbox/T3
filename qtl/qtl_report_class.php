@@ -137,22 +137,17 @@ class Downloads
         echo "<b>Genotype platforms:</b> $platforms<br>\n";
 
         //get list of assemblies
-        $sql = "select distinct(qtl_annotations.assembly_name), data_public_flag, assemblies.description, created_on from qtl_annotations, assemblies
-            where qtl_annotations.assembly_name = assemblies.assembly_name  order by created_on";
+        $sql = "select distinct(assemblies.assembly_uid), assemblies.assembly_name, data_public_flag, assemblies.description, created_on
+            from qtl_annotations, assemblies
+            where qtl_annotations.assembly_name = assemblies.assembly_uid order by created_on";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($result)) {
             //pick latest assembly as default
-            if ($row[1] == 1) {
-                $assembly = $row[0];
-                $assembly = $row[0];
-                $assemblyList[] = $row[0];
-                $assemblyDesc[] = $row[2];
-                // do not show ones that are private
-            } elseif (($row[1] == 0) && authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
-                $assembly = $row[0];
-                $assemblyList[] = $row[0];
-                $assemblyDesc[] = $row[2];
-            }
+            $uid = $row[0];
+            $assembly = $uid;
+            $assemblyList[$uid] = $row[1];
+            $assemblyDesc[$uid] = $row[3];
+            // do not show ones that are private
         }
 
         if (isset($_GET['assembly'])) {
@@ -162,12 +157,12 @@ class Downloads
         //display list of assemblies
         echo "<br><form><table><tr><td>Genome Assembly<td>Description";
         foreach ($assemblyList as $key => $ver) {
-            if ($ver == $assembly) {
+            if ($key == $assembly) {
                 $selected = "checked";
             } else {
                 $selected = "";
             }
-            echo "<tr><td nowrap><input type=\"radio\" name=\"assembly\" value=\"$ver\" $selected> $ver<td>$assemblyDesc[$key]<br>";
+            echo "<tr><td nowrap><input type=\"radio\" name=\"assembly\" value=\"$key\" $selected> $ver<td>$assemblyDesc[$key]<br>";
         }
         $sql = "select * from assemblies where data_public_flag = 0";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -312,7 +307,6 @@ class Downloads
                 $marker = $val[0];
                 $chrom = $val[1];
                 $pos = $val[2];
-                $gene = $annot_list1[$marker];
                 if ($marker == $muid) {
                     $zvalue = number_format($val[3], 3);
                     $qvalue = number_format($val[4], 3);
@@ -490,7 +484,7 @@ class Downloads
             die("Error: select genome assembly\n");
         }
 
-        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"IWGSC1+popseq\"";
+        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = 4";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
@@ -637,13 +631,6 @@ class Downloads
             die("Error: select genome assembly\n");
         }
 
-        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"IWGSC1+popseq\"";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-        while ($row = mysqli_fetch_array($res)) {
-            $marker = $row[0];
-            $gene = $row[2];
-            $annot_list1[$marker] = $gene;
-        }
         $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"$assembly\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
@@ -853,6 +840,7 @@ class Downloads
         } else {
             die("Error: select genome assembly\n");
         }
+        $assembly_name = mysql_grab("select assembly_name from assemblies where assembly_uid = $assembly");
 
         echo "<table><tr><td>Analysis Method<td>Group by<td>Sort by";
         echo "<tr><td>";
@@ -868,20 +856,9 @@ class Downloads
         echo "</table><br>";
 
         /**
-         * Get WheatExp
-         **/
-        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"IWGSC1+popseq\"";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-        while ($row = mysqli_fetch_array($res)) {
-            $marker = $row[0];
-            $gene = $row[1];
-            $desc = $row[2];
-            $annot_list1[$marker] = $gene;
-        }
-        /**
          * Get expVIP
          **/
-        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"Wheat_TGACv1\"";
+        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = 4";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
@@ -890,7 +867,7 @@ class Downloads
             $annot_list2[$marker] = $gene;
         }
 
-        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = \"$assembly\"";
+        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = $assembly";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker = $row[0];
@@ -987,7 +964,7 @@ class Downloads
                 $pvalue = $val[5];
                 if ($qvalue < 0.05) {
                     $count++;
-                    $sql = "select chrom, pos, bin from marker_report_reference where marker_name = \"$marker\" and assembly_name = \"$assembly\"";
+                    $sql = "select chrom, pos, bin from marker_report_reference where marker_name = \"$marker\" and assembly_name = \"$assembly_name\"";
                     $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
                     if ($row2 = mysqli_fetch_array($res2)) {
                         $chrom = $row2[0];
