@@ -1,16 +1,16 @@
 <?php
 
-#######################################################################################
-# ViroBLAST
-# viroblast.php
-# Copyright © University of Washington. All rights reserved.
-# Written by Wenjie Deng in the Department of Microbiology at University of Washington.
-#######################################################################################
+/**
+ * ViroBLAST
+ * viroblast.php
+ * Copyright © University of Washington. All rights reserved.
+ * Written by Wenjie Deng in the Department of Microbiology at University of Washington.
+ */
 
 require 'config.php';
 
-include $config['root_dir'] . 'includes/bootstrap_curator.inc';
-include $config['root_dir'] . 'theme/admin_header.php';
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
+require $config['root_dir'] . 'theme/admin_header.php';
 ?>
 
 <script type="text/javascript" src='viroblast/javascripts/viroblast.js'></script>
@@ -36,11 +36,7 @@ include $config['root_dir'] . 'theme/admin_header.php';
 <a href=viroblast/docs/blast_databases.html>Database(s) </a>
 </td><td>
 <?php
-if (authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
-    $fp = fopen("./viroblastLocal.ini", "r");
-} else {
-    $fp = fopen("./viroblast.ini", "r");
-}
+$fp = fopen("./viroblast.ini", "r");
 if (!$fp) {
     echo "<p><strong> Error: Couldn't open file viroblast.ini </strong></p></body></html>";
     exit;
@@ -50,26 +46,26 @@ while (!feof($fp)) {
     if (!$blastdbstring) {
         continue;
     }
-	if (!preg_match("/^\s*#/", $blastdbstring)) {
-		$blastdbArray = preg_split("/:/", $blastdbstring);	
-		$blastProgram = $blastdbArray[0];
-		$dbString = $blastdbArray[1];
-		
-		if ($blastProgram == "blast+") {
-			echo "<input type='hidden' name= 'blastpath' value='$dbString'>";
-		}else {
-			if (preg_match("/^\s*(.*?)\s*$/", $blastProgram, $match)) {
-				$blastProgram = $match[1];
-			}
-			if (preg_match("/^\s*(.*?)(\s*|\s*,\s*)$/", $dbString, $match)) {
-				$dbString = $match[1];
-			}
-			$dbString = preg_replace("/\s*=>\s*/", "=>", $dbString);
-			if (preg_match("/,/", $dbString, $match)) {
-				$dbString = preg_replace("/\s*,\s*/", ",", $dbString);
-			}		
-			echo "<input id='$blastProgram' type='hidden' name='blastdb[]' value='$dbString'>";
-		}
+    if (!preg_match("/^\s*#/", $blastdbstring)) {
+        $blastdbArray = preg_split("/:/", $blastdbstring);
+        $blastProgram = $blastdbArray[0];
+        $dbString = $blastdbArray[1];
+
+        if ($blastProgram == "blast+") {
+            echo "<input type='hidden' name= 'blastpath' value='$dbString'>";
+        } else {
+            if (preg_match("/^\s*(.*?)\s*$/", $blastProgram, $match)) {
+                $blastProgram = $match[1];
+            }
+            if (preg_match("/^\s*(.*?)(\s*|\s*,\s*)$/", $dbString, $match)) {
+                $dbString = $match[1];
+            }
+            $dbString = preg_replace("/\s*=>\s*/", "=>", $dbString);
+            if (preg_match("/,/", $dbString, $match)) {
+                $dbString = preg_replace("/\s*,\s*/", ",", $dbString);
+            }
+            echo "<input id='$blastProgram' type='hidden' name='blastdb[]' value='$dbString'>";
+        }
     }
 }
 fclose($fp);
@@ -77,19 +73,19 @@ fclose($fp);
 ?>
 <select id="dbList" size=4 multiple="multiple" name ="patientIDarray[]">
 <script type="text/javascript">
-	var dblib = Array();
-	var programNode = document.getElementById("programList");
-	var blastndbNode = document.getElementById("blastn");
-	var blastpdbNode = document.getElementById("blastp");
-	var blastxdbNode = document.getElementById("blastx");
-	var tblastndbNode = document.getElementById("tblastn");
-	var tblastxdbNode = document.getElementById("tblastx");
-	dblib["blastn"] = blastndbNode.value;
-	dblib["blastp"] = blastpdbNode.value;
-	dblib["blastx"] = blastxdbNode.value;
-	dblib["tblastn"] = tblastndbNode.value;
-	dblib["tblastx"] = tblastxdbNode.value;
-	changeDBList(programNode.value, document.getElementById("dbList"), dblib[programNode.value]);
+    var dblib = Array();
+    var programNode = document.getElementById("programList");
+    var blastndbNode = document.getElementById("blastn");
+    var blastpdbNode = document.getElementById("blastp");
+    var blastxdbNode = document.getElementById("blastx");
+    var tblastndbNode = document.getElementById("tblastn");
+    var tblastxdbNode = document.getElementById("tblastx");
+    dblib["blastn"] = blastndbNode.value;
+    dblib["blastp"] = blastpdbNode.value;
+    dblib["blastx"] = blastxdbNode.value;
+    dblib["tblastn"] = tblastndbNode.value;
+    dblib["tblastx"] = tblastxdbNode.value;
+    changeDBList(programNode.value, document.getElementById("dbList"), dblib[programNode.value]);
 </script>
 
 </select>
@@ -126,5 +122,5 @@ fclose($fp);
 ResultGraph feature from <a href="mailto:flemming@ipk-gatersleben.de">Steffen Flemming</a> (thanks!).
 </div>
 <?php
-  $footer_div=1;
-include $config['root_dir'].'theme/footer.php'; ?>
+$footer_div = 1;
+require $config['root_dir'].'theme/footer.php';

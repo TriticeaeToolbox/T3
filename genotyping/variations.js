@@ -1,7 +1,24 @@
 var php_self = document.location.href;
 
-function reload()
+function display()
 {
-    var $assembly = document.getElementById("assembly").value;
-    window.location.href = "genotyping/variations.php?assembly=" + $assembly;
+   assembly = $('input[name="assembly"]:checked').val();
+   jQuery.ajax({
+      type: "GET",
+      url: php_self,
+      data: "function=displayVariations&assembly=" + assembly,
+      success: function (data, textStatus) {
+        jQuery("#step2").html(data);
+        document.title = title;
+      },
+      error: function () {
+        alert("Error finding gene");
+      }
+    });
 }
+
+$(document).ready(function(){
+    $("input[type=radio]").click(function(){
+        display();
+    });
+});
