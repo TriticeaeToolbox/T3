@@ -148,6 +148,8 @@ class Downloads
             }
             if (isset($_SESSION['geno_exps'])) {
                 $download_genoe = "checked";
+            } else {
+                $download_geno = "checked";
             }
         }
         if (isset($_SESSION['clicked_buttons'])) {
@@ -597,76 +599,76 @@ class Downloads
     private function step1_lines()
     {
         global $mysqli;
+        ?>
+        <table id="phenotypeSelTab" class="tableclass1">
+        <tr>
+        <th>Lines</th>
+        <tr><td>
+        <?php
+        if (isset($_SESSION['selected_lines'])) {
+            $selectedlines= $_SESSION['selected_lines'];
+            $count = count($_SESSION['selected_lines']);
             ?>
-            <table id="phenotypeSelTab" class="tableclass1">
-            <tr>
-            <th>Lines</th>
-            <tr><td>
+            <select name="lines" multiple="multiple" style="height: 12em;">
             <?php
-            if (isset($_SESSION['selected_lines'])) {
-                $selectedlines= $_SESSION['selected_lines'];
-                $count = count($_SESSION['selected_lines']);
+            foreach ($selectedlines as $uid) {
+                $sql = "SELECT line_record_name from line_records where line_record_uid = $uid";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                $row = mysqli_fetch_assoc($res)
                 ?>
-                <select name="lines" multiple="multiple" style="height: 12em;">
+                <option disabled value="">
+                <?php echo $row['line_record_name'] ?>
+                </option>
                 <?php
-                foreach ($selectedlines as $uid) {
-                    $sql = "SELECT line_record_name from line_records where line_record_uid = $uid";
-                    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-                    $row = mysqli_fetch_assoc($res)
-                    ?>
-                    <option disabled value="">
-                    <?php echo $row['line_record_name'] ?>
-                    </option>
-                    <?php
-                }
-                ?>
+            }
+            ?>
             </select>
             </td>
             <?php
-            } else {
-                echo "none selected";
-            }
+        } else {
+            echo "none selected";
+        }
             echo "</table>";
-	}
-	
-	/**
-	 * starting with lines display trials
-	 */
-	private function step2_lines()
-	{
-            global $mysqli;
-	    ?>
-	    <table id="linessel" class="tableclass1">
-	    <tr>
-	    <th>Markers</th>
-	    </tr>
-	    <tr><td>
-	    <?php 
-	    if (isset($_SESSION['clicked_buttons'])) {
-	      $selected = $_SESSION['clicked_buttons'];
-		  ?>
-	      <select name="markers" multiple="multiple" style="height: 12em;">
-	      <?php
-	      foreach($selected as $uid) {
-	        $sql = "SELECT marker_name from markers where marker_uid = $uid";
-	        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-	        $row = mysqli_fetch_assoc($res)
-	        ?>
-	        <option disabled value="
-	        <?php echo $uid ?>">
-	        <?php echo $row['marker_name'] ?>
-	        </option>
-	        <?php
-	      }
-              echo "</select>";
-	    } else {
-	      echo "All";
-	    }
-	    ?>
-	    </td>
-	    </table>
-	    <?php  
-	}
+    }
+
+    /**
+     * starting with lines display trials
+     */
+    private function step2_lines()
+    {
+        global $mysqli;
+        ?>
+        <table id="linessel" class="tableclass1">
+        <tr>
+        <th>Markers</th>
+        </tr>
+        <tr><td>
+        <?php
+        if (isset($_SESSION['clicked_buttons'])) {
+            $selected = $_SESSION['clicked_buttons'];
+            ?>
+            <select name="markers" multiple="multiple" style="height: 12em;">
+            <?php
+            foreach ($selected as $uid) {
+                $sql = "SELECT marker_name from markers where marker_uid = $uid";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                $row = mysqli_fetch_assoc($res)
+            ?>
+            <option disabled value="
+            <?php echo $uid ?>">
+            <?php echo $row['marker_name'] ?>
+            </option>
+            <?php
+            }
+            echo "</select>";
+        } else {
+            echo "All";
+        }
+	?>
+	</td>
+	</table>
+	<?php  
+    }
 	
 	/**
 	 * starting with lines display phenotype items
