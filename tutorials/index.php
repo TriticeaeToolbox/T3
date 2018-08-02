@@ -1,4 +1,6 @@
 <?php
+ 
+$pageTitle = "Tutorials";
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 require $config['root_dir'].'theme/admin_header2.php';
@@ -9,6 +11,17 @@ require $config['root_dir'].'theme/admin_header2.php';
 <ol>
 <li><a href=tutorials/variant_effect.php>Variant Effects Report</a>
 <li><a href=tutorials/blast.php>BLAST Analysis</a>
+<li><a href=tutorials/Tutorial_TASSEL.pdf>Exporting data for TASSEL</a>
+<li><a href=tutorials/Tutorial_Flapjack.pdf>Exporting data for Flapjack</a>
+<li><a href=tutorials/Tutorial_RScript.pdf>Exporting data for R Scripts</a>
+<?php
+$database = mysql_grab("select database()");
+if (preg_match("/wheat/", $database)) {
+    ?>
+    <li><a href=tutorials/TutorialEcoTILLING.pdf>Eco TILLING BLAST</a>
+    <?php
+}
+?>
 </ol>
 <h2>Data Submission</h2>
 <ol>
