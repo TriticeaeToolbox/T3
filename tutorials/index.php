@@ -7,7 +7,6 @@ require $config['root_dir'].'theme/admin_header2.php';
 ?>
 
 <h1>Tutorials</h1>
-<h2>Analysis, Reports</h2>
 <ol>
 <li><a href=tutorials/variant_effect.php>Variant Effects Report</a>
 <li><a href=tutorials/blast.php>BLAST Analysis</a>
@@ -23,7 +22,7 @@ if (preg_match("/wheat/", $database)) {
 }
 ?>
 </ol>
-<h2>Data Submission</h2>
+<h1>Data Submission</h1>
 <ol>
 <?php
 $files = scandir($config['root_dir'] . "curator_data/tutorial");
