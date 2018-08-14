@@ -66,30 +66,29 @@ class AnnotationsCheck
     th.marker { background: #5b53a6; color: #fff; padding: 5px 0; border: 0; }
     td.marker { padding: 5px 0; border: 0 !important; }
     </style>
-<?php
+    <?php
     $error_flag = 0;
     $row = loadUser($_SESSION['username']);
-    ini_set("memory_limit","24M");
     $username=$row['name'];
     $tmp_dir="./uploads/tmpdir_".$username."_".rand();
     umask(0);
-    if(!file_exists($tmp_dir) || !is_dir($tmp_dir)) 
-      mkdir($tmp_dir, 0777);
-    $target_path=$tmp_dir."/";
-    if($_SERVER['REQUEST_METHOD'] == "POST")
-      $data_public_flag = $_POST['flag']; // 1:yes, 0:no
-    if ($_FILES['file']['name'][0] == "") {
-      error(1, "No File Uploaded");
-      print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+    if (!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
+        mkdir($tmp_dir, 0777);
     }
-    else {
-      $uploadfile=$_FILES['file']['name'][0];
-      $uftype=$_FILES['file']['type'][0];
-      if (strpos($uploadfile, ".txt") === FALSE) {
-	error(1, "Expecting an tab-delimited text file. <br> The type of the uploaded file is ".$uftype);
-	print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
-      }
-      else {
+    $target_path=$tmp_dir."/";
+    if ($_SERVER['REQUEST_METHOD'] == "POST") {
+        $data_public_flag = $_POST['flag']; // 1:yes, 0:no
+    }
+    if ($_FILES['file']['name'][0] == "") {
+        error(1, "No File Uploaded");
+        print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+    } else {
+        $uploadfile=$_FILES['file']['name'][0];
+        $uftype=$_FILES['file']['type'][0];
+        if (strpos($uploadfile, ".txt") === false) {
+            error(1, "Expecting an tab-delimited text file. <br> The type of the uploaded file is ".$uftype);
+            print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
+      } else {
 	if (move_uploaded_file($_FILES['file']['tmp_name'][0], $target_path.$uploadfile))  {
 	  /* Start reading the input */
 	  $annotfile = $target_path.$uploadfile;
@@ -408,10 +407,6 @@ class AnnotationsCheck
                         WHERE trial_code = '$trialCode'";
 	  $res = mysqli_query($mysqli, $sql) or die("Database Error: Experiment record update failed - ". mysqli_error($mysqli));
 	  //echo "$sql<br>\n";
-	  $sql = "UPDATE genotype_experiment_info set processing_date = '$processDate', manifest_file_name = '$manifestF', cluster_file_name = '$clusterF', OPA_name = '$opaName', 
-                        sample_sheet_filename = '$sampleSht', comments = '$comment', platform_uid = $platform_uid
-                        WHERE experiment_uid = '$exp_uid'";
-	  $res = mysqli_query($mysqli, $sql) or die("Database Error: Genotype record update failed - ". mysqli_error($mysqli));
 	  // Also update CAPdata_programs_uid in table 'datasets', if different.
 	  // Get the current value:
 	  $sql = "select d.datasets_uid, CAPdata_programs_uid
@@ -465,17 +460,25 @@ class AnnotationsCheck
 	  $rdata = mysqli_fetch_assoc($res);
 	  $de_uid=$rdata['datasets_experiments_uid'];
 	  //echo " de_uid ".$de_uid."\n"; 
-                    
-	  /*  Fill in genotype_experiments table */
-	  $sql = "INSERT INTO genotype_experiment_info (experiment_uid, platform_uid, processing_date, manifest_file_name, cluster_file_name, OPA_name,
+	}
+
+        $sql = "SELECT genotype_experiment_info_uid from genotype_experiment_info where experiment_uid = $exp_uid";
+        $res = mysqli_query($mysqli, $sql) or die("Database Error: Unable to find experiment in genotype_experiment_info\n");
+        $rdata = mysqli_fetch_assoc($res);
+        if (empty($rdata)) {
+            $sql = "INSERT INTO genotype_experiment_info (experiment_uid, platform_uid, processing_date, manifest_file_name, cluster_file_name, OPA_name,
                     analysis_software, BGST_version_number, sample_sheet_filename, raw_datafile_archive, comments, updated_on, created_on)
                     VALUES ('$exp_uid', $platform_uid, '$processDate', '$manifestF', '$clusterF',
                         '$opaName', '$analysisSW', '$swVer', '$sampleSht',NULL , '$comment', NOW(), NOW())";
-	  $res = mysqli_query($mysqli, $sql) or die("Database Error: Genotype record insertion failed - ". mysqli_error($mysqli));
-	  //echo "result code for exp info table:".$res."\n"; 
-	}
+            $res = mysqli_query($mysqli, $sql) or die("Database Error: Genotype record insertion failed - ". mysqli_error($mysqli));
+            //echo "result code for exp info table:".$res."\n"; 
+        } else {
+            $sql = "UPDATE genotype_experiment_info set processing_date = '$processDate', manifest_file_name = '$manifestF', cluster_file_name = '$clusterF', OPA_name = '$opaName', 
+                        sample_sheet_filename = '$sampleSht', comments = '$comment', platform_uid = $platform_uid
+                        WHERE experiment_uid = '$exp_uid'";
+            $res = mysqli_query($mysqli, $sql) or die("Database Error: Genotype record update failed - ". mysqli_error($mysqli));  
       }
-
+    }
     echo " <b>The Data is inserted/updated successfully </b><br>";
     echo "<br/><br/>";
     ?>
