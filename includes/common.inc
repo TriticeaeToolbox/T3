@@ -153,7 +153,7 @@ function showTableOptions($table, $selected = "null", $orderby = "uid")
 function get_pkey($tablename)
 {
     global $mysqli;
-    $result = mysqli_query($mysqli, "DESC $tablename") or die("Error in includes/common.inc:get_pkey():<br>Query was: 'DESC ".$tablename."'");
+    $result = mysqli_query($mysqli, "DESC $tablename") or die("Error in get_pkey():<br>");
     $pkey="";
     while ($row = mysqli_fetch_assoc($result)) {
         foreach ($row as $k => $v) {
@@ -207,38 +207,40 @@ function get_unique_name($table)
  * @param $id - the field to select the maximum of.
  * @return - the maximum field value.
  */
-function getMaxId($table, $id) {
+function getMaxId($table, $id)
+{
     global $mysqli;
-	$res = mysqli_query($mysqli, "SELECT max($id) FROM $table");
-	$t = mysqli_fetch_row($res);
-	return $t[0];
+    $res = mysqli_query($mysqli, "SELECT max($id) FROM $table");
+    $t = mysqli_fetch_row($res);
+    return $t[0];
 }
 
 /**
- * This function gets the total number of entries in a particular table. 
- * 
+ * This function gets the total number of entries in a particular table.
+ *
  * @param $table - the table of which to count entries of.
  * @return the number of entries in that table.
  */
-function getNumEntries($table) {
+function getNumEntries($table)
+{
     global $mysqli;
     $res = mysqli_query($mysqli, "SELECT count(*) FROM $table");
     $a = mysqli_fetch_row($res);
     return $a[0];
 }
 
-function display_uploaded_file($filename) {
+function display_uploaded_file($filename)
+{
+    require_once "../lib/Excel/reader.php";    //include excel reader
 
-	require_once("../lib/Excel/reader.php");	//include excel reader
+    /* Creating the object */
+    $data = new Spreadsheet_Excel_Reader();
+    $data->setOutputEncoding('CP1251');
+    $data->read($filename);
 
-	/* Creating the object */
-	$data = new Spreadsheet_Excel_Reader();
-	$data->setOutputEncoding('CP1251');
-	$data->read($filename);
+    //$data->trimSheet(0); 	//new function that I added to trim columns
 
-	//$data->trimSheet(0); 	//new function that I added to trim columns
-
-	/* Setting Error Reporting */
+    /* Setting Error Reporting */
 	error_reporting(E_ALL ^ E_NOTICE);
 		
 	/* Show in table format */
