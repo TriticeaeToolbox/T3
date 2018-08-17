@@ -12,7 +12,7 @@ require "theme/normal_header.php";
 // DEM feb2018: Allow GRIN ID parameter too, for line_record searches.
 
 $table = strip_tags($_REQUEST['table']);
-$table = preg_replace("/[^a-zA-Z_]/", "", $string);
+$table = preg_replace("/[^a-zA-Z_]/", "", $table);
 $prettified = beautifulTableName($table, 0);
 $id = $_REQUEST['uid'];
 $pattern = '/user/i';
