@@ -137,7 +137,8 @@ class Downloads
         echo "<b>Genotype platforms:</b> $platforms<br>\n";
 
         //get list of assemblies
-        $sql = "select distinct(assemblies.assembly_uid), assemblies.assembly_name, data_public_flag, assemblies.description, created_on
+        $assembly = "";
+        $sql = "select distinct(assemblies.assembly_uid), assemblies.assembly_name, assemblies.description, created_on
             from qtl_annotations, assemblies
             where qtl_annotations.assembly_name = assemblies.assembly_uid order by created_on";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -146,8 +147,17 @@ class Downloads
             $uid = $row[0];
             $assembly = $uid;
             $assemblyList[$uid] = $row[1];
-            $assemblyDesc[$uid] = $row[3];
-            // do not show ones that are private
+            $assemblyDesc[$uid] = $row[2];
+        }
+        if (empty($assembly)) { //if not genes then just get assemblies
+            $sql = "select assembly_uid, assembly_name, description from assemblies";
+            $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            while ($row = mysqli_fetch_row($result)) {
+                $uid = $row[0];
+                $assembly = $uid;
+                $assemblyList[$uid] = $row[1];
+                $assemblyDesc[$uid] = $row[2];
+            }
         }
 
         if (isset($_GET['assembly'])) {
@@ -759,6 +769,7 @@ class Downloads
         $browserLink['Wheat_TGACv1'] = "http://plants.ensembl.org/Triticum_aestivum/Location/View?r=";
         $browserLink['RefSeq_v1'] = "https://triticeaetoolbox.org/jbrowse/?data=wheat2016&loc=";
         $browserLink['Wheat_Pangenome'] = "https://triticeaetoolbox.org/jbrowse/?data=wheat2017&loc=";
+        $browserLink['OatSeedRef90'] = "https://triticeaetoolbox.org/jbrowse/?data=oat&loc=";
         // get species
         if (preg_match("/([A-Za-z]+)\/[^\/]+\/[^\/]+$/", $_SERVER['PHP_SELF'], $match)) {
             $species = $match[1];
@@ -841,6 +852,17 @@ class Downloads
             die("Error: select genome assembly\n");
         }
         $assembly_name = mysql_grab("select assembly_name from assemblies where assembly_uid = $assembly");
+        $sql = "select phenotypes_name, TO_number from phenotypes where phenotype_uid = $puid";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        if ($row = mysqli_fetch_array($res)) {
+            $phenotype_name = $row[0];
+            $TO = $row[1];
+            if (preg_match("/TO:(\d+)/", $TO, $match)) {
+                $TO = $match[1];
+            } else {
+                $TO = "";
+            }
+        }
 
         echo "<table><tr><td>Analysis Method<td>Group by<td>Sort by";
         echo "<tr><td>";
@@ -1043,12 +1065,24 @@ class Downloads
                     if ($pos == "") {
                         $jbrowse = "";
                     } elseif (preg_match("/RefSeq/", $assembly)) {
-                        $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$chrom:$start..$stop\">JBrowse</a>";
+                        $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly_name] . "$chrom:$start..$stop\">JBrowse</a>";
                     } elseif (preg_match("/TGAC/", $assembly)) {
-                        $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$bin:$start-$stop\">Ensembl Browser</a>";
+                        $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly_name] . "$bin:$start-$stop\">Ensembl Browser</a>";
                     } else {
-                        $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly] . "$chrom:$start-$stop\">JBrowse</a>";
+                        $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly_name] . "$chrom:$start-$stop\">JBrowse</a>";
                     }
+                    if (empty($gene)) {
+                        $knetminer1 = "";
+                        $knetminer2 = "";
+                    } else {
+                        $knetminer1 = "<a target=\"_new\" href=\"http://knetminer.rothamsted.ac.uk/wheat_api/genepage?keyword=" . urlencode($phenotype_name) . "&list=$gene\">keyword</a>";
+                        if (empty($TO)) {
+                            $knetminer2 = "";
+                        } else {
+                            $knetminer2 = "<a target=\"_new\" href=\"http://knetminer.rothamsted.ac.uk/wheat_api/genepage?keyword=$TO&list=$gene\">ontology</a>";
+                        }
+                    }
+
                     if ($gb == "marker") {
                         if (isset($marker_list[$marker])) {
                         } else {
@@ -1057,16 +1091,20 @@ class Downloads
                             $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
                             $row2 = mysqli_fetch_row($res2);
                             $uid = $row2[0];
-                            $sql = "select gene_annotation_uid from gene_annotations where gene_id =\"$gene\"";
-                            $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-                            $row2 = mysqli_fetch_row($res2);
-                            $gene_uid = $row2[0];
                             $marker_link = "<a href=\"$target_url" . "view.php?table=markers&uid=" . $uid . "\">$marker</a>";
-                            $gene_link = "<a href=\"view.php?table=gene_annotations&uid=" . $gene_uid . "\">$gene</a>";
+                            if (empty($gene)) {
+                                $gene_link = "";
+                            } else {
+                                $sql = "select gene_annotation_uid from gene_annotations where gene_id =\"$gene\" and assembly_name = $assembly";
+                                $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                                $row2 = mysqli_fetch_row($res2);
+                                $gene_uid = $row2[0];
+                                $gene_link = "<a href=\"view.php?table=gene_annotations&uid=" . $gene_uid . "\">$gene</a>";
+                            }
                             $zvalue = number_format($zmeta[$marker], 3);
                             $detail_link = "$ztot[$marker]<td><a id=\"detail\" onclick=\"detailM('$marker')\">Trial details</a>";
                             $output_index[] = $sort_index;
-                            $output_list[] = "<tr><td>$marker_link<td>$chrom<td>$pos<td>$gene_link<td>$desc2<td>$zvalue<td>$detail_link<td>$jbrowse<td>$exp1 $exp2 $exp3";
+                            $output_list[] = "<tr><td>$marker_link<td>$chrom<td>$pos<td>$gene_link<td>$desc2<td>$zvalue<td>$detail_link<td>$jbrowse<td>$exp1 $exp2 $exp3<td>$knetminer1 $knetminer2";
                         }
                     } else {
                         if ($gene == "") {
@@ -1075,7 +1113,7 @@ class Downloads
                             $gene_list[$gene] = 1;
                             $zvalue = number_format($zmeta[$gene], 3);
                             $output_index[] = $sort_index;
-                            $output_list[] = "<tr><td>$gene<td>$chrom<td>$desc2<td><a id=\"detail\" onclick=\"detailG('$gene')\">$zvalue</a><td>$ztot[$gene]<td>$jbrowse";
+                            $output_list[] = "<tr><td>$gene<td>$chrom<td>$desc2<td><a id=\"detail\" onclick=\"detailG('$gene')\">$zvalue</a><td>$ztot[$gene]<td>$jbrowse<td>$knetminer1 $knetminer2";
                         }
                     }
                 }
@@ -1088,11 +1126,11 @@ class Downloads
             if ($gb == "marker") {
                 //echo "<table><tr><td>marker<td><a id=\"sort2\" onclick=\"sort('pos')\">location</a>";
                 echo "<table><tr><td>marker<td>chromosome<td>location";
-                echo "<td>gene<td>feature<td nowrap>Z-score<td>Trial Count<td>Trial Details<td>Genome Browser<td>Expression";
+                echo "<td>gene<td>feature<td nowrap>Z-score<td>Trial Count<td>Trial Details<td>Genome Browser<td>Expression<td>Knetminer";
             } else {
                 //echo "<table><tr><td>gene<td><a id=\"sort2\" onclick=\"sort('pos')\">location</a>";
                 echo "<table><tr><td>gene<td>location";
-                echo "<td>feature<td>Z-score<td>Count<td>Geneome Browser";
+                echo "<td>feature<td>Z-score<td>Count<td>Geneome Browser<td>Knetminer";
             }
 
             if ($sort_type == "score") {
