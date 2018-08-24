@@ -81,6 +81,9 @@ class SelectPhenotypeExp
             case 'step3phenotype':
                 $this->step3_phenotype();
                 break;
+            case 'step3metabolite':
+                $this->step3_metabolite();
+                break;
             case 'step4phenotype':
                 $this->step4_phenotype();
                 break;
@@ -217,49 +220,52 @@ class SelectPhenotypeExp
         <option value="Locations">Locations</option>
         <option value="Phenotypes">Trait Category</option>
         </select></p>
-		        <script type="text/javascript" src="downloads/downloads14.js"></script>
-                <?php
-                $this->step1_breedprog();
-                ?>
-                </div></div>
-                <div id="step2" style="float: left; margin-bottom: 1.5em;"></div>
-                <div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
-		        <div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
-		        <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
-		        <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
-		        </div>
-                <?php
-        }
+        <script type="text/javascript" src="downloads/downloads14.js"></script>
+        <?php
+        $this->step1_breedprog();
+        ?>
+        </div></div>
+        <div id="step2" style="float: left; margin-bottom: 1.5em;"></div>
+        <div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
+        <div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
+        <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
+        <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
+        </div>
+        <?php
+    }
 
     /**
      * 1. display a spinning activity image when a slow function is running
      * 2. show button to clear sessin data
      * 3. show button to save current selection
-     */    
-    private function refresh_title() {
-      global $mysqli;
-      $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
-      $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
-      $menu = (isset($_GET['menu']) && !empty($_GET['menu'])) ? $_GET['menu'] : null;
-      ?>
-      <h2>Select Lines, Traits, and Trials</h2>
-      <p>
-      Select phenotype data for analysis or download. When you save the selection, the genotype experiment selection is cleared and consensus genotypes will be used.<br>
-      <em>Select multiple options by holding down the Ctrl key while clicking.</em> 
-      <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;">
-      <?php 
-      $selection_ready = 0;
-      if (isset($_SESSION['selected_lines'])) {
+     */
+    private function refresh_title()
+    {
+        global $mysqli;
+        $command = (isset($_GET['cmd']) && !empty($_GET['cmd'])) ? $_GET['cmd'] : null;
+        $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
+        $menu = (isset($_GET['menu']) && !empty($_GET['menu'])) ? $_GET['menu'] : null;
         ?>
-        <input type="button" value="Clear current selection" onclick="javascript: use_normal();"/>
-        <?php 
-      }
+        <h2>Select Lines, Traits, and Trials</h2>
+        <p>
+        Select phenotype data for analysis or download. When you save the selection, the genotype experiment selection is cleared and consensus genotypes will be used.<br>
+        <em>Select multiple options by holding down the Ctrl key while clicking.</em> 
+        <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;">
+        <?php
+        $selection_ready = 0;
+        if (isset($_SESSION['selected_lines'])) {
+            ?>
+            <input type="button" value="Clear current selection" onclick="javascript: use_normal();"/>
+            <?php
+        }
       if ($command == "save") {
         if ($menu == "Lines") {
         } elseif (empty($_GET['lines'])) {
           if ((!empty($_GET['pi'])) && (!empty($_GET['exps']))) {
-            $phen_item = $_GET['pi'];
-            $experiments = $_GET['exps'];
+            $phen_item_str = $_GET['pi'];
+            $experiments_str = $_GET['exps'];
+            $phen_item_ary = explode(",", $phen_item_str);
+            $experiments_ary = explode(",", $experiments_str);
           } else {
             echo "error phenotype and experiments not set";
           }
@@ -268,21 +274,34 @@ class SelectPhenotypeExp
             $lines_str = implode(",", $lines);
             $count = count($_SESSION['selected_lines']);
           } else {
-            $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+            $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name 
             FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
             WHERE
             pd.tht_base_uid = tb.tht_base_uid
             AND p.phenotype_uid = pd.phenotype_uid
             AND lr.line_record_uid = tb.line_record_uid
-            AND pd.phenotype_uid IN ($phen_item)
-            AND tb.experiment_uid IN ($experiments)
+            AND pd.phenotype_uid = ?
+            AND tb.experiment_uid = ?
             ORDER BY lr.line_record_name";
 
             $lines = array();
-            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-            while ($row = mysqli_fetch_assoc($res))
-            {
-              array_push($lines,$row['id']);
+            if ($stmt = $mysqli->prepare($sql)) {
+                foreach ($phen_item_ary as $phen_item) {
+                    foreach ($experiments_ary as $experiments) {
+                        $stmt->bind_param('ii', $phen_item, $experiments);
+                        $stmt->execute();
+                        $stmt->bind_result($line_record_uid, $line_record_name);
+                        while ($stmt->fetch()) {
+                            if (!in_array($line_record_uid, $lines)) {
+                                array_push($lines, $line_record_uid);
+                            }
+                        }
+                    }
+                }
+                $stmt->close();
+                echo "<br>$phen_item<br>$experiments<br>\n";
+            } else {
+                echo "Error: bad selection\n";
             }
             $lines_str = implode(",", $lines);
           }
@@ -294,14 +313,13 @@ class SelectPhenotypeExp
             pd.tht_base_uid = tb.tht_base_uid
             AND p.phenotype_uid = pd.phenotype_uid
             AND lr.line_record_uid = tb.line_record_uid
-            AND pd.phenotype_uid IN ($phen_item)
-            AND tb.experiment_uid IN ($experiments)
+            AND pd.phenotype_uid IN ($phen_item_str)
+            AND tb.experiment_uid IN ($experiments_str)
             ORDER BY lr.line_record_name";
             $lines = array();
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-            while ($row = mysqli_fetch_assoc($res))
-            {
-              array_push($lines,$row['id']);
+            while ($row = mysqli_fetch_assoc($res)) {
+                array_push($lines, $row['id']);
             }
             $lines_str = implode(",", $lines);
             $count = count($lines);
@@ -312,8 +330,8 @@ class SelectPhenotypeExp
             pd.tht_base_uid = tb.tht_base_uid
             AND p.phenotype_uid = pd.phenotype_uid
             AND lr.line_record_uid = tb.line_record_uid
-            AND pd.phenotype_uid IN ($phen_item)
-            AND tb.experiment_uid IN ($experiments)
+            AND pd.phenotype_uid IN ($phen_item_str)
+            AND tb.experiment_uid IN ($experiments_str)
             ORDER BY lr.line_record_name";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             while ($row = mysqli_fetch_assoc($res)) {
@@ -330,8 +348,8 @@ class SelectPhenotypeExp
             pd.tht_base_uid = tb.tht_base_uid
             AND p.phenotype_uid = pd.phenotype_uid
             AND lr.line_record_uid = tb.line_record_uid
-            AND pd.phenotype_uid IN ($phen_item)
-            AND tb.experiment_uid IN ($experiments)
+            AND pd.phenotype_uid IN ($phen_item_str)
+            AND tb.experiment_uid IN ($experiments_str)
             ORDER BY lr.line_record_name";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             while ($row = mysqli_fetch_assoc($res)) {
@@ -430,17 +448,27 @@ class SelectPhenotypeExp
 			<th>Traits</th>
 		</tr>
 		<tr><td>
-		<select id="traitsbx" name="phenotype_items" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_items(this.options)">
                 <?php
 
-		$sql = "SELECT phenotype_uid AS id, phenotypes_name AS name from phenotypes, phenotype_category
-		 where phenotypes.phenotype_category_uid = phenotype_category.phenotype_category_uid and phenotype_category.phenotype_category_uid in ($phen_cat)";
+                $sql = "select phenotype_category_name from phenotype_category where phenotype_category_uid in ($phen_cat)";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                $row = mysqli_fetch_row($res);
+                if ($row[0] == "Metabolite") {
+                    $sql = "select compound_uid as id, CONCAT(SUBSTRING(compound_name, 1, 30), ' ', ROUND(retention,2))  as name from compounds";
+                } else {
+		    $sql = "SELECT phenotype_uid AS id, phenotypes_name AS name from phenotypes, phenotype_category
+		     where phenotypes.phenotype_category_uid = phenotype_category.phenotype_category_uid and phenotype_category.phenotype_category_uid in ($phen_cat)";
+                }
+                ?>
+                <select id="traitsbx" name="phenotype_items" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_items(this.options)">
+                <?php
 		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		while ($row = mysqli_fetch_assoc($res))
 		{
+                 $name = $row['name'];
 		 ?>
 		    <option value="<?php echo $row['id'] ?>">
-		     <?php echo $row['name'] ?>
+		     <?php echo $name ?>
 		    </option>
 		    <?php
 		}
@@ -450,7 +478,69 @@ class SelectPhenotypeExp
 		
 		<?php
     }
-    
+   
+    /**
+     * starting with phenotype display trials
+     */
+        private function step3_metabolite()
+    {
+        global $mysqli;
+        $phen_item = $_GET['pi'];
+        $trait_cmb = (isset($_GET['trait_cmb']) && !empty($_GET['trait_cmb'])) ? $_GET['trait_cmb'] : null;
+        if ($trait_cmb == "all") { 
+           $any_ckd = ""; $all_ckd = "checked";
+        } else {
+           $trait_cmb = "any";
+           $any_ckd = "checked"; $all_ckd = "";
+        }
+        ?>
+        <p>3.
+        <select name="select1">
+          <option value="BreedingProgram">Trials</option>
+        </select></p>
+        <table id="phenotypeSelTab" class="tableclass1">
+        <tr>
+                <th>Trials</th>
+        </tr>
+        <tr><td>
+        <select name="trials" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_trial(this.options)">
+        <?php
+
+        $sel_list = array();
+        $sql = "select experiments.experiment_uid as id, trial_code as name, spectra
+            from experiments, spectra_index
+            where experiments.experiment_uid = spectra_index.experiment_uid
+            and JSON_CONTAINS(spectra, '[\"$phen_item\"]')";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_assoc($res))
+        {
+          $exp_uid = $row['id'];
+          $pi = $row['phenotype_uid'];
+          $sel_list[$exp_uid] = $row['name'];
+          $pi_list[$exp_uid][$pi] = 1;        //*array of traits for each trial
+        }
+        $phen_array = explode(",",$phen_item);
+        foreach ($sel_list as $id=>$name) {
+          $found = 1;
+          foreach ($phen_array as $item) {    //*check if trial contains all trait
+            if (!isset($pi_list[$id][$item])) {
+               $found = 0;
+            }
+          }
+          if ($found || ($trait_cmb == "any")) {
+          ?>
+          <option value="<?php echo $id ?>">
+          <?php echo $name ?>
+          </option>
+          <?php
+          }
+        }
+        ?>
+        </select>
+        </table>
+        <?php
+    }
+ 
     /**
      * starting with phenotype display trials
      */
@@ -479,16 +569,16 @@ class SelectPhenotypeExp
         <?php
 
         $sel_list = array();
-	$sql = "SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, p.phenotype_uid, e.experiment_year
-	 FROM experiments as e, tht_base as tb, phenotype_data as pd, phenotypes as p
-	 WHERE
-	 e.experiment_uid = tb.experiment_uid
-	 AND pd.tht_base_uid = tb.tht_base_uid
-	 AND p.phenotype_uid = pd.phenotype_uid
-	 AND pd.phenotype_uid IN ($phen_item)";
-	 if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
-	 $sql .= " and data_public_flag > 0";
-	 $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
+	    $sql = "SELECT DISTINCT tb.experiment_uid as id, e.trial_code as name, p.phenotype_uid, e.experiment_year
+	    FROM experiments as e, tht_base as tb, phenotype_data as pd, phenotypes as p
+	    WHERE
+	    e.experiment_uid = tb.experiment_uid
+	    AND pd.tht_base_uid = tb.tht_base_uid
+	    AND p.phenotype_uid = pd.phenotype_uid
+	    AND pd.phenotype_uid IN ($phen_item)";
+	    if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR)))
+	    $sql .= " and data_public_flag > 0";
+	    $sql .= " ORDER BY e.experiment_year DESC, e.trial_code";
 	$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 	while ($row = mysqli_fetch_assoc($res))
 	{
@@ -529,135 +619,151 @@ class SelectPhenotypeExp
     /**
      * starting with phenotype display lines
      */
-	private function step4_phenotype()
+    private function step4_phenotype()
     {
         global $mysqli;
         $phen_item = $_GET['pi'];
         $experiments = $_GET['e'];
         $subset = (isset($_GET['subset']) && !empty($_GET['subset'])) ? $_GET['subset'] : null;
-	$selected_lines = array();
-	$_SESSION['phenotype'] = $phen_item; // Empty the session array.
+        $selected_lines = array();
+        $_SESSION['phenotype'] = $phen_item; // Empty the session array.
 
-	if (count($_SESSION['selected_lines']) > 0) {
-	 $sub_ckd = "";
-         $all_ckd = "checked";
-	} else {
-	 $sub_ckd = "disabled";
-         $all_ckd = "checked";
-	}
-	if ($subset == "yes") {
-	 $sub_ckd = "yes";
-         $yes_ckd = "checked";
-	} elseif ($subset == "no") {
-	 $sub_ckd = "";
-         $all_ckd = "checked";
-	} elseif ($subset == "comb") {
-	 $sub_ckd = "";
-         $cmb_ckd = "checked";
-	}
-	?>
-	<p>4.
-	<select name="select1">
-	  <option value="BreedingProgram">Lines</option>
-	</select></p>
+        if (count($_SESSION['selected_lines']) > 0) {
+            $sub_ckd = "";
+            $all_ckd = "checked";
+        } else {
+            $sub_ckd = "disabled";
+            $all_ckd = "checked";
+        }
+        if ($subset == "yes") {
+            $sub_ckd = "yes";
+            $yes_ckd = "checked";
+        } elseif ($subset == "no") {
+            $sub_ckd = "";
+            $all_ckd = "checked";
+        } elseif ($subset == "comb") {
+            $sub_ckd = "";
+            $cmb_ckd = "checked";
+        }
+        ?>
+        <p>4.
+        <select name="select1">
+        <option value="BreedingProgram">Lines</option>
+        </select></p>
 
         <table id="phenotypeSelTab" class="tableclass1">
-		<tr>
-			<th>Lines</th>
-		</tr>
-		<tr><td>
-		<select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_lines(this.options)">
-                <?php
+        <tr>
+        <th>Lines</th>
+        </tr>
+        <tr><td>
+        <select name="lines" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_lines(this.options)">
+        <?php
         $lines_list = array();
         $lines_new = "";
         if ($sub_ckd == "checked") {
-          $selected_lines = $_SESSION['selected_lines'];
-          foreach ($selected_lines as $line) {
-            $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
-            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-            $row = mysqli_fetch_assoc($res);
-            ?>
-            <option selected value="<?php echo $row['id'] ?>">
-            <?php echo $row['name'] ?>
-            </option>
-            <?php
-          }
+            $selected_lines = $_SESSION['selected_lines'];
+            foreach ($selected_lines as $line) {
+                $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                $row = mysqli_fetch_assoc($res);
+                ?>
+                <option selected value="<?php echo $row['id'] ?>">
+                <?php echo $row['name'] ?>
+                </option>
+                <?php
+            }
         } elseif ($cmb_ckd == "checked") {
-          $selected_lines = $_SESSION['selected_lines'];
-          foreach ($selected_lines as $line) {
-            $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
+            $selected_lines = $_SESSION['selected_lines'];
+            foreach ($selected_lines as $line) {
+                $sql = "SELECT line_record_uid as id, line_record_name as name from line_records where line_record_uid = $line";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                $row = mysqli_fetch_assoc($res);
+                ?>
+                <option selected value="<?php echo $row['id'] ?>">
+                <?php echo $row['name'] ?>
+                </option>
+                <?php
+            }
+            $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
+            FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
+            WHERE
+            pd.tht_base_uid = tb.tht_base_uid
+            AND p.phenotype_uid = pd.phenotype_uid
+            AND lr.line_record_uid = tb.line_record_uid
+            AND pd.phenotype_uid IN ($phen_item)
+            AND tb.experiment_uid IN ($experiments)
+            ORDER BY lr.line_record_name";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-            $row = mysqli_fetch_assoc($res);
-            ?>
-           <option selected value="<?php echo $row['id'] ?>">
-           <?php echo $row['name'] ?>
-           </option>
-           <?php
-         }
-         $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name
-         FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
-         WHERE
-         pd.tht_base_uid = tb.tht_base_uid
-         AND p.phenotype_uid = pd.phenotype_uid
-         AND lr.line_record_uid = tb.line_record_uid
-         AND pd.phenotype_uid IN ($phen_item)
-         AND tb.experiment_uid IN ($experiments)
-         ORDER BY lr.line_record_name";
-         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-         while ($row = mysqli_fetch_assoc($res))
-         {
-           $temp1 = $row['name'];
-           $temp2 = $row['id'];
-           if (isset($lines_list[$temp2])) {
-           } else {
-             if ($lines_new == "") {
-               $lines_new = $temp1;
-               ?>
-               <option disabled="disabled">--added--
-               </option>
-               <?php
-             }
-             ?>
-             <option selected value="<?php echo $row['id'] ?>">
-             <?php echo $row['name'] ?>
-             </option>
-             <?php
-           }
-         }
+            while ($row = mysqli_fetch_assoc($res)) {
+                $temp1 = $row['name'];
+                $temp2 = $row['id'];
+                if (isset($lines_list[$temp2])) {
+                } else {
+                    if ($lines_new == "") {
+                        $lines_new = $temp1;
+                        ?>
+                        <option disabled="disabled">--added--
+                        </option>
+                        <?php
+                    }
+                    ?>
+                    <option selected value="<?php echo $row['id'] ?>">
+                    <?php echo $row['name'] ?>
+                    </option>
+                    <?php
+                }
+            }
         } else {
-		$sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name 
-	 FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr 
-	 WHERE
-	 pd.tht_base_uid = tb.tht_base_uid
-	 AND p.phenotype_uid = pd.phenotype_uid
-	 AND lr.line_record_uid = tb.line_record_uid
-	 AND pd.phenotype_uid IN ($phen_item)
-	 AND tb.experiment_uid IN ($experiments)
-	 ORDER BY lr.line_record_name";
-		//$_SESSION['selected_lines'] = array(); // Empty the session array.
-		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-		while ($row = mysqli_fetch_assoc($res))
-		{
-		 //array_push($_SESSION['selected_lines'],$row['id']);
-		 ?>
-				<option selected value="<?php echo $row['id'] ?>">
-					<?php echo $row['name'] ?>
-				</option>
-				<?php
-		}
+            $sql = "select experiment_type_name from experiments, experiment_types
+              where experiments.experiment_type_uid = experiment_types.experiment_type_uid
+              and experiment_uid IN ($experiments)";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            if ($row = mysqli_fetch_row($res)) {
+                $experiment_type_name = $row[0];
+                echo "$experiment_type_name<br>\n";
+                if ($experiment_type_name == "metabolite") {
+                    $sql = "select DISTINCT line_records.line_record_uid as id, line_record_name as name 
+                    FROM spectra_merged, line_records
+                    WHERE line_records.line_record_uid = spectra_merged.line_record_uid
+                    AND experiment_uid IN ($experiments)";
+                    echo "$sql<br>\n";
+                } else {
+                    $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name as name 
+	            FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr 
+	            WHERE
+	            pd.tht_base_uid = tb.tht_base_uid
+	            AND p.phenotype_uid = pd.phenotype_uid
+	            AND lr.line_record_uid = tb.line_record_uid
+	            AND pd.phenotype_uid IN ($phen_item)
+	            AND tb.experiment_uid IN ($experiments)
+	            ORDER BY lr.line_record_name";
+                }
+            } else {
+                die("Error: unknown experiment type\n");
+            }
+            //$_SESSION['selected_lines'] = array(); // Empty the session array.
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            while ($row = mysqli_fetch_assoc($res)) {
+                //array_push($_SESSION['selected_lines'],$row['id']);
+                ?>
+                <option selected value="<?php echo $row['id'] ?>">
+                <?php echo $row['name'] ?>
+                </option>
+                <?php
+            }
         }
-		?>
-		</select>
-		</table>	
-		<?php
-		if (count($_SESSION['selected_lines']) > 0) {
-		  ?>
-                  Combine with currently selected lines:<br>
-		  <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onclick="javascript: update_phenotype_linesb(this.value)">Replace<br>
-		  <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onclick="javascript: update_phenotype_linesb(this.value)">Add (OR)<br>
-                  <input type="radio" name="subset" id="subset" value="yes" <?php echo "$yes_ckd"; ?> onclick="javascript: update_phenotype_linesb(this.value)">Intersect (AND)<br>
-		  <?php
-		}
+        ?>
+        </select>
+        </table>
+        <?php
+        if (count($_SESSION['selected_lines']) > 0) {
+            ?>
+            Combine with currently selected lines:<br>
+            <input type="radio" name="subset" id="subset" value="no" <?php echo "$all_ckd"; ?> onclick="javascript: update_phenotype_linesb(this.value)">Replace<br>
+            <input type="radio" name="subset" id="subset" value="comb" <?php echo "$cmb_ckd"; ?> onclick="javascript: update_phenotype_linesb(this.value)">Add (OR)<br>
+            <input type="radio" name="subset" id="subset" value="yes" <?php echo "$yes_ckd"; ?> onclick="javascript: update_phenotype_linesb(this.value)">Intersect (AND)<br>
+            <?php
+        }
     }
     
     /**
@@ -1660,61 +1766,6 @@ class SelectPhenotypeExp
 	  <?php 
 	}
 
-	/**
-	 * allow entry of lines, this function is not used at this time
-	 */
-	private function enter_lines()
-	{
-            global $mysqli;
-		if($_SERVER['REQUEST_METHOD'] == "GET")
-  // Store what the user's previous selections were so we can
-  // redisplay them as the page is redrawn.
- 		{
-		    $name = $_GET['LineSearchInput'];
-		    echo "$names<br>";
-		}
-		?>
-		<form id="searchLines" action="<?php echo $_SERVER['SCRIPT_NAME'] ?>" method="GET">
-                <input type="hidden" name="function" value="enterlines">
-
-      		<b>Name</b> <br/><br/>
-      		<textarea name="LineSearchInput" rows="3" cols="20" style="height: 6em;"><?php $nm = explode('\r\n', $name); foreach ($nm as $n) echo $n."\n"; ?></textarea>
-      		<br> Eg: Cayuga, Doyce<br>
-      		Synonyms will be translated.
-		<input type="submit" value=Search>
-		</form>
-		<?php
-		if (isset($_GET['LineSearchInput'])) {
-			$linenames = $_POST['LineSearchInput'];
-			echo "made it here\n";
-			if (strlen($linenames) != 0)
-    
-        if (strpos($linenames, ',') > 0 ) {
-                        $linenames = str_replace(", ",",", $linenames);
-                        $lineList = explode(',',$linenames);
-                } elseif (preg_match("/\t/", $linenames)) {
-                        $lineList = explode("\t",$linenames);
-                } else {
-                        $lineList = explode('\r\n',$linenames);
-                }
-
-        $items = implode("','", $lineList);
-        $mStatment = "SELECT distinct (lr.line_record_name) FROM line_records lr left join line_synonyms ls on ls.line_record_uid = lr.line_record_uid where ls.line_synonym_name in ('" .$items. "') or lr.line_record_name in ('". $items. "');";
-
-        $res = mysqli_query($mysqli, $mStatment) or die(mysqli_error($mysqli));
-
-        if (mysqli_num_rows($res) != 0) {
-        while($myRow = mysqli_fetch_assoc($res)) {
-          array_push ($lineArr,$myRow['line_record_name']);
-        }
-        // Generate the translated line names
-        $linenames =  implode("','", $lineArr);
-      } else {
-        $linenames = '';
-      }
-	}
-	}
-	
 	/**
 	 * display a list of experiments
 	 */
