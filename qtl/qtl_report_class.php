@@ -1027,24 +1027,29 @@ class Downloads
                     } else {
                         $desc2 = "";
                     }
-                    if ($chrom == "UNK") {
+                    if (($chrom == "UNK") || ($chrom == "chrUn")) {
                         $chrom_num = 4;
                         $chrom_arm = "";
                     } else {
-                        $chrom_num = substr($chrom, 0, 1);
-                        $chrom_arm = substr($chrom, 1, 1);
+                        if (preg_match("/(\d+)(\w)/", $chrom, $match)) {
+                            $chrom_num = $match[1];
+                            $chrom_arm = $match[2];
+                        } else {
+                            $chrom_num = "";
+                            $chrom_arm = "";
+                        }
                     }
                     if (isset($_GET['sortby'])) {
                         $sort_type = $_GET['sortby'];
                         if ($sort_type == "posit") {
                             if ($chrom_arm == "A") {
-                                $sort_index = (($chrom_num * 10) + 1) * 10000000 + $pos;
+                                $sort_index = (($chrom_num * 10) + 1) * 100000000 + $pos;
                             } elseif ($chrom_arm == "B") {
-                                $sort_index = (($chrom_num * 10) + 2) * 10000000 + $pos;
+                                $sort_index = (($chrom_num * 10) + 2) * 100000000 + $pos;
                             } elseif ($chrom_arm == "D") {
-                                $sort_index = (($chrom_num * 10) + 3) * 10000000 + $pos;
+                                $sort_index = (($chrom_num * 10) + 3) * 100000000 + $pos;
                             } else {
-                                $sort_index = (($chrom_num * 10) + 4) * 10000000 + $pos;
+                                $sort_index = (($chrom_num * 10) + 4) * 100000000 + $pos;
                             }
                         } else {
                             $sort_type = "score";
