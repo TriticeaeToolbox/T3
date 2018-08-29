@@ -85,9 +85,9 @@ function showMarkerForLine($line_id, $order = "marker_name")
     if (mysqli_num_rows($resource) > 0) {
         $found = 1;
         echo displayTable($resource, true);
-        echo "<form action='dbtest/exportQueryResult.php' method='post'>
+        echo "<form action='genotyping/exportQueryResult.php' method='post'>
         <input type='submit' value='Export to CSV' />
-        <input type='hidden' name='query_string' value='" . urlencode($query) ."' />
+        <input type='hidden' name='line_id' value='" . $line_id . "' />
         </form>";
     }
     
@@ -127,9 +127,9 @@ function showLineForMarker($marker_uid, $order = "line_record_name")
     $resource = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
     while ($row = mysqli_fetch_assoc($resource)) {
         $trial_code = $row['trial_code'];
-        $lines = json_decode($row['marker_index'], true);
-        if (isset($lines)) {
-            if (in_array($line_id, $lines)) {
+        $markers = json_decode($row['marker_index'], true);
+        if (isset($markers)) {
+            if (in_array($marker_uid, $markers)) {
                 $found = 1;
                 echo "found in genotype experiment <a href=\"display_genotype.php?trial_code=$trial_code\">$trial_code</a><br>\n";
             }
@@ -157,10 +157,10 @@ function showLineForMarker($marker_uid, $order = "line_record_name")
             } else {
                 echo displayTable($resource, true);
             }
-            echo "<form action='dbtest/exportQueryResult.php' method='post'>
-            <input type='submit' value='Export to CSV' />
-	    <input type='hidden' name='query_string' value='" . urlencode($query) ."' />
-	    </form>";
+            echo "<form action='genotyping/exportQueryResult.php' method='post'>";
+            echo "<input type='submit' value='Export to CSV' />";
+            echo "<input type='hidden' name='marker_uid' value=" . $marker_uid ." />";
+            echo "</form>";
         }
     }
 }
