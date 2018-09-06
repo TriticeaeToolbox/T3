@@ -43,19 +43,19 @@ class Downloads
         </table>
         <div id="title">
         <?php
+        if (isset($_GET['pi'])) {
+            $var = intval($_GET['pi']);
+            $_SESSION['selected_traits'] = array($var);
+            ?>
+            <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
+            <?php
+        }
         $this->refreshTitle();
         ?>
         </div>
         <div id="step1" style="float: left; margin-bottom: 1.5em;">
         <script type="text/javascript" src="qtl/menu14.js"></script><br>
         <?php
-        if (isset($_GET['pi'])) {
-            $var = $_GET['pi'];
-            $_SESSION['selected_traits'] = array($var);
-            ?>
-            <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
-            <?php
-        }
         if (isset($_SESSION['selected_traits']) || isset($_SESSION['selected_trials'])) {
             ?>
             <script type="text/javascript">
