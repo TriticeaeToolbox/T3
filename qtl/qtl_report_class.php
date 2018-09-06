@@ -16,9 +16,6 @@ class Downloads
             case 'displayQTL':
                 $this->displayQTL();
                 break;
-            case 'sort':
-                $this->displaySort();
-                break;
             case 'search':
                 $this->displaySearch();
                 break;
@@ -56,7 +53,7 @@ class Downloads
             $var = $_GET['pi'];
             $_SESSION['selected_traits'] = array($var);
             ?>
-            <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" /></div>
+            <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
             <?php
         }
         if (isset($_SESSION['selected_traits']) || isset($_SESSION['selected_trials'])) {
@@ -295,8 +292,19 @@ class Downloads
     private function displaySearch()
     {
         global $mysqli;
+        global $config;
+        include $config['root_dir'].'theme/admin_header2.php';
+        echo "<h2>GWAS Results</h2>";
+
         $database = "qtl_raw";
-        $muid = $_GET['marker'];
+        $marker_name = $_GET['marker'];
+
+        if (preg_match("/([A-Za-z]+)\/[^\/]+\/[^\/]+$/", $_SERVER['PHP_SELF'], $match)) {
+            $species = $match[1];
+        } else {
+            $species = "";
+        }
+        $target_url = $config['base_url'] . "raw/gwas_$species/single/";
 
         $sql = "select experiment_uid, trial_code from experiments";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -306,18 +314,31 @@ class Downloads
             $trial_list[$uid] = $trial_code;
         }
 
-        echo "<table><tr><td>marker<td>chrom<td>pos<td>z-score<td>q-value<td>p-value<td>phenotype trial<td>genotype trial<td>plot";
-        $sql = "select genotype_exp, phenotype_exp, gwas from $database";
+        $sql = "select phenotype_uid, phenotypes_name from phenotypes";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        while ($row = mysqli_fetch_array($res)) {
+            $uid = $row[0];
+            $phenotype = $row[1];
+            $pheno_list[$uid] = $phenotype;
+        }
+
+        $marker_safe = htmlspecialchars($marker_name);
+        echo "marker name = $marker_safe<br>\n";
+        echo "<table><tr><td>marker<td>phenotype<td>chrom<td>pos<td>z-score<td>q-value<td>p-value<td>phenotype trial<td>genotype trial<td>plot";
+        $sql = "select phenotype_uid, genotype_exp, phenotype_exp, gwas from $database";
         $res = mysqli_query($mysqli, $sql, MYSQLI_USE_RESULT) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
-            $gexp = $row[0];
-            $pexp = $row[1];
-            $gwas = json_decode($row[2]);
+            $puid = $row[0];
+            $gexp = $row[1];
+            $pexp = $row[2];
+            $phenotype = $pheno_list[$puid];
+            $gwas = json_decode($row[3]);
             foreach ($gwas as $val) {
                 $marker = $val[0];
                 $chrom = $val[1];
                 $pos = $val[2];
-                if ($marker == $muid) {
+                $pval = $val[5];
+                if (($marker == $marker_name) && ($pval < 0.05)) {
                     $zvalue = number_format($val[3], 3);
                     $qvalue = number_format($val[4], 3);
                     $pvalue = number_format($val[5], 5);
@@ -335,7 +356,7 @@ class Downloads
                     } else {
                         $trial = "$trial_list[$pexp]";
                     }
-                    echo "<tr><td>$marker<td>$chrom<td>$location<td>$zvalue<td>$qvalue<td>$pvalue<td>$trial<td>$trial_list[$gexp]<td>$link2 $link3\n";
+                    echo "<tr><td>$marker<td>$phenotype<td>$chrom<td>$location<td>$zvalue<td>$qvalue<td>$pvalue<td>$trial<td>$trial_list[$gexp]<td>$link2 $link3\n";
                 }
             }
         }
