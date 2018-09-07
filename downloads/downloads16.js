@@ -796,9 +796,10 @@ function update_experiments(options) {
                 var typeGE=document.getElementById('typeGE');
                 document.getElementById('title2').innerHTML = "Creating download file";
                 document.getElementById('step6').innerHTML = "";
-                var url=php_self + "?function=download_session" + "&ver=" + version + "&typeG=" + typeG.checked + "&typeGE=" + typeGE.checked + '&mm=' + mm + '&mmaf=' + mmaf;
+                var url=php_self + "?function=download_session_" + version + "&typeG=" + typeG.checked + "&typeGE=" + typeGE.checked + '&mm=' + mm + '&mmaf=' + mmaf;
                 document.title='Creating Download file...';
-                var tmp = new Ajax.Updater($('step6'), url, {
+                new Ajax.Updater($('step6'), url, {
+                    method: 'get',
                     onSuccess: function() {
                         $('step6').show();
                         document.title = title;
@@ -824,6 +825,7 @@ function update_experiments(options) {
                 var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf + '&mml=' + mml + '&use_line=yes&typeGE=' + typeGE.checked;
                 document.title='Loading Markers...';
                 var tmp = new Ajax.Updater($('step5'), url, {
+                    method: 'get',
                     onComplete: function() {
                          $('step5').show();
                         document.title = title;
@@ -852,6 +854,7 @@ function update_experiments(options) {
             var url=php_self + "?function=step6lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str;
                 document.title='Loading Traits...';
                 var tmp = new Ajax.Updater($('step5'), url, {
+                    method: 'get',
                     insertion: 'bottom',
                     onSuccess: function() {
                          $('step5').show();
@@ -871,7 +874,8 @@ function update_experiments(options) {
                 var url=php_self + "?function=step5lines&pi=" + phenotype_items_str + '&yrs=' + years_str + '&exps=' + experiments_str + '&mm=' + mm + '&mmaf=' + mmaf + '&use_line=' + use_line + "&typeGE=" + typeGE.checked;
                 document.title='Loading Markers...';
                 //changes are right here
-                var tmp = new Ajax.Updater($('step5'), url, {
+                new Ajax.Updater($('step5'), url, {
+                    method: 'get',
                     insertion: 'bottom',
                     onSuccess: function() {
                          $('step5').show();
@@ -893,6 +897,7 @@ function update_experiments(options) {
                 document.getElementById('step6').innerHTML = "";
                 var url=php_self + "?function=verifyLines&typeP=" + typeP.checked + "&typeG=" + typeG.checked + "&typeGE=" + typeGE.checked;
                 var tmp = new Ajax.Updater($('step5'), url, {
+                    method: 'get',
                     onSuccess: function() {
                     if (typeG.checked) {
                         load_markers_lines( mm, mmaf);

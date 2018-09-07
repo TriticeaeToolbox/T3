@@ -577,7 +577,7 @@ class Downloads
         <div id="step4b" style="float: left; margin-bottom: 1.5em;"></div>
         <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
         <div id="step6" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
-        <script type="text/javascript" src="downloads/downloads07.js"></script>
+        <script type="text/javascript" src="downloads/downloads16.js"></script>
         <script type="text/javascript">
         var mm = 50;
         var mmaf = 5;
