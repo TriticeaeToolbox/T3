@@ -220,7 +220,7 @@ class SelectPhenotypeExp
         <option value="Locations">Locations</option>
         <option value="Phenotypes">Trait Category</option>
         </select></p>
-        <script type="text/javascript" src="downloads/downloads14.js"></script>
+        <script type="text/javascript" src="downloads/downloads16.js"></script>
         <?php
         $this->step1_breedprog();
         ?>
@@ -258,31 +258,31 @@ class SelectPhenotypeExp
             <input type="button" value="Clear current selection" onclick="javascript: use_normal();"/>
             <?php
         }
-      if ($command == "save") {
-        if ($menu == "Lines") {
-        } elseif (empty($_GET['lines'])) {
-          if ((!empty($_GET['pi'])) && (!empty($_GET['exps']))) {
-            $phen_item_str = $_GET['pi'];
-            $experiments_str = $_GET['exps'];
-            $phen_item_ary = explode(",", $phen_item_str);
-            $experiments_ary = explode(",", $experiments_str);
-          } else {
-            echo "error phenotype and experiments not set";
-          }
-          if ((($subset == "yes") || ($subset == "comb")) && count($_SESSION['selected_lines'])>0) {
-            $lines = $_SESSION['selected_lines'];
-            $lines_str = implode(",", $lines);
-            $count = count($_SESSION['selected_lines']);
-          } else {
-            $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name 
-            FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
-            WHERE
-            pd.tht_base_uid = tb.tht_base_uid
-            AND p.phenotype_uid = pd.phenotype_uid
-            AND lr.line_record_uid = tb.line_record_uid
-            AND pd.phenotype_uid = ?
-            AND tb.experiment_uid = ?
-            ORDER BY lr.line_record_name";
+        if ($command == "save") {
+            if ($menu == "Lines") {
+            } elseif (empty($_GET['lines'])) {
+            if ((!empty($_GET['pi'])) && (!empty($_GET['exps']))) {
+                $phen_item_str = $_GET['pi'];
+                $experiments_str = $_GET['exps'];
+                $phen_item_ary = explode(",", $phen_item_str);
+                $experiments_ary = explode(",", $experiments_str);
+            } else {
+                echo "error phenotype and experiments not set";
+            }
+            if ((($subset == "yes") || ($subset == "comb")) && count($_SESSION['selected_lines'])>0) {
+                $lines = $_SESSION['selected_lines'];
+                $lines_str = implode(",", $lines);
+                $count = count($_SESSION['selected_lines']);
+            } else {
+                $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name 
+                FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
+                WHERE
+                pd.tht_base_uid = tb.tht_base_uid
+                AND p.phenotype_uid = pd.phenotype_uid
+                AND lr.line_record_uid = tb.line_record_uid
+                AND pd.phenotype_uid = ?
+                AND tb.experiment_uid = ?
+                ORDER BY lr.line_record_name";
 
             $lines = array();
             if ($stmt = $mysqli->prepare($sql)) {
