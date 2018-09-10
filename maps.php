@@ -25,7 +25,6 @@ $sql_r = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 
 while ($row = mysqli_fetch_assoc($sql_r)) {
     $val = $row["mapset_name"];
-    //echo 	$row["mapset_name"];
     $mapsetStr.= $val.",";
 }
 $mapsetStr = (substr($mapsetStr, 0, (strlen($mapsetStr)-1)));
@@ -160,74 +159,68 @@ if ($row = mysqli_fetch_array($res)) {
       /*
       Function for passing selected map name
       */
-		
+
       function update_maps(Str)
-			{
-				
-				maps_str = Str;
-				
-				load_markers();
-			}
-			
-		/*
-			Function for passing selected marker name
-		*/
-			
-			function update_markers_annotations(markvalue)
-			{
-			
-			markers_annotation_str = markvalue;
-			
-			load_marker_annotation();
-			}	
-			
-		/*
-			Function for passing selected annotation name
-		*/
-			
-			function annotation_comments(ann_name)
-			{
-			annotation_str = ann_name;
-			load_annotation_comments();
-			}
-			
-				
-		/*
-			Function for loading maps dropdown
-		*/
-		
-		function load_maps()
-			{
+      {
+          maps_str = Str;
+          load_markers();
+      }
+
+    /*
+        Function for passing selected marker name
+    */
+
+    function update_markers_annotations(markvalue)
+    {
+        markers_annotation_str = markvalue;
+        load_marker_annotation();
+    }
+
+    /*
+        Function for passing selected annotation name
+    */
+
+    function annotation_comments(ann_name)
+    {
+        annotation_str = ann_name;
+        load_annotation_comments();
+    }
+
+    /*
+        Function for loading maps dropdown
+    */
+
+    function load_maps()
+    {
 				
                 $('maps_loader').hide();
                 
-				new Ajax.Updater(
+                new Ajax.Updater(
                     $('maps_loader'),
-                    '<?php echo $_SERVER['PHP_SELF'] ?>?function=typeMaps'+ '&mset=' + mapset_str ,
-					{ 
+                    '<?php echo $_SERVER['PHP_SELF'] ?>?function=typeMaps'+ '&mset=' + mapset_str, {
+                        method: 'get',
                         onComplete: function() {
-                        		
                             $('maps_loader').show();
                         }
                     }
-				);
-				maps_loaded = true;
-				
-			}
+		);
+		maps_loaded = true;
+
+		}
 			
 			
-			/*
+		/*
 			Function for loading Markers dropdown table
 		*/			
-			
-			function load_markers()
-			{
-			$('markers_loader').hide();
+
+		function load_markers()
+		{
+		$('markers_loader').hide();
                 
-				new Ajax.Updater(
+		new Ajax.Updater(
                     $('markers_loader'),
-                    '<?php echo $_SERVER['PHP_SELF'] ?>?function=typeMarkers' + '&mp=' + maps_str ,
-					{ 
+                    '<?php echo $_SERVER['PHP_SELF'] ?>?function=typeMarkers' + '&mp=' + maps_str, {
+                        method: 'get',
                         onComplete: function() {
                             $('markers_loader').show();
 			    var mapname = $j("select[name='mapsdetails'] option:selected")
@@ -249,14 +242,13 @@ if ($row = mysqli_fetch_array($res)) {
 				    });
                         }
                     }
-				);
-				markers_loaded = true;
-			
-			}
-			
-			/*
-				Function for loading marker  annotation dropdown
-			*/
+		);
+		markers_loaded = true;
+		}
+
+		/*
+			Function for loading marker  annotation dropdown
+		*/
 			
     function load_marker_annotation()
     {
@@ -264,42 +256,34 @@ if ($row = mysqli_fetch_array($res)) {
                 
 				new Ajax.Updater(
                     $('marker_annotation_loader'),
-                    '<?php echo $_SERVER['PHP_SELF'] ?>?function=typeMarkerAnnotation'+ '&mkan=' + markers_annotation_str ,
-					{ 
+                    '<?php echo $_SERVER['PHP_SELF'] ?>?function=typeMarkerAnnotation'+ '&mkan=' + markers_annotation_str, {
+                        method: 'get',
                         onComplete: function() {
-                        		
                             $('marker_annotation_loader').show();
-                            
                         }
                     }
-				); 
-				
-				
-			}
+	); 
+    }
 			
-			/*
-				Function for loading marker  annotation comments dropdown
-			*/
-			
-			function load_annotation_comments()
-			{
+	/*
+		Function for loading marker  annotation comments dropdown
+	*/
+
+	function load_annotation_comments()
+	{
 						
                 $('annotation_comments_loader').hide();
                 
-				new Ajax.Updater(
+		new Ajax.Updater(
                     $('annotation_comments_loader'),
-                    '<?php echo $_SERVER['PHP_SELF'] ?>?function=typeAnnotationComments'+ '&anncom=' + annotation_str ,
-					{ 
+                    '<?php echo $_SERVER['PHP_SELF'] ?>?function=typeAnnotationComments'+ '&anncom=' + annotation_str, {
+                        method: 'get',
                         onComplete: function() {
-                        		
                             $('annotation_comments_loader').show();
-                            
                         }
                     }
-				); 
-				
-				
-			}
+	); 
+}
 			
 
       </script>		
