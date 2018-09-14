@@ -12,10 +12,9 @@ include $config['root_dir'].'theme/admin_header.php';
 
 echo "<h2>Polymarker design for 2017 WheatCAP project</h2>";
 
-echo "A detailed description of the design process can be found <a href=genotyping/20180821_mapping_stats.pdf>here</a>.<br>";
-echo "Genotype experiment description can be found <a href=display_genotype.php?trial_code=2017_WheatCAP>2017_WheatCAP</a> and";
-echo " <a href=display_genotype.php?trial_code=2017_WheatCAP_UCD>2017_WheatCAP_UCD</a>.<br>";
-echo "A description of the polymarker program can be found at <a href=\"https://academic.oup.com/bioinformatics/article/31/12/2038/213995\" target=\"_blank\">PolyMarker: A Fast polyploid primer design pipeline</a>.<br><br>";
+echo "The Polymarker program was used to design primers on all the markers in the <a href=display_genotype.php?trial_code=2017_WheatCAP>2017_WheatCAP</a> experiment. A detailed description of the design process can be found <a href=genotyping/20180821_mapping_stats.pdf>here</a>. ";
+echo "A description of the polymarker program can be found at <a href=\"https://academic.oup.com/bioinformatics/article/31/12/2038/213995\" target=\"_blank\">PolyMarker: A Fast polyploid primer design pipeline</a>.";
+echo "The designed primers can also be found as a <a href=\"/jbrowse/?data=wheat2016&tracks=Primers 2017_WheatCAP\" target=\"_blank\">JBrowse track</a>.<br><br>";
 
 if (isset($_GET['marker'])) {
     $marker = $_GET['marker'];
