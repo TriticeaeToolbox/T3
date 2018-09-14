@@ -23,13 +23,16 @@
 <script type="text/javascript" src="includes/core.js"></script>
 <script type="text/javascript" src="theme/new.js"></script>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-<script src="//code.jquery.com/jquery-2.2.4.min.js"></script>
+<!--script src="//code.jquery.com/jquery-2.2.4.min.js"></script-->
+<script src="//code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script src="theme/jquery.smartmenus.min.js" type="text/javascript"></script>
 <script src='https://www.google.com/recaptcha/api.js'></script>
+<!--script type="text/javascript" src="js/site.js"></script-->
 
 <link href="theme/sm-core-css.css" rel="stylesheet" type="text/css">
 <link href="theme/sm-cleant3.css" rel="stylesheet" type="text/css">
+<link rel="manifest" href="theme/manifest.json">
 <script>
 jQuery( document ).ready(function( $ ) {
     $('#main-menu').smartmenus();
@@ -199,8 +202,19 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         $results = mysql_grab("SHOW tables like 'marker_report_reference'");
         if ($results == "marker_report_reference") {
             ?>
-            <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Alignment to Reference</a>
             <li><a href="<?php echo $config['base_url']; ?>genotyping/variations.php" title="Variant Effects">Variant Effects</a>
+            <?php
+        }
+        $results = mysql_grab("SHOW tables like 'marker_primers'");
+        if ($results == "marker_primers") {
+            ?>
+            <li><a href="<?php echo $config['base_url']; ?>genotyping/polymarker.php" title="Designed Markers">Designed Primers</a>
+            <?php
+        }
+        $results = mysql_grab("SHOW tables like 'marker_report_reference'");
+        if ($results == "marker_report_reference") {
+            ?>
+            <li><a href="<?php echo $config['base_url']; ?>genotyping/marker_report_ref.php" title="BLAST Markers against genome assembly">Marker Alignment to Reference</a>
             <?php
         }
         $results = mysql_grab("SHOW tables like 'marker_report_synonyms'");
