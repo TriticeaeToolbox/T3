@@ -912,7 +912,7 @@ function ajaxSubmitForm ($arr) {
 
 	// save and display tree
 	// Output XML string
-	echo $dom->saveXML();
+        echo $dom->saveXML();
 }
 
 
@@ -948,27 +948,32 @@ function DispMapSel($arr)
 {
     global $mysqli;
     if (! isset($arr['mapname']) || strlen($arr['mapname'])<1) {
-	print "Invalid input of map name";
-	return;
+        print "Invalid input of map name";
+        return;
     }
     $mapname=$arr['mapname'];
     $result=mysqli_query($mysqli, "select map_uid from map where map_name=\"$mapname\" order by map_name") or die("Invalid map name");
     if (mysqli_num_rows($result)>0) {
         $row=mysqli_fetch_assoc($result);
-	$mapuid=$row['map_uid'];
-	// print "select min(start_position), max(start_position) from markers_in_maps where map_uid=$mapuid";
-	$res2=mysqli_query($mysqli, "select min(start_position), max(start_position) from markers_in_maps where map_uid=$mapuid");
-	if (mysqli_num_rows($res2)>0) {
-		$row=mysqli_fetch_assoc($res2);
-		$mstt=round(array_shift($row));
-		$mend=round(array_shift($row));
-		print "Map start: $mstt<br>";
-		print "Map end: $mend<br>";
-		print "Range:<br>";
-		print "From <input type='text' style='width:30px' id='mapstt' value=\"$mstt\"> ";
-		print "to <input type='text' style='width:30px' id='mapend' value=\"$mend\"><br>";
-		print "<input type='button' style=\"color: black\" value=\"Show markers\" onClick=\"DispMarkers('$mapuid')\"><br>";
-	}
+        $mapuid=$row['map_uid'];
+        $res2=mysqli_query($mysqli, "select min(start_position), max(start_position) from markers_in_maps where map_uid=$mapuid");
+        if (mysqli_num_rows($res2)>0) {
+            $row=mysqli_fetch_assoc($res2);
+            $mstt=round(array_shift($row));
+            $mend=round(array_shift($row));
+            $length = strlen($mend);
+            print "Map start: $mstt<br>";
+            print "Map end: $mend<br>";
+            print "Range:<br>";
+            if ($length < 4) {
+                print "From <input type='text' style='width:30px' id='mapstt' value=\"$mstt\"> ";
+                print "to <input type='text' style='width:30px' id='mapend' value=\"$mend\"><br>";
+            } else {
+                print "From <input type='text' style='width:90px' id='mapstt' value=\"$mstt\"><br>";
+                print "To <input type='text' style='width:90px' id='mapend' value=\"$mend\"><br>";
+            }
+            print "<input type='button' style=\"color: black\" value=\"Show markers\" onClick=\"DispMarkers('$mapuid')\"><br>";
+        }
     }
 }
 
