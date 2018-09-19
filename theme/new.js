@@ -52,7 +52,7 @@ var startList = function() {
 };
 
 function update_side_menu() {
-    $.ajax({
+    jQuery.ajax({
       url: "side_menu.php",
       success: function(data, textSataus) {
         jQuery("#quicklinks").html(data);
