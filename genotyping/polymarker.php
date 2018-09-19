@@ -10,7 +10,7 @@ $mysqli = connecti();
 
 include $config['root_dir'].'theme/admin_header.php';
 
-echo "<h2>PolyMarker design for primers</h2>";
+echo "<h2>PolyMarker designed primers</h2>";
 
 echo "The PolyMarker program was used to design primers on all the markers in the <a href=display_genotype.php?trial_code=2017_WheatCAP>2017_WheatCAP</a> experiment.";
 echo "<br>Description of the design process: <a href=genotyping/20180821_mapping_stats.pdf>PolyMarker for WheatCAP</a>";
@@ -19,13 +19,13 @@ echo "<br>Website for polymarker program: <a href=\"http://polymarker.tgac.ac.uk
 echo "<br>Description of the polymarker program: <a href=\"https://academic.oup.com/bioinformatics/article/31/12/2038/213995\" target=\"_blank\">PolyMarker: A Fast polyploid primer design pipeline</a>";
 
 echo "<h3>Designed Primers</h3>";
+echo "<a href=\"genotyping/marker_selection.php\">Select a marker</a> using the \"Wheat CAP 2017\" map to see design results.<br>";
 if (isset($_GET['marker'])) {
     $marker = $_GET['marker'];
     $selected = explode(",", $marker);
 } elseif (isset($_SESSION['clicked_buttons'])) {
     $selected = $_SESSION['clicked_buttons'];
 } else {
-    echo "<a href=\"genotyping/marker_selection.php\">Select a marker</a> using the \"Wheat CAP 2017\" map to see design results.<br>";
     echo "</div>";
     include $config['root_dir'].'theme/footer.php'; 
     die();
