@@ -15,9 +15,8 @@ function getElmt(id) {
 }
 
 function moveQuickLinks() {
-    var quickLinks = getElmt("quicklinks"), pos = 0;
-    // if (document.documentElement) { pos = 15 + document.documentElement.scrollTop; }
-    // else { pos = 15 + document.body.scrollTop; }
+    var quickLinks = getElmt("quicklinks");
+    var pos = 0;
     if (document.documentElement.scrollTopMax) {
         pos = 15 + document.documentElement.scrollTop; // Firefox
     } else {
@@ -34,6 +33,7 @@ if (screen.width >= 640) {
 function set_over() {
     this.className = "over";
 }
+
 function set_blank() {
     this.className = '';
 }
@@ -52,12 +52,16 @@ var startList = function() {
 };
 
 function update_side_menu() {
-    var url = "side_menu.php";
-    var tmp = new Ajax.Updater($('quicklinks'), url, {
-        onComplete : function() {
-            $('quicklinks').show();
-            document.title = title;
-        }
+    $.ajax({
+      url: "side_menu.php",
+      success: function(data, textSataus) {
+        jQuery("#quicklinks").html(data);
+        $('quicklinks').show();
+        document.title = title;
+      },
+      error: function() {
+        alert("Error in side menu");
+      }
     });
 }
 
