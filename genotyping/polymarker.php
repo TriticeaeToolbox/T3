@@ -10,12 +10,15 @@ $mysqli = connecti();
 
 include $config['root_dir'].'theme/admin_header.php';
 
-echo "<h2>Polymarker design for 2017 WheatCAP project</h2>";
+echo "<h2>PolyMarker design for primers</h2>";
 
-echo "The Polymarker program was used to design primers on all the markers in the <a href=display_genotype.php?trial_code=2017_WheatCAP>2017_WheatCAP</a> experiment. A detailed description of the design process can be found <a href=genotyping/20180821_mapping_stats.pdf>here</a>. ";
-echo "A description of the polymarker program can be found at <a href=\"https://academic.oup.com/bioinformatics/article/31/12/2038/213995\" target=\"_blank\">PolyMarker: A Fast polyploid primer design pipeline</a>.";
-echo "The designed primers can also be found as a <a href=\"/jbrowse/?data=wheat2016&tracks=Primers 2017_WheatCAP\" target=\"_blank\">JBrowse track</a>.<br><br>";
+echo "The PolyMarker program was used to design primers on all the markers in the <a href=display_genotype.php?trial_code=2017_WheatCAP>2017_WheatCAP</a> experiment.";
+echo "<br>Description of the design process: <a href=genotyping/20180821_mapping_stats.pdf>PolyMarker for WheatCAP</a>";
+echo "<br>Visual interface for selecting primers: <a href=\"/jbrowse/?data=wheat2016&tracks=Primers 2017_WheatCAP\" target=\"_blank\">JBrowse</a>";
+echo "<br>Website for polymarker program: <a href=\"http://polymarker.tgac.ac.uk\">polymarker.tgac.ac.uk</a>";
+echo "<br>Description of the polymarker program: <a href=\"https://academic.oup.com/bioinformatics/article/31/12/2038/213995\" target=\"_blank\">PolyMarker: A Fast polyploid primer design pipeline</a>";
 
+echo "<h3>Designed Primers</h3>";
 if (isset($_GET['marker'])) {
     $marker = $_GET['marker'];
     $selected = explode(",", $marker);
