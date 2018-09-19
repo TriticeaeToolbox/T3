@@ -46,7 +46,7 @@ foreach ($selected as $marker) {
         if ($stmt->fetch()) {
             $count++;
             $line = explode(",", $results);
-            $header = array("ID","SNP (position and changed)","Region Size (size of the aligned sequence)","chromosome","number of chromosomes where the marker hits","regions where contig is found","SNP_type","A Primer for first allele","B Primer for second allele","common primer","primer type","orientation of the first primer","A_TM, melting point of first primer","B_TM, melting point of second primer","melting point of common primer","selected from","product size","errors","is repetitive","hit_count, how many regions the marker maps");
+            $header = array("ID","SNP (position and change in the SNP)","Region Size (size of the aligned sequence)","chromosome","number of chromosomes where the marker hits","regions where contig is found","SNP_type","A Primer for first allele","B Primer for second allele","common primer","primer type","orientation of the first primer","A_TM, melting point of first primer","B_TM, melting point of second primer","melting point of common primer","selected from","product size","errors","is repetitive","hit_count, how many regions the marker maps");
             echo "<table>";
             echo "<tr><td>Marker Name<td>$marker_name\n";
             foreach ($line as $key => $val) {
