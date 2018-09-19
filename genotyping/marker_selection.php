@@ -18,7 +18,7 @@ require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
 $mysqli = connecti();
 $pageTitle = "Select Markers";
-require $config['root_dir'].'theme/admin_header2.php';
+require $config['root_dir'].'theme/admin_header.php';
 ?>
 
 <div id="primaryContentContainer">
