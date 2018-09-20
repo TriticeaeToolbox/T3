@@ -5,7 +5,6 @@
  * formatted for an HTML selection box who's value is the id and who's name is
  * displayed.
  *
- * @return nothing - this function echos its results.
  */
 function showMapsetOptions()
 {
@@ -15,7 +14,6 @@ function showMapsetOptions()
     while ($row = mysqli_fetch_assoc($res)) {
         echo "\t\t<option value=\"$row[mapset_id]\">$row[mapset_name]</option>\n";
     }
-    return true;
 }
 
 function generic_sel_options($table)
@@ -130,7 +128,6 @@ function showLineForMarker($marker_uid, $order = "line_record_name")
         $markers = json_decode($row['marker_index'], true);
         if (isset($markers)) {
             if (in_array($marker_uid, $markers)) {
-                $found = 1;
                 echo "found in genotype experiment <a href=\"display_genotype.php?trial_code=$trial_code\">$trial_code</a><br>\n";
             }
         }
