@@ -66,7 +66,7 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
             $seq = $row['sequence'];
             $type = $row['marker_type_name'];
             $sql1 = "select map_uid from markers_in_maps where marker_uid = $mkruid";
-            $result2 = mysqli_query($mysqli, $sql1) or die(mysqli_error($mydqli));
+            $result2 = mysqli_query($mysqli, $sql1) or die(mysqli_error($mysqli));
             if ($row2 = mysqli_fetch_row($result2)) {
                 $mkr_mapped = "Yes";
             } else {
@@ -78,7 +78,7 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
                 $syn = "";
             }
             $sql2 = "select sum(total) from allele_frequencies where marker_uid = $mkruid";
-            $result2 = mysqli_query($mysqli, $sql2) or die(mysqli_error($mydqli));
+            $result2 = mysqli_query($mysqli, $sql2) or die(mysqli_error($mysqli));
             if ($row2 = mysqli_fetch_row($result2)) {
                 $lines_geno = $row2[0];
             } else {
@@ -139,7 +139,7 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
         $seq = $row['sequence'];
         $type = $row['marker_type_name'];
         $sql1 = "select map_uid from markers_in_maps where marker_uid = $mkruid";
-        $result2 = mysqli_query($mysqli, $sql1) or die(mysqli_error($mydqli));
+        $result2 = mysqli_query($mysqli, $sql1) or die(mysqli_error($mysqli));
         if ($row2 = mysqli_fetch_row($result2)) {
             $mkr_mapped = "Yes";
         } else {
@@ -151,7 +151,7 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
             $syn = "";
         }
         $sql2 = "select sum(total) from allele_frequencies where marker_uid = $mkruid";
-        $result2 = mysqli_query($mysqli, $sql2) or die(mysqli_error($mydqli));
+        $result2 = mysqli_query($mysqli, $sql2) or die(mysqli_error($mysqli));
         if ($row2 = mysqli_fetch_row($result2)) {
             $lines_geno = $row2[0];
         } else {
@@ -185,7 +185,7 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
         $seq = $row['sequence'];
         $type = $row['marker_type_name'];
         $sql = "select map_uid from markers_in_maps where marker_uid = $mkruid";
-        $result2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mydqli));
+        $result2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         if ($row2 = mysqli_fetch_row($result2)) {
             $mkr_mapped = "Yes";
         } else {
