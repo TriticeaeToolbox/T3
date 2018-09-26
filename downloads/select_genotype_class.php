@@ -214,7 +214,7 @@ class SelectGenotypeExp
  */
     private function type1Checksession()
     {
-  ?>
+        ?>
   <style type="text/css">
   th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
   table {background: none; border-collapse: collapse}
@@ -222,13 +222,13 @@ class SelectGenotypeExp
   h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
   </style>
   <div id="title">
-      <?php
-      if (isset($_SESSION['selected_lines'])) {
-          $countLines = count($_SESSION['selected_lines']);
-          $lines = $_SESSION['selected_lines'];
-      }
-      $this->refreshTitle();
-      ?>
+        <?php
+        if (isset($_SESSION['selected_lines'])) {
+            $countLines = count($_SESSION['selected_lines']);
+            $lines = $_SESSION['selected_lines'];
+        }
+        $this->refreshTitle();
+        ?>
   </div>
   <div id="step1" style="float: left; margin-bottom: 1.5em;">
   <p>1.
@@ -237,38 +237,38 @@ class SelectGenotypeExp
   <option value="DataProgram">Data Program</option>
   </select></p>
   <div id="step11" style="float: left; margin-bottom: 1.5em;">
-  <script type="text/javascript" src="downloads/select_genotype03.js"></script>
-      <?php
-      $this->step1_platform();
+  <script type="text/javascript" src="downloads/select_genotype04.js"></script>
+    <?php
+    $this->step1_platform();
   //$this->type_GenoType_Display();
-      ?>
+    ?>
   </div></div>
   <div id="step2" style="float: left; margin-bottom: 1.5em;"></div>
   <div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
   <div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
   <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
   </div>
-  <?php
-}
+    <?php
+    }
 
 /**
  * display platform
  */
-private function step1_platform()
-{
-    global $mysqli;
-    ?>
+    private function step1_platform()
+    {
+        global $mysqli;
+        ?>
     <table><tr><td>
     <select name='platform[]' style="height: 12em;" multiple onchange="javascript: update_platform(this.options)">
-    <?php
-    $result=mysqli_query($mysqli, "select distinct(platform.platform_uid), platform_name from platform, genotype_experiment_info where platform.platform_uid = genotype_experiment_info.platform_uid") or die(mysqli_error($mysqli));
-    while ($row=mysqli_fetch_assoc($result)) {
-        $uid = $row['platform_uid'];
-        $val = $row['platform_name'];
-        print "<option value='$uid'>$val</option>\n";
+        <?php
+        $result=mysqli_query($mysqli, "select distinct(platform.platform_uid), platform_name from platform, genotype_experiment_info where platform.platform_uid = genotype_experiment_info.platform_uid") or die(mysqli_error($mysqli));
+        while ($row=mysqli_fetch_assoc($result)) {
+            $uid = $row['platform_uid'];
+            $val = $row['platform_name'];
+            print "<option value='$uid'>$val</option>\n";
+        }
+        print "</select></table>";
     }
-    print "</select></table>";
-}
 /**
  * display data program
  */
