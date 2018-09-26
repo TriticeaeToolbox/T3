@@ -55,6 +55,33 @@ if (isset($_GET['query'])) {
             }
             echo "\"$row[1]\",\"$gr\",\"$row[2]\",\"$parent1\",\"$parent2\",\"$row[3]\",\"$row[4]\"\n";
         }
+    } elseif ($query == "properties") {
+        $sql = "select line_record_uid, line_record_name from line_records";
+        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_row($result)) {
+            $uid = $row[0];
+            $name = $row[1];
+            $line_name_list[$uid] = $name;
+        }
+        $sql = "select properties_uid, name from properties";
+        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_row($result)) {
+            $uid = $row[0];
+            $name = $row[1];
+            $property_name_list[$uid] = $name;
+        }
+        $sql = "select line_record_uid, value, property_uid from line_properties, property_values
+        where line_properties.property_value_uid = property_values.property_values_uid order by line_record_uid";
+        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        echo "\"Nae\",\"Property\",\"Value\"\n";
+        while ($row = mysqli_fetch_row($result)) {
+            $lineuid = $row[0];
+            $value = $row[1];
+            $property_uid = $row[2];
+            $line_name = $line_name_list[$lineuid];
+            $property_name = $property_name_list[$property_uid];
+            echo "$line_name,\"$property_name\",\"$value\"\n";
+        }
     }
 } else {
     include $config['root_dir'].'theme/admin_header2.php';
@@ -62,11 +89,12 @@ if (isset($_GET['query'])) {
     echo "Downloads all records in the database into CSV formatted file<br><br>";
     $result = mysql_grab("select database()");
     $url = $config['base_url'] . "downloads/bulk_download.php?query=lines";
-    echo "<a href=\"$url\">Line Records</a> in $result";
+    echo "<a href=\"$url\">Line Records</a>";
     if (preg_match("/Oat/i", $result)) {
         echo "<br><a href=\"/POOL/bulk_download.php\">Line Records</a> in <a href=/POOL><b>P</b>edigrees <b>Of</b> <b>O</b>at <b>L</b>ines</a></a>";
     }
-
+    $url = $config['base_url'] . "downloads/bulk_download.php?query=properties";
+    echo "<br><a href=\"$url\">Genetic characters</a>";
     echo "</div>";
     include $config['root_dir'].'theme/footer.php';
 }
