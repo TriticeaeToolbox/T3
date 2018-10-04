@@ -64,7 +64,7 @@ if (isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "") {
           select marker_uid from markers where marker_name REGEXP \"$mkrnm\"";
         if ($r = mysqli_query($mysqli, $sql)) {
             if (mysqli_num_rows($r) == 0) {
-                echo "<font color=red>\"$mkrnm\" not found.</font><br>";
+                echo "<font color=red>marker not found.</font><br>";
             } else {
                 while ($row = mysqli_fetch_row($r)) {
                     $selmkrs[] = $row[0];
@@ -72,7 +72,7 @@ if (isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "") {
             }
             $_SESSION['clicked_buttons'] = $selmkrs;
         } else {
-            echo "<font color=red>\"$mkrnm\" not found.</font><br>";
+            echo "<font color=red>marker not found.</font><br>";
         }
     } else {
         foreach ($selmkrnames as $mkrnm) {
@@ -87,12 +87,12 @@ if (isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "") {
                     if (! in_array($row, $selmkrs)) {
                         array_push($selmkrs, $row);
                     }
-                } else {
-                    echo "<font color=red>\"$mkrnm\" not found.</font><br>";
+                } elseif (preg_match('/([A-Za-z0-9_-]+)/', $mkrnm, $match)) { //sanitize output
+                    echo "<font color=red>\"$match[1]\" not found.</font><br>";
                 }
                 mysqli_stmt_close($stmt);
             } else {
-                echo "Eror mysqli_error($mysqli\n";
+                echo "Eror mysqli_error($mysqli)\n";
             }
         }
         $clkmkrs=$_SESSION['clicked_buttons'];
