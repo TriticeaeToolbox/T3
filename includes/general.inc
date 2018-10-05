@@ -177,6 +177,7 @@ function show_gene_annotations($id)
     //To simply things, just refer to this function.
     show_general("gene_annotations", $id);
 
+    $gene_id = mysql_grab("select gene_id from gene_annotations where gene_annotation_uid = $id");
     $results = mysql_grab("SHOW tables like 'pathways'");
     if ($results == "pathways") {
         echo "<br>Pathways from Plant Reactome";
