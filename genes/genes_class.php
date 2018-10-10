@@ -139,7 +139,7 @@ class Genes
         } else {
             $sql = "select gene_annotation_uid, gene_id, transcript, gene_name, description, bin, uniprot from gene_annotations
                 where assembly_name = \"$assembly\"
-                order by if(gene_name = '' or gene_name is null, 1, 0), gene_name";
+                order by type='mRNA' desc, transcript";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
             $stmt->execute();
             $stmt->store_result();
