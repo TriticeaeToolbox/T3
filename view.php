@@ -59,7 +59,7 @@ if (preg_match($pattern, $table)) {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $rec);
         if (mysqli_stmt_fetch($stmt)) {
-            echo "<h1>$prettified $nm</h1>";
+            echo "<h1>$prettified " . htmlspecialchars($nm) . "</h1>";
             echo "<div class=boxContent>";
             $func = "show_" . $table;
             mysqli_stmt_close($stmt);
@@ -70,10 +70,11 @@ if (preg_match($pattern, $table)) {
             }
             echo "</div>";
         } else {
+            error(1, "No Record Found");
             mysqli_stmt_close($stmt);
         }
     } else {
-        error(1, "No Record Found");
+        echo "Error mysqli_error($mysqli)";
     }
 } elseif ($grin) {
     // Argument is a GRIN accession ID.
@@ -90,15 +91,16 @@ if (preg_match($pattern, $table)) {
         mysqli_stmt_bind_result($stmt, $rec);
         if (mysqli_stmt_fetch($stmt)) {
             mysqli_stmt_close($stmt);
-            echo "<h1>Line Record for GRIN $grin</h1>";
+            echo "<h1>Line Record for GRIN " . htmlspecialchars($grin) . "</h1>";
             echo "<div class=boxContent>";
             show_line_records($rec);
             echo "</div>";
+        } else {
+            error(1, "No Record Found");
+            mysqli_stmt_close($stmt);
         }
-        error(1, "No Record Found");
     } else {
-        mysqli_stmt_close($stmt);
-        error(1, "No Record Found");
+        echo "Error mysqli_error($mysqli)";
     }
 }
 
