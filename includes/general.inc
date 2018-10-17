@@ -186,7 +186,7 @@ function show_gene_annotations($id)
             from pathways, pathway_gene
         where pathways.pathway_uid = pathway_gene.pathway_uid
         and pathway_gene.gene_id = \"$gene_id\"";
-        $res = mysqli_query($mysqli, $sql) or die("Error in show gene annotation<br>$sql");
+        $res = mysqli_query($mysqli, $sql) or die("Error in show gene annotation<br>");
         while ($row = mysqli_fetch_row($res)) {
             if ($count == 0) {
                 echo "<table><tr><td>Pathway<td>Species<td>Plant Reactome";
