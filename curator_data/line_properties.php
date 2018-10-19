@@ -2,6 +2,7 @@
 
 /**
  * 9apr2013 dem: Genetics characters of lines, e.g. gene or QTL alleles
+ * 10/17/18 clb: warn if overwrite current values
  * from: ./input_line_names_check.php
  */
 
@@ -31,23 +32,23 @@ function die_nice($message = "")
 /* Show more informative messages when we get invalid data. */
 function errmsg($sql, $err)
 {
-  global $mysqli;
-  if (preg_match('/^Data truncated/', $err)) {
-    // Undefined value for an enum type
-    $pieces = preg_split("/'/", $err);
-    $column = $pieces[1];
-    $msg = "Unallowed value for field <b>$column</b>. ";
-    // Only works for table line_records.  Could pass table name as parameter.
-    $r = mysqli_query($mysqli, "describe line_records $column");
-    $columninfo = mysqli_fetch_row($r);
-    $msg .= "Allowed values are: ".$columninfo[1];
-    $msg .= "<br>Command: ".$sql."<br>";
-    die_nice($msg);
-  }
-  elseif (preg_match('/^Duplicate entry/', $err)) {
-  die_nice($err."<br>".$sql);
-  }
-  else die_nice("MySQL error: ".$err."<br>The command was:<br>".$sql."<br>");
+    global $mysqli;
+    if (preg_match('/^Data truncated/', $err)) {
+        // Undefined value for an enum type
+        $pieces = preg_split("/'/", $err);
+        $column = $pieces[1];
+        $msg = "Unallowed value for field <b>$column</b>. ";
+        // Only works for table line_records.  Could pass table name as parameter.
+        $r = mysqli_query($mysqli, "describe line_records $column");
+        $columninfo = mysqli_fetch_row($r);
+        $msg .= "Allowed values are: ".$columninfo[1];
+        $msg .= "<br>Command: ".$sql."<br>";
+        die_nice($msg);
+    } elseif (preg_match('/^Duplicate entry/', $err)) {
+        die_nice($err."<br>".$sql);
+    } else {
+        die_nice("MySQL error: ".$err."<br>The command was:<br>".$sql."<br>");
+    }
 }
 
 /* ******************************* */
@@ -65,18 +66,18 @@ class LineNames_Check
     // Using the class's constructor to decide which action to perform
     public function __construct($function = null)
     {
-      switch($function)
-	{
-	case 'typeDatabase':
-	  $this->type_Database(); /* update database */
-	  break;
-	default:
-	  $this->typeLineNameCheck(); /* initial case*/
-	  break;
-	}
+        switch ($function) {
+            case 'typeDatabase':
+                $this->type_Database(); /* update database */
+                break;
+            default:
+                $this->typeLineNameCheck(); /* initial case*/
+                break;
+        }
     }
 
-    private function typeLineNameCheck() {
+    private function typeLineNameCheck()
+    {
       global $config;
       include($config['root_dir'] . 'theme/admin_header.php');
       echo "<h2>Genetic Characters: Validation</h2>"; 
@@ -97,23 +98,6 @@ class LineNames_Check
 	window.open(url, "_self");
       }
       </script>
-
-      <!-- 	  <style type="text/css"> -->
-      <!-- 	  th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6} -->
-      <!-- table {background: none; border-collapse: collapse} -->
-      <!-- td {border: 0px solid #eee !important;} -->
-      <!-- h3 {border-left: 4px solid #5B53A6; padding-left: .5em;} -->
-      <!-- </style> -->
-
-      <!-- 	  <style type="text/css"> -->
-      <!-- 	  table.marker -->
-      <!-- 	  {background: none; border-collapse: collapse} -->
-      <!-- th.marker -->
-      <!-- 	{ background: #5b53a6; color: #fff; padding: 5px 0; border: 0; } -->
-      <!-- td.marker -->
-      <!-- 	{ padding: 5px 0; border: 0 !important; } -->
-      <!-- </style> -->
-		
 <?php
       $row = loadUser($_SESSION['username']);
       $username=$row['name'];
@@ -200,6 +184,7 @@ class LineNames_Check
 	      }
 	    } // end foreach($header as $columnOffset => $columnName)
 
+            $replaceStr = "";
 	    // Read in the property values.  Ignore the next row after the header.
 	    for ($irow = $firstline+2; $irow <=$rows; $irow++)  {
 	      // Ignore rows with first cell empty.
@@ -220,10 +205,32 @@ class LineNames_Check
 
 	      // Check if line is in database, as either a line name or synonym.
 	      $line_uid = get_lineuid($line);
+              $line_uids = implode(",",$line_uid);  // $line_uids is a string containing a single uid. 
 	      // $line_uid is an array.
 	      if ($line_uid === FALSE) {
 		die_nice("Row $irow: Line '$line' not found.");
 	      }
+ 
+              // Check if new or replace
+              foreach ($ourprops as $pr) { 
+                  if (empty($propval[$pr])) {
+                    echo "$pr empty<br>\n";
+                  } else {
+                    $propval[$pr] = mysqli_real_escape_string($mysqli, $propval[$pr]);
+                    $propuid = mysql_grab("select properties_uid from properties where name = '$pr'");
+                    $propvaluid = mysql_grab("select property_values_uid from property_values 
+                                          where property_uid = $propuid and value = '$propval[$pr]'");
+                    $value = mysql_grab("select value
+                              from line_properties lp, property_values pv
+                              where line_record_uid = $line_uids and property_uid = $propuid
+                              and lp.property_value_uid = pv.property_values_uid");
+                    if (empty($value)) {
+                    } elseif ($value == $propval[$pr]) {
+                    } else {
+                        $replaceStr .= "$line replace $pr $value with $propval[$pr]<br>\n";
+                    }
+                  }
+              }
 	    } /* end of for ($irow) */
 	    // If any errors, show them and stop.
 	    if ($cnt > 0) {
@@ -258,7 +265,12 @@ class LineNames_Check
       }  
 	      ?>
 	   </table>
-</div>
+      </div>
+      <?php
+      if (!empty($replaceStr)) {
+          echo "Warning: the following values will be replace<br>$replaceStr\n";
+      }
+      ?>
 
 <p>
   <input type="Button" value="Accept" 

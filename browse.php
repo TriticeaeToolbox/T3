@@ -94,14 +94,14 @@ $tablelabel = beautifulTableName($table)."s"; // for display
 // Rename phenotype experiments as "Trials".
 if ($table == "experiments") {
     $tablelabel = "Trials";
-}
+    $sql = "select $key, $uniqname from $table where $key in ($uidlist) order by experiment_type_uid, $uniqname";
 // Use a better class name than the table name:
-if ($tablelabel == 'Experiment Sets') {
+} elseif ($tablelabel == 'Experiment Sets') {
     $tablelabel = 'Experiments';
+    $sql = "select $key, $uniqname from $table where $key in ($uidlist) order by $uniqname";
+} else {
+    $sql = "select $key, $uniqname from $table where $key in ($uidlist) order by $uniqname"; // Alphabetize
 }
-
-// Alphabetize
-$sql = "select $key, $uniqname from $table where $key in ($uidlist) order by $uniqname";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli)."<br>Query was:<br>$sql");
 while ($record = mysqli_fetch_row($res)) {
     $records[] = array($record[0], $record[1]);
@@ -113,24 +113,33 @@ print "<div class='section'>";
 print "<h1>$tablelabel</h1>";
 print "<table>";
 // row, column and cell count from 0; page counts from 1.
+$category = "";
 for ($rw = 0; $rw < $numrows; $rw++) {
     print "<tr>";
     for ($clm = 0; $clm < $numcols; $clm++) {
-        $cell = (($page - 1) * $pagesize) + ($clm * $numrows + $rw);
+        $cell = (($page - 1) * $pagesize) + ($rw * $numcols + $clm);
         if ($cell < $numrecords) {
             $uid = $records[$cell][0];
             $name = $records[$cell][1];
             // Intercept experiments and route to display_phenotype.php or display_genotype.php.
             if ($table == "experiments") {
-                $sql = "select experiment_type_uid from experiments where trial_code = \"$name\"";
+                $sql = "select experiment_type_name from experiments, experiment_types
+                     where experiments.experiment_type_uid = experiment_types.experiment_type_uid and trial_code = \"$name\"";
                 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
                 $record = mysqli_fetch_row($res);
                 $expttype = $record[0];
-                if ($expttype == 1) {
+                if ($category == "") {
+                    print "<td>$expttype trials<tr>";
+                    $category = $expttype;
+                } elseif ($category != $expttype) {
+                    print "<tr><td>$expttype trials<tr>";
+                    $category = $expttype;
+                }
+                if ($expttype == "phenotype") {
                     print "<td><a href='display_phenotype.php?trial_code=$name'>$name</a>";
-                } elseif ($expttype == 2) {
+                } elseif ($expttype == "genotype") {
                     print "<td><a href='display_genotype.php?trial_code=$name'>$name</a>";
-                } elseif ($expttype == 3) {
+                } elseif ($expttype == "metabolite") {
                     print "<td><a href='compounds/display_metabolite.php?trial_code=$name'>$name</a>";
                 } else {
                     print "Error: invalid experiment type\n";

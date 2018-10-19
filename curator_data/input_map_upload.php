@@ -5,7 +5,7 @@
  */
 
 require 'config.php';
-require $config['root_dir'] . 'includes/bootstrap_curator2.inc';
+require $config['root_dir'] . 'includes/bootstrap_curator.inc';
 require $config['root_dir'] . 'theme/admin_header2.php';
 $mysqli =  connecti();
 loginTest();

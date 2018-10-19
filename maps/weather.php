@@ -31,7 +31,6 @@ class Weather
         <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
         <script src="maps/weather01.js"></script>
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAnJxEsuDGtgqXG27wkA5z7nXxkJCjJwVQ&callback=initMap" async defer></script>
-        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css">
         <script>
         $( function() {
           $( "#date1" ).datepicker();

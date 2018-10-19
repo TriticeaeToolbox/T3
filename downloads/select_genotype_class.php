@@ -73,7 +73,7 @@ class SelectGenotypeExp
                 break;
 
             default:
-                $this->type1_select();
+                $this->type1Select();
                 break;
         }
     }
@@ -103,13 +103,19 @@ class SelectGenotypeExp
                 $_SESSION['selected_lines'] = $lines;
             } elseif (!empty($_GET['exps'])) {
                 $experiments = $_GET['exps'];
-                $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
-                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-                if ($row = mysqli_fetch_array($res)) {
-                    $lines = json_decode($row[0], true);
-                    $_SESSION['selected_lines'] = $lines;
+                if ($stmt  = $mysqli->prepare("select line_index from allele_bymarker_expidx where experiment_uid IN (?)")) {
+                    $stmt->bind_param("s", $experiments);
+                    $stmt->execute();
+                    $stmt->bind_result($lines);
+                    if ($stmt->fetch()) {
+                        $lines = json_decode($lines, true);
+                        $stmt->close();
+                        $_SESSION['selected_lines'] = $lines;
+                    } else {
+                        die("<br>Error: genotype experiment not found\n");
+                    }
                 } else {
-                    die("Error: genotype experiment not found\n");
+                    die("<br>Error: genotype experiment not found\n");
                 }
             } else {
                 echo "error - no selection found";
@@ -167,48 +173,48 @@ class SelectGenotypeExp
 /**
  * load header and footer
  */
-private function type1_select()
-{
-     global $config;
-     $pageTitle = "Select Lines by Genotype Experiment";
-     include $config['root_dir'].'theme/normal_header.php';
-     $this->type1_checksession();
-     include $config['root_dir'].'theme/footer.php';
-}
+    private function type1Select()
+    {
+        global $config;
+        $pageTitle = "Select Lines by Genotype Experiment";
+        include $config['root_dir'].'theme/normal_header.php';
+        $this->type1Checksession();
+        include $config['root_dir'].'theme/footer.php';
+    }
 
 /**
  * this handles the first first menu
  */
-private function type1()
-{
-  unset($_SESSION['selected_lines']);
-  unset($_SESSION['phenotype']);
-  unset($_SESSION['clicked_buttons']);
-  unset($_SESSION['filtered_markers']);
-  unset($_SESSION['geno_exps']);
-  unset($_SESSION['geno_exps_cnt']);
+    private function type1()
+    {
+        unset($_SESSION['selected_lines']);
+        unset($_SESSION['phenotype']);
+        unset($_SESSION['clicked_buttons']);
+        unset($_SESSION['filtered_markers']);
+        unset($_SESSION['geno_exps']);
+        unset($_SESSION['geno_exps_cnt']);
 
-  ?>
+        ?>
   <p>1.
   <select name="select1" onchange="javascript: update_select1(this.options)">
   <option value="Platform">Platform</option>
   <option value="DataProgram">Data Program</option>
   </select></p>
   <div id="step11" style="float: left; margin-bottom: 1.5em;">
-  <?php
-  $this->step1_platform();
-  $footer_div = 1;
-  ?>
+        <?php
+        $this->step1_platform();
+        $footer_div = 1;
+        ?>
   </div>
-  <?php
-}
+        <?php
+    }
 
 /**
  * Checks the session variable, then go directly to the data program
  */
-private function type1_checksession()
-{
-  ?>
+    private function type1Checksession()
+    {
+        ?>
   <style type="text/css">
   th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6}
   table {background: none; border-collapse: collapse}
@@ -216,13 +222,13 @@ private function type1_checksession()
   h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
   </style>
   <div id="title">
-  <?php
-  if (isset($_SESSION['selected_lines'])) {
-    $countLines = count($_SESSION['selected_lines']);
-    $lines = $_SESSION['selected_lines'];
-  }
-  $this->refreshTitle();
-  ?>
+        <?php
+        if (isset($_SESSION['selected_lines'])) {
+            $countLines = count($_SESSION['selected_lines']);
+            $lines = $_SESSION['selected_lines'];
+        }
+        $this->refreshTitle();
+        ?>
   </div>
   <div id="step1" style="float: left; margin-bottom: 1.5em;">
   <p>1.
@@ -231,38 +237,38 @@ private function type1_checksession()
   <option value="DataProgram">Data Program</option>
   </select></p>
   <div id="step11" style="float: left; margin-bottom: 1.5em;">
-  <script type="text/javascript" src="downloads/select_genotype03.js"></script>
-  <?php
-  $this->step1_platform();
+  <script type="text/javascript" src="downloads/select_genotype04.js"></script>
+    <?php
+    $this->step1_platform();
   //$this->type_GenoType_Display();
-  ?>
+    ?>
   </div></div>
   <div id="step2" style="float: left; margin-bottom: 1.5em;"></div>
   <div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
   <div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
   <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
   </div>
-  <?php
-}
+    <?php
+    }
 
 /**
  * display platform
  */
-private function step1_platform()
-{
-    global $mysqli;
-    ?>
+    private function step1_platform()
+    {
+        global $mysqli;
+        ?>
     <table><tr><td>
     <select name='platform[]' style="height: 12em;" multiple onchange="javascript: update_platform(this.options)">
-    <?php
-    $result=mysqli_query($mysqli, "select distinct(platform.platform_uid), platform_name from platform, genotype_experiment_info where platform.platform_uid = genotype_experiment_info.platform_uid") or die(mysqli_error($mysqli));
-    while ($row=mysqli_fetch_assoc($result)) {
-        $uid = $row['platform_uid'];
-        $val = $row['platform_name'];
-        print "<option value='$uid'>$val</option>\n";
+        <?php
+        $result=mysqli_query($mysqli, "select distinct(platform.platform_uid), platform_name from platform, genotype_experiment_info where platform.platform_uid = genotype_experiment_info.platform_uid") or die(mysqli_error($mysqli));
+        while ($row=mysqli_fetch_assoc($result)) {
+            $uid = $row['platform_uid'];
+            $val = $row['platform_name'];
+            print "<option value='$uid'>$val</option>\n";
+        }
+        print "</select></table>";
     }
-    print "</select></table>";
-}
 /**
  * display data program
  */

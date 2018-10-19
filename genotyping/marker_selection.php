@@ -64,7 +64,7 @@ if (isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "") {
           select marker_uid from markers where marker_name REGEXP \"$mkrnm\"";
         if ($r = mysqli_query($mysqli, $sql)) {
             if (mysqli_num_rows($r) == 0) {
-                echo "<font color=red>\"$mkrnm\" not found.</font><br>";
+                echo "<font color=red>marker not found.</font><br>";
             } else {
                 while ($row = mysqli_fetch_row($r)) {
                     $selmkrs[] = $row[0];
@@ -72,7 +72,7 @@ if (isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "") {
             }
             $_SESSION['clicked_buttons'] = $selmkrs;
         } else {
-            echo "<font color=red>\"$mkrnm\" not found.</font><br>";
+            echo "<font color=red>marker not found.</font><br>";
         }
     } else {
         foreach ($selmkrnames as $mkrnm) {
@@ -87,12 +87,12 @@ if (isset($_POST['selMarkerstring']) && $_POST['selMarkerstring'] != "") {
                     if (! in_array($row, $selmkrs)) {
                         array_push($selmkrs, $row);
                     }
-                } else {
-                    echo "<font color=red>\"$mkrnm\" not found.</font><br>";
+                } elseif (preg_match('/([A-Za-z0-9_-]+)/', $mkrnm, $match)) { //sanitize output
+                    echo "<font color=red>\"$match[1]\" not found.</font><br>";
                 }
                 mysqli_stmt_close($stmt);
             } else {
-                echo "Eror mysqli_error($mysqli\n";
+                echo "Eror mysqli_error($mysqli)\n";
             }
         }
         $clkmkrs=$_SESSION['clicked_buttons'];
@@ -296,6 +296,7 @@ $sql = "select mapset_uid, mapset_name from mapset";
 if (!authenticate(array(USER_TYPE_PARTICIPANT, USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
     $sql .= " where data_public_flag > 0";
 }
+$sql .= " order by created_on desc";
 $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 while ($row=mysqli_fetch_assoc($result)) {
     $seluid=$row['mapset_uid'];
@@ -388,5 +389,5 @@ while ($row=mysqli_fetch_assoc($result)) {
 </div>
 </div>
 </div>
-<script type="text/javascript" src="genotyping/marker01.js"></script>
+<script type="text/javascript" src="genotyping/marker02.js"></script>
 <?php require $config['root_dir'].'theme/footer.php'; ?>

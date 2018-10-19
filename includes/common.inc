@@ -153,7 +153,11 @@ function showTableOptions($table, $selected = "null", $orderby = "uid")
 function get_pkey($tablename)
 {
     global $mysqli;
-    $result = mysqli_query($mysqli, "DESC $tablename") or die("Error in get_pkey():<br>");
+    if (!$result = mysqli_query($mysqli, "DESC $tablename")) {
+        error_log("error in get_pkey $tablename");
+        echo "pkey for table not found<br>\n";
+        return;
+    }
     $pkey="";
     while ($row = mysqli_fetch_assoc($result)) {
         foreach ($row as $k => $v) {
@@ -186,7 +190,11 @@ function get_unique_name($table)
     } elseif ($table == "marker_synonyms") {
         return "value";
     } else {
-        $q = mysqli_query($mysqli, "SHOW CREATE TABLE $table") or die("Error in function get_unique_name():<br>");
+        if (!$q = mysqli_query($mysqli, "SHOW CREATE TABLE $table")) {
+            error_log("error in get_unique_name $table");
+            echo "unique name for table not found<br>\n";
+            return;
+        }
         $row = mysqli_fetch_row($q);
         $parts = explode("\n", $row[1]);
         for ($i = 2; $i<count($parts); $i++) {

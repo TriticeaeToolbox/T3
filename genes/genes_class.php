@@ -125,21 +125,21 @@ class Genes
         if (isset($_GET['search'])) {
             $query = $_GET['search'];
             $param = "%" . $query . "%";
-            $sql = "select gene_annotation_uid, gene_id, transcript, gene_name, description, bin from gene_annotations
+            $sql = "select gene_annotation_uid, gene_id, transcript, gene_name, description, bin, uniprot from gene_annotations
                 where assembly_name = ? 
-                and (description like ? OR gene_name like ? or gene_id like ?)";
+                and (description like ? OR gene_name like ? OR gene_id like ? OR uniprot like ?)";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
-            $stmt->bind_param("ssss", $assembly, $param, $param, $param) or die(mysqli_error($mysqli));
+            $stmt->bind_param("sssss", $assembly, $param, $param, $param, $param) or die(mysqli_error($mysqli));
             $stmt->execute();
             $stmt->store_result();
             $count_rows = $stmt->num_rows;
             $sql .= " limit 10 offset $offset";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
-            $stmt->bind_param("ssss", $assembly, $param, $param, $param) or die(mysqli_error($mysqli));
+            $stmt->bind_param("sssss", $assembly, $param, $param, $param, $param) or die(mysqli_error($mysqli));
         } else {
-            $sql = "select gene_annotation_uid, gene_id, transcript, gene_name, description, bin from gene_annotations
+            $sql = "select gene_annotation_uid, gene_id, transcript, gene_name, description, bin, uniprot from gene_annotations
                 where assembly_name = \"$assembly\"
-                order by if(gene_name = '' or gene_name is null, 1, 0), gene_name";
+                order by type='mRNA' desc, transcript";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
             $stmt->execute();
             $stmt->store_result();
@@ -158,13 +158,13 @@ class Genes
    
         $count = 0;
         $stmt->execute();
-        $stmt->bind_result($uid, $gene_id, $transcript, $gene_name, $desc, $bin);
+        $stmt->bind_result($uid, $gene_id, $transcript, $gene_name, $desc, $bin, $uniprot);
         while ($stmt->fetch()) {
             if ($count == 0) {
-                echo "<table><tr><td>Gene Id<td>Transcript<td>Name<td>Bin<td>Description\n";
+                echo "<table><tr><td>Gene Id<td>Transcript<td>Name<td>Bin<td>Description<td>Functional annotation\n";
             }
             $count++;
-            echo "<tr><td><a href=\"view.php?table=gene_annotations&uid=$uid\">$gene_id</a><td>$transcript<td>$gene_name<td>$bin<td>$desc\n";
+            echo "<tr><td><a href=\"view.php?table=gene_annotations&uid=$uid\">$gene_id</a><td>$transcript<td>$gene_name<td>$bin<td>$desc<td>$uniprot\n";
         }
         $stmt->close();
         if ($count > 0) {

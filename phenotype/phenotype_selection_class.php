@@ -88,7 +88,7 @@ class Downloads
         ?>        
         </div>
         <div id="step1" style="float: left; margin-bottom: 1.5em;">
-        <script type="text/javascript" src="phenotype/downloads04.js"></script><br>
+        <script type="text/javascript" src="phenotype/downloads05.js"></script><br>
         <?php
         $this->type1_phenotype();
         ?>
@@ -112,58 +112,60 @@ class Downloads
         <br><br>
         <?php
         if ($command == "save") {
-          if (isset($_GET['pi'])) {
-            $_SESSION['phenotype'] = $_GET['pi'];
-            $phenotype_ary = explode(",",$_SESSION['phenotype']);
-            $_SESSION['selected_traits'] = $phenotype_ary;
-          } else {
-            echo "error - no traits selection found";
-          }
-          if (isset($_GET['exps'])) {
-            $trials_ary = explode(",",$_GET['exps']);
-            $_SESSION['selected_trials'] = $trials_ary;  
-            $_SESSION['experiments'] = $_GET['exps'];
-          } else {
-            echo "error - no trials selection found";
-          }
-      } elseif ($command == "deselect") {
-        if (isset($_GET['pi'])) {
-          $deselect_str = $_GET['pi'];
-          $deselect_ary = explode(",",$deselect_str);
-          $ntraits=count($_SESSION['selected_traits']);
-          if ($deselect_str == "") {
-          } elseif ($ntraits > 1) {
-            $phenotype_ary = $_SESSION['selected_traits'];
-            foreach ($deselect_ary as $uid)
-              if (($lineidx = array_search($uid, $phenotype_ary)) !== false) {
-              array_splice($phenotype_ary, $lineidx,1);
+            if (isset($_GET['pi'])) {
+                $_SESSION['phenotype'] = $_GET['pi'];
+                $phenotype_ary = explode(",", $_SESSION['phenotype']);
+                $_SESSION['selected_traits'] = $phenotype_ary;
+            } else {
+                echo "error - no traits selection found";
             }
-            $_SESSION['phenotype']=implode(",",$phenotype_ary);
-            $_SESSION['selected_traits'] = $phenotype_ary;
-          } else {
-            unset($_SESSION['phenotype']);
-            unset($_SESSION['selected_traits']);
-          }
-        } 
-        if (isset($_GET['exp'])) {
-          $deselect_str = $_GET['exp'];
-          $deselect_ary = explode(",",$deselect_str);
-          $trials_ary = $_SESSION['selected_trials'];
-          $ntrials=count($_SESSION['selected_trials']);
-          if ($deselect_str == "") {
-          } elseif ($ntrials > 1) {
-            foreach ($deselect_ary as $uid)
-              if (($lineidx = array_search($uid, $trials_ary)) !== false) {
-              array_splice($trials_ary, $lineidx,1);
+            if (isset($_GET['exps'])) {
+                $trials_ary = explode(",", $_GET['exps']);
+                $_SESSION['selected_trials'] = $trials_ary;
+                $_SESSION['experiments'] = $_GET['exps'];
+            } else {
+                echo "error - no trials selection found";
             }
-            $_SESSION['selected_trials'] = $trials_ary;
-            $_SESSION['experiments'] = implode(',',$trials_ary);
-          } else {
-            unset($_SESSION['selected_trials']);
-            unset($_SESSION['experiments']);
-          }
+        } elseif ($command == "deselect") {
+            if (isset($_GET['pi'])) {
+                $deselect_str = $_GET['pi'];
+                $deselect_ary = explode(",", $deselect_str);
+                $ntraits=count($_SESSION['selected_traits']);
+                if ($deselect_str == "") {
+                } elseif ($ntraits > 1) {
+                    $phenotype_ary = $_SESSION['selected_traits'];
+                    foreach ($deselect_ary as $uid) {
+                        if (($lineidx = array_search($uid, $phenotype_ary)) !== false) {
+                            array_splice($phenotype_ary, $lineidx, 1);
+                        }
+                    }
+                    $_SESSION['phenotype']=implode(",", $phenotype_ary);
+                    $_SESSION['selected_traits'] = $phenotype_ary;
+                } else {
+                    unset($_SESSION['phenotype']);
+                    unset($_SESSION['selected_traits']);
+                }
+            }
+            if (isset($_GET['exp'])) {
+                $deselect_str = $_GET['exp'];
+                $deselect_ary = explode(",", $deselect_str);
+                $trials_ary = $_SESSION['selected_trials'];
+                $ntrials=count($_SESSION['selected_trials']);
+                if ($deselect_str == "") {
+                } elseif ($ntrials > 1) {
+                    foreach ($deselect_ary as $uid) {
+                        if (($lineidx = array_search($uid, $trials_ary)) !== false) {
+                            array_splice($trials_ary, $lineidx, 1);
+                        }
+                    }
+                    $_SESSION['selected_trials'] = $trials_ary;
+                    $_SESSION['experiments'] = implode(',', $trials_ary);
+                } else {
+                    unset($_SESSION['selected_trials']);
+                    unset($_SESSION['experiments']);
+                }
+            }
         }
-      }
       if (isset($_SESSION['selected_traits'])) {
         $ntraits=count($_SESSION['selected_traits']);
         echo "<table>";

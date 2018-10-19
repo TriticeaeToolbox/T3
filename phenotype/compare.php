@@ -2,8 +2,8 @@
 require 'config.php';
 /*
  * Logged in page initialization
- * 
- * 8/16/2010 J.Lee  Fix significant digits display 
+ *
+ * 8/16/2010 J.Lee  Fix significant digits display
  * 3/29/2012 C.Birkett changed intersect option to use SESSION variable, then DispPhenotype will show trial only if it is in selected lines
  */
 require $config['root_dir'] . 'includes/bootstrap.inc';
@@ -56,62 +56,59 @@ if (! file_exists('/tmp/tht')) {
 }
 
 if (isset($_POST['deselLines'])) {
-  $selected_lines = $_SESSION['selected_lines'];
-  foreach ($_POST['deselLines'] as $line_uid) {
-    if (($lineidx = array_search($line_uid, $selected_lines)) !== false) {
-      array_splice($selected_lines, $lineidx,1);
+    $selected_lines = $_SESSION['selected_lines'];
+    foreach ($_POST['deselLines'] as $line_uid) {
+        if (($lineidx = array_search($line_uid, $selected_lines)) !== false) {
+            array_splice($selected_lines, $lineidx, 1);
+        }
     }
-  }
-  $_SESSION['selected_lines']=$selected_lines;
+    $_SESSION['selected_lines']=$selected_lines;
 }
 
-  if (isset($_POST['selectWithin']) && ($_SESSION['selectWithin'] != $_POST['selectWithin'])) { //change in combine selection, no form submitted
+if (isset($_POST['selectWithin']) && ($_SESSION['selectWithin'] != $_POST['selectWithin'])) { //change in combine selection, no form submitted
     $_SESSION['selectWithin'] = $_POST['selectWithin'];
-  } elseif(isset($_POST['phenotypecategory']) || isset($_GET['phenotype'])) {	//form has been submitted
-
+} elseif (isset($_POST['phenotypecategory']) || isset($_GET['phenotype'])) {  //form has been submitted
     /* Deal with sorting */
-	if(isset($_GET['sortby']) && isset($_GET['sorttype'])) {
-		if($_GET['sortby'] == "value")	//make sure we're sorting correctly here.
-			$_GET['sortby']  = "CAST(value AS DECIMAL(10,4))";
+    if (isset($_GET['sortby']) && isset($_GET['sorttype'])) {
+        if ($_GET['sortby'] == "value") {  //make sure we're sorting correctly here.
+            $_GET['sortby']  = "CAST(value AS DECIMAL(10,4))";
+        }
+        $order = "ORDER BY " . $_GET['sortby'] . " " . $_GET['sorttype'];
+    } else {
+        $order = "ORDER BY CAST(value AS DECIMAL(10,4)) DESC";
+    }
 
-		$order = "ORDER BY " . $_GET['sortby'] . " " . $_GET['sorttype'];
-	}
-	else
-		$order = "ORDER BY CAST(value AS DECIMAL(10,4)) DESC";
+    /* Check for valid input */
+    $phenotype = $_REQUEST['phenotype'];
+    if ($phenotype == "") {
+        error(1, "No Phenotype Selected");
+        die();
+    }
 
-	/* Check for valid input */
-	$phenotype = $_REQUEST['phenotype'];
-	if($phenotype == "") {
-		error(1, "No Phenotype Selected");
-		die();
-	}
-
-	// Limit the queries for histogram and table to the specified trials.
-	$in_these_trials = "";
-	if(isset($_REQUEST['trial']) && $_REQUEST['trial'] != "") {
-	  // Can't pass the array 'trial' via GET, so convert to comma-delimited string.
-	  $triallist = implode(",", $_REQUEST['trial']);
-	  $_GET['triallist'] = $triallist;
-	  $in_these_trials = "AND e.experiment_uid IN (" . $triallist . ")";
-	}
-	else if(isset($_REQUEST['triallist']) && $_REQUEST['triallist'] != "") {
-	  $in_these_trials = "AND e.experiment_uid IN (" . $_REQUEST['triallist'] . ")";
-	}
-        // DLH R plotting for histogram
-        $phen_name = mysqli_query($mysqli, "select phenotypes_name,unit_name from phenotypes,units where phenotype_uid = $phenotype
-                                        AND units.unit_uid = phenotypes.unit_uid;");
-        $pname = mysqli_fetch_row($phen_name);
-        $hist_query = mysqli_query($mysqli, "
+    // Limit the queries for histogram and table to the specified trials.
+    $in_these_trials = "";
+    if (isset($_REQUEST['trial']) && $_REQUEST['trial'] != "") {
+        // Can't pass the array 'trial' via GET, so convert to comma-delimited string.
+        $triallist = implode(",", $_REQUEST['trial']);
+        $_GET['triallist'] = $triallist;
+        $in_these_trials = "AND e.experiment_uid IN (" . $triallist . ")";
+    } elseif (isset($_REQUEST['triallist']) && $_REQUEST['triallist'] != "") {
+        $in_these_trials = "AND e.experiment_uid IN (" . $_REQUEST['triallist'] . ")";
+    }
+    // DLH R plotting for histogram
+    $phen_name = mysqli_query($mysqli, "select phenotypes_name,unit_name from phenotypes,units where phenotype_uid = $phenotype
+                                    AND units.unit_uid = phenotypes.unit_uid;");
+    $pname = mysqli_fetch_row($phen_name);
+    $hist_query = mysqli_query($mysqli, "
 	  select value from phenotype_data as pd, experiments as e, tht_base
 	  where phenotype_uid = $phenotype 
 	  and tht_base.tht_base_uid = pd.tht_base_uid
 	  and e.experiment_uid = tht_base.experiment_uid
-	  $in_these_trials"
-				  ) or die(mysqli_error($mysqli));
-        $x = 'x <- c(';
-        while($row = mysqli_fetch_row($hist_query)) {
-	  $x .= "$row[0],";
-        }
+	  $in_these_trials") or die(mysqli_error($mysqli));
+    $x = 'x <- c(';
+    while ($row = mysqli_fetch_row($hist_query)) {
+        $x .= "$row[0],";
+    }
         $x = trim($x, ",");
         $x .= ")";
         $date = date("Uu");
@@ -220,18 +217,22 @@ $in_these_trials
         <script type="text/javascript">
           update_side_menu();
         </script> 
-	<div class='box'><h2>Results</h2><div class='boxContent'>
+        <div class='box'><h2>Results</h2><div class='boxContent'>
         <?php
 
-        if(mysqli_num_rows($search) > 0) {
-	  echo displayTableSigdig($search, true, $sigdig);
-	  echo "<form action='".$config['base_url']."dbtest/exportQueryResult.php' method='post'><input type='submit' value='Export to CSV' /><input type='hidden' name='query_string' value='" . urlencode($query) ."' /></form>";
-	  //echo "<br /><form action='".$config['base_url']."pedigree/pedigree_markers.php'><input type='submit' value='View Common Marker Values' /></form>";
-	}
-	else
-	  echo "<b>No records found.</b><br>";
+        if (mysqli_num_rows($search) > 0) {
+            echo displayTableSigdig($search, true, $sigdig);
+            echo "<form action='".$config['base_url']."phenotype/exportQueryResult.php' method='post'>\n";
+            echo "<input type='submit' value='Export to CSV'>\n";
+            echo "<input type='hidden' name='phenotype' value='" . $phenotype ."'>\n";
+            echo "<input type='hidden' name='searchVal' value='" . $searchVal . "'>\n";
+            echo "<input type='hidden' name='inTheseTrials' value='" . $triallist . "'>\n";
+            echo "</form>";
+        } else {
+            echo "<b>No records found.</b><br>";
+        }
 
-	echo "<br></div></div>";
+        echo "<br></div></div>";
   }
 ?>
 

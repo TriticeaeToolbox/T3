@@ -30,13 +30,11 @@ while ($row=mysqli_fetch_assoc($result)) {
 if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0)) {
     if ((count($_SESSION['clicked_buttons']) > 1000) || ($function == "download")) {
         $use_file = 1;
-        $dir = "/tmp/tht/";
-        $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
-        $filename = "selected_markers_" . $unique_str . ".csv";
-        $h = fopen($dir.$filename, "w+");
-        fwrite($h, "name,type,A_allele,B_allele,synonym,mapped,lines genotyped,sequence\n");
+        header("Content-type: application/vnd.ms-excel");
+        header("Content-Disposition: attachment;Filename=Markers.csv");
+        echo "name,type,A_allele,B_allele,synonym,mapped,lines genotyped,sequence\n";
     } else {
-        include $config['root_dir'].'theme/admin_header.php';
+        include $config['root_dir'].'theme/admin_header2.php';
         $use_file = 0;
         ?>
         <h2>Marker Information</h2>
@@ -66,7 +64,7 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
             $seq = $row['sequence'];
             $type = $row['marker_type_name'];
             $sql1 = "select map_uid from markers_in_maps where marker_uid = $mkruid";
-            $result2 = mysqli_query($mysqli, $sql1) or die(mysqli_error($mydqli));
+            $result2 = mysqli_query($mysqli, $sql1) or die(mysqli_error($mysqli));
             if ($row2 = mysqli_fetch_row($result2)) {
                 $mkr_mapped = "Yes";
             } else {
@@ -78,34 +76,31 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
                 $syn = "";
             }
             $sql2 = "select sum(total) from allele_frequencies where marker_uid = $mkruid";
-            $result2 = mysqli_query($mysqli, $sql2) or die(mysqli_error($mydqli));
+            $result2 = mysqli_query($mysqli, $sql2) or die(mysqli_error($mysqli));
             if ($row2 = mysqli_fetch_row($result2)) {
                 $lines_geno = $row2[0];
             } else {
                 $lines_geno = "";
             }
             if ($use_file) {
-                fwrite($h, "$selval,$type,$a_allele,$b_allele,\"$syn\",$mkr_mapped,$lines_geno,$seq\n");
+                echo "$selval,$type,$a_allele,$b_allele,\"$syn\",$mkr_mapped,$lines_geno,$seq\n";
             } else {
                 echo "<tr><td><a href=\"" . $config['base_url'] . "view.php?table=markers&uid=$mkruid\">$selval</a><td nowrap>$type<td>$a_allele<td>$b_allele<td nowrap>$syn<td>$mkr_mapped<td>$lines_geno<td>$seq\n";
             }
         } else {
             if ($use_file) {
-                fwrite($h, "$mkruid,not found\n");
-            } else {
+                echo "$mkruid,not found\n";
             }
         }
     }
 } elseif (isset($_SESSION['geno_exps'])) {
     if (($_SESSION['geno_exps_cnt'] > 1000) || ($function == "download")) {
         $use_file = 1;
-        $dir = "/tmp/tht/";
-        $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
-        $filename = "selected_markers_" . $unique_str . ".csv";
-        $h = fopen($dir.$filename, "w+");
-        fwrite($h, "name,type,A_allele,B_allele,synonym,mapped,lines genotyped,sequence\n");
+        header("Content-type: application/vnd.ms-excel");
+        header("Content-Disposition: attachment;Filename=Markers.csv");
+        echo "name,type,A_allele,B_allele,seq\n";
     } else {
-        include $config['root_dir'].'theme/admin_header.php';
+        include $config['root_dir'].'theme/admin_header2.php';
         $use_file = 0;
         ?>
         <h2>Marker Information</h2>
@@ -138,38 +133,36 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
         $b_allele=$row['B_allele'];
         $seq = $row['sequence'];
         $type = $row['marker_type_name'];
-        $sql1 = "select map_uid from markers_in_maps where marker_uid = $mkruid";
-        $result2 = mysqli_query($mysqli, $sql1) or die(mysqli_error($mydqli));
-        if ($row2 = mysqli_fetch_row($result2)) {
-            $mkr_mapped = "Yes";
-        } else {
-            $mkr_mapped = "";
-        }
-        if (isset($synonym[$mkruid])) {
-            $syn = $synonym[$mkruid];
-        } else {
-            $syn = "";
-        }
-        $sql2 = "select sum(total) from allele_frequencies where marker_uid = $mkruid";
-        $result2 = mysqli_query($mysqli, $sql2) or die(mysqli_error($mydqli));
-        if ($row2 = mysqli_fetch_row($result2)) {
-            $lines_geno = $row2[0];
-        } else {
-            $lines_geno = "";
-        }
         if ($use_file) {
-            fwrite($h, "$selval,$type,$a_allele,$b_allele,\"$syn\",$mkr_mapped,$lines_geno,$seq\n");
+            echo "$selval,$type,$a_allele,$b_allele,$seq\n";
         } else {
+            $sql1 = "select map_uid from markers_in_maps where marker_uid = $mkruid";
+            $result2 = mysqli_query($mysqli, $sql1) or die(mysqli_error($mysqli));
+            if ($row2 = mysqli_fetch_row($result2)) {
+                $mkr_mapped = "Yes";
+            } else {
+                $mkr_mapped = "";
+            }
+            if (isset($synonym[$mkruid])) {
+                $syn = $synonym[$mkruid];
+            } else {
+                $syn = "";
+            }
+            $sql2 = "select sum(total) from allele_frequencies where marker_uid = $mkruid";
+            $result2 = mysqli_query($mysqli, $sql2) or die(mysqli_error($mysqli));
+            if ($row2 = mysqli_fetch_row($result2)) {
+                $lines_geno = $row2[0];
+            } else {
+                $lines_geno = "";
+            }
             echo "<tr><td><a href=\"" . $config['base_url'] . "view.php?table=markers&uid=$mkruid\">$selval</a><td nowrap>$type<td>$a_allele<td>$b_allele<td nowrap>$syn<td>$mkr_mapped<td>$lines_geno<td>$seq\n";
         }
     }
 } elseif (isset($_GET['geno_exp'])) {
     $use_file = 1;
-    $dir = "/tmp/tht/";
-    $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
-    $filename = "selected_markers_" . $unique_str . ".csv";
-    $h = fopen($dir.$filename, "w+");
-    fwrite($h, "name,type,A_allele,B_allele,synonym,mapped,lines genotyped,sequence\n");
+    header("Content-type: application/vnd.ms-excel");
+    header("Content-Disposition: attachment;Filename=Markers.csv");
+    echo "name,type,A_allele,B_allele,synonym,mapped,lines genotyped,sequence\n";
     $exp = $_GET['geno_exp'];
     $exp = intval($exp);
     $sql = "select markers.marker_uid, marker_name, A_allele, B_allele, sequence, marker_type_name from markers, marker_types, allele_frequencies
@@ -185,7 +178,7 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
         $seq = $row['sequence'];
         $type = $row['marker_type_name'];
         $sql = "select map_uid from markers_in_maps where marker_uid = $mkruid";
-        $result2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mydqli));
+        $result2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         if ($row2 = mysqli_fetch_row($result2)) {
             $mkr_mapped = "Yes";
         } else {
@@ -201,13 +194,10 @@ if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) 
         } else {
             $lines_geno = "";
         }
-        fwrite($h, "$selval,$type,$a_allele,$b_allele,\"$syn\",$mkr_mapped,$lines_geno,$seq\n");
+        echo "$selval,$type,$a_allele,$b_allele,\"$syn\",$mkr_mapped,$lines_geno,$seq\n";
     }
 }
-if ($use_file) {
-    fclose($h);
-    header("Location: ".$dir.$filename);
-} else {
+if (!$use_file) {
     echo "</table><br>";
-    print "<a href=genotyping/display_markers.php?function=download>Download marker information</a><br>\n";
+    print "<a href=" . $config['base_url'] . "/genotyping/display_markers.php?function=download>Download marker information</a><br>\n";
 }
