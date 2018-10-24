@@ -13,7 +13,6 @@ if (isset($_GET['query'])) {
     header("Content-Disposition: attachment;Filename=LineRecords.csv");
     $query = $_GET['query'];
     if ($query == "lines") {
-        /* should add Synonyms */
         $sql = "select line_record_uid, barley_ref_number from barley_pedigree_catalog_ref";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($result)) {
@@ -36,9 +35,20 @@ if (isset($_GET['query'])) {
                 $parent_list[$lineuid]['parent1Name'] = $line_name;
             }
         }
+        $sql = "select line_record_uid, line_synonym_name from line_synonyms";
+        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_row($result)) {
+            $uid = $row[0];
+            $name = $row[1];
+            if (isset($syn_names[$uid])) {
+                $syn_names[$uid] .= ", $name";
+            } else {
+                $syn_names[$uid] = $name;
+            }
+        }
         $sql = "select line_record_uid, line_record_name, breeding_program_code, pedigree_string, description from line_records";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        echo "\"Name\",\"GRIN\",\"Breeding Program\",\"Parent1\",\"Parent2\",\"Pedigree\",\"Description\"\n";
+        echo "\"Name\",\"GRIN\",\"Synonym\",\"Breeding Program\",\"Parent1\",\"Parent2\",\"Pedigree\",\"Description\"\n";
         while ($row = mysqli_fetch_row($result)) {
             $lineuid = $row[0];
             if (is_array($grin_names[$lineuid])) {
@@ -53,7 +63,12 @@ if (isset($_GET['query'])) {
                 $parent1 = "";
                 $parent2 = "";
             }
-            echo "\"$row[1]\",\"$gr\",\"$row[2]\",\"$parent1\",\"$parent2\",\"$row[3]\",\"$row[4]\"\n";
+            if (isset($syn_names[$lineuid])) {
+                $synonym = $syn_names[$lineuid];
+            } else {
+                $synonym = "";
+            }
+            echo "\"$row[1]\",\"$gr\",\"$synonym\",\"$row[2]\",\"$parent1\",\"$parent2\",\"$row[3]\",\"$row[4]\"\n";
         }
     } elseif ($query == "properties") {
         $sql = "select line_record_uid, line_record_name from line_records";
