@@ -97,7 +97,7 @@ class Downloads
         are selected then only results for the selected trials are shown otherwise results are shown for all
         trials.
         <a href='<?php echo $config['base_url']; ?>/qtl/zbrowse.html'>ZBrowse instructions</a>. 
-        Expression data is provided by "WheatExp: An Expression Database for Polyploid Wheat" and "Wheat Expression Browser: expVIP".
+        Expression data is provided by "Wheat Expression Browser: expVIP" and "EMBL-EBI: Expression Atlas".
         <br><br>
         <b>Analysis Methods:</b> The analysis includes genotype and phenotype trials where there were more than 50
         germplasm lines in common.<br>
@@ -899,7 +899,18 @@ class Downloads
         echo "</table><br>";
 
         /**
-         * Get expVIP
+         * Get knetminer, only accepts RefSeq1.0
+         **/
+        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = 5";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+        while ($row = mysqli_fetch_array($res)) {
+            $marker = $row[0];
+            $gene = $row[1];
+            $desc = $row[2];
+            $annot_list1[$marker] = $gene;
+        }
+        /**
+         * Get Expression Atlas, only accepts TGACv1
          **/
         $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = 4";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -916,8 +927,8 @@ class Downloads
             $marker = $row[0];
             $gene = $row[1];
             $desc = $row[2];
-            $annot_list3[$marker] = $gene;
-            $annot_list4[$marker] = $desc;
+            $annot_gene[$marker] = $gene;
+            $annot_desc[$marker] = $desc;
         }
 
         $sql = "select experiment_uid, number_entries from phenotype_experiment_info";
@@ -983,8 +994,8 @@ class Downloads
                 foreach ($gwas as $val) {
                     $marker_name = $val[0];
                     $zvalue = $val[3];
-                    if (isset($annot_list3[$marker_name])) {
-                        $gene = $annot_list3[$marker_name];
+                    if (isset($annot_gene[$marker_name])) {
+                        $gene = $annot_gene[$marker_name];
                         $zsum[$gene] += $zvalue;
                         $ztot[$gene]++;
                     }
@@ -1026,25 +1037,40 @@ class Downloads
                     }
                     if (isset($annot_list1[$marker])) {
                         $gene = $annot_list1[$marker];
-                        $exp1 = "<a target=\"_new\" href=\"https://wheat.pw.usda.gov/WheatExp/graph_and_table.php?seq_id=$gene\">WheatExp</a>";
+                        $knetminer1 = "<a target=\"_new\" href=\"http://knetminer.rothamsted.ac.uk/wheat_api/genepage?keyword=" . urlencode($phenotype_name) . "&list=$gene\">keyword</a>";
+                        if (empty($TO)) {
+                            $knetminer2 = "";
+                        } else {
+                            $knetminer2 = "<a target=\"_new\" href=\"http://knetminer.rothamsted.ac.uk/wheat_api/genepage?keyword=$TO&list=$gene\">ontology</a>";
+                        }
                     } else {
-                        $exp1 = "";
+                        $knetminer1 = "";
                     }
                     if (isset($annot_list2[$marker])) {
                         $gene = $annot_list2[$marker];
-                        $exp2 = "<a target=\"_new\" href=\"http://www.wheat-expression.com/genes/1?gene=$gene&studies%5B%5D=DRP000768&studies%5B%5D=ERP003465&studies%5B%5D=ERP004505&studies%5B%5D=SRP004884&studies%5B%5D=SRP013449&studies%5B%5D=SRP017303&studies%5B%5D=SRP022869&studies%5B%5D=SRP028357&studies%5B%5D=SRP029372&studies%5B%5D=SRP038912&studies%5B%5D=SRP041017&studies%5B%5D=SRP041022&studies%5B%5D=ERP008767&studies%5B%5D=SRP045409&studies%5B%5D=INRA-RNASeq&studies%5B%5D=SRP056412&studies%5B%5D=TGAC_genome\">expVIP</a>";
-                        $exp3 = "<a target=\"_new\" href=\"https://www.ebi.ac.uk/gxa/genes/$gene\">EMBL-EBI</a>";
+                        $exp2 = "<a target=\"_new\" href=\"https://www.ebi.ac.uk/gxa/genes/$gene\">EMBL-EBI</a>";
                     } else {
+                        $exp1 = "";
                         $exp2 = "";
-                        $exp3 = "";
                     }
-                    if (isset($annot_list3[$marker])) {
-                        $gene = $annot_list3[$marker];
+                    if ($assembly == 6) {
+                        $gene_set = "RefSeq1.1";
+                    } elseif ($assembly == 5) {
+                        $gene_set = "RefSeq1.0";
+                    } elseif ($assembly == 4) {
+                        $gene_set = "TGACv1";
+                    } else {
+                        $gene_set = "";
+                    }
+                    if (isset($annot_gene[$marker])) {
+                        $gene = $annot_gene[$marker];
+                        $exp1 = "<a target=\"_new\" href=\"http://www.wheat-expression.com/genes/show?gene_set=$gene_set&name=$gene&search_by=gene\">expVIP</a>";
                     } else {
                         $gene = "";
+                        $exp1 = "";
                     }
-                    if (isset($annot_list4[$marker])) {
-                        $desc2 = $annot_list4[$marker];
+                    if (isset($annot_desc[$marker])) {
+                        $desc2 = $annot_desc[$marker];
                     } else {
                         $desc2 = "";
                     }
@@ -1097,17 +1123,6 @@ class Downloads
                     } else {
                         $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly_name] . "$chrom:$start-$stop\">JBrowse</a>";
                     }
-                    if (empty($gene)) {
-                        $knetminer1 = "";
-                        $knetminer2 = "";
-                    } else {
-                        $knetminer1 = "<a target=\"_new\" href=\"http://knetminer.rothamsted.ac.uk/wheat_api/genepage?keyword=" . urlencode($phenotype_name) . "&list=$gene\">keyword</a>";
-                        if (empty($TO)) {
-                            $knetminer2 = "";
-                        } else {
-                            $knetminer2 = "<a target=\"_new\" href=\"http://knetminer.rothamsted.ac.uk/wheat_api/genepage?keyword=$TO&list=$gene\">ontology</a>";
-                        }
-                    }
 
                     if ($gb == "marker") {
                         if (isset($marker_list[$marker])) {
@@ -1130,7 +1145,7 @@ class Downloads
                             $zvalue = number_format($zmeta[$marker], 3);
                             $detail_link = "$ztot[$marker]<td><a id=\"detail\" onclick=\"detailM('$marker')\">Trial details</a>";
                             $output_index[] = $sort_index;
-                            $output_list[] = "<tr><td>$marker_link<td>$chrom<td>$pos<td>$gene_link<td>$desc2<td>$zvalue<td>$detail_link<td>$jbrowse<td>$exp1 $exp2 $exp3<td>$knetminer1 $knetminer2";
+                            $output_list[] = "<tr><td>$marker_link<td>$chrom<td>$pos<td>$gene_link<td>$desc2<td>$zvalue<td>$detail_link<td>$jbrowse<td>$exp1 $exp2<td>$knetminer1 $knetminer2";
                         }
                     } else {
                         if ($gene == "") {
