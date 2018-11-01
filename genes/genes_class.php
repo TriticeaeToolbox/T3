@@ -91,7 +91,7 @@ class Genes
         }
         ?>
         <form>
-        Search Gene Id, Name, or Description:
+        Search Gene Id, Name, Description, or Functional annotation:<br>
         <input type="hidden" name="assembly" value=<?php echo $assembly ?>>
         <input type="text" name="search" value=<?php echo $query ?>>
         <input type="submit" value="Search">
@@ -139,7 +139,7 @@ class Genes
         } else {
             $sql = "select gene_annotation_uid, gene_id, transcript, gene_name, description, bin, uniprot from gene_annotations
                 where assembly_name = \"$assembly\"
-                order by type='mRNA' desc, transcript";
+                order by bin, transcript";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
             $stmt->execute();
             $stmt->store_result();
@@ -150,10 +150,9 @@ class Genes
         if ($count_rows > 10) {
             $next = $pageNum + 1;
             $prev = $pageNum -1;
-            echo "<br>$count_rows found, Page = $pageNum ";
-            echo "<button type=\"button\" onclick=\"javascript: nextPage($prev)\">Prev Page</button>";
+            echo "<br><button type=\"button\" onclick=\"javascript: nextPage($prev)\">Prev Page</button>";
             echo "<button type=\"button\" onclick=\"javascript: nextPage($next)\">Next Page</button>";
-            echo "<br>";
+            echo "    $count_rows found, Page = $pageNum <br>";
         }
    
         $count = 0;
