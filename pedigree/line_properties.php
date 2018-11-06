@@ -12,7 +12,7 @@ require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap.inc';
 $mysqli = connecti();
 $pageTitle = "Select Lines by Properties";
-require $config['root_dir'] . 'theme/admin_header.php';
+require $config['root_dir'] . 'theme/admin_header2.php';
 
 // Clear propvals cookie on initial entry, or if the last action was to save $_SESSION['selected_lines'].
 if (empty($_POST) or $_POST['WhichBtn']) {
@@ -316,26 +316,26 @@ if (!empty($_POST)) {
     }
     if (count($year) != 0) {
         if ($count == 0) {
-          $where .= "line_record_uid IN (select line_record_uid from tht_base, experiments
+            $where .= "line_record_uid IN (select line_record_uid from tht_base, experiments
 where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experiments.experiment_uid)";
-      } else {
-          $where .= " AND line_record_uid IN (select line_record_uid from tht_base, experiments 
+        } else {
+            $where .= " AND line_record_uid IN (select line_record_uid from tht_base, experiments 
 where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experiments.experiment_uid)";
-      }
-      $count++;
-    }
-    if (count($species) != 0)    {
-      // Include as a Property.
-      foreach ($species as $spcs) {
-        if ($stmt = mysqli_prepare($mysqli, "select property_values_uid from property_values where value = ?")) {
-            mysqli_stmt_bind_param($stmt, "s", $spcs);
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_bind_result($stmt, $pvid);
-            mysqli_stmt_fetch($stmt);
-            $propvalids2[] = $pvid;
-            mysqli_stmt_close($stmt);
         }
-      }
+        $count++;
+    }
+    if (count($species) != 0) {
+      // Include as a Property.
+        foreach ($species as $spcs) {
+            if ($stmt = mysqli_prepare($mysqli, "select property_values_uid from property_values where value = ?")) {
+                mysqli_stmt_bind_param($stmt, "s", $spcs);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_bind_result($stmt, $pvid);
+                mysqli_stmt_fetch($stmt);
+                $propvalids2[] = $pvid;
+                mysqli_stmt_close($stmt);
+            }
+        }
     }
     if (count($propvalids) != 0) {
         $geneticStr = implode("','", $propvalids);
@@ -363,37 +363,38 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
         $sql = "select line_ids from linepanels where linepanels_uid = ?";
         if ($stmt = mysqli_prepare($mysqli, $sql)) {
             mysqli_stmt_bind_param($stmt, "i", $p);
-            foreach($panel as $p) {
+            foreach ($panel as $p) {
                 mysqli_stmt_execute($stmt);
                 mysqli_stmt_bind_result($stmt, $uid);
                 mysqli_stmt_fetch($stmt);
                 $idlist .= "$uid,";
             }
             mysqli_stmt_close($stmt);
-      }
-      $idlist = rtrim($idlist, ',');
-      if ($count == 0)    	
-    	$where .= "line_record_uid IN ($idlist)";
-      else    	
-	$where .= " AND line_record_uid IN ($idlist)";
-      $count++;
+        }
+        $idlist = rtrim($idlist, ',');
+        if ($count == 0) {
+            $where .= "line_record_uid IN ($idlist)";
+        } else {
+            $where .= " AND line_record_uid IN ($idlist)";
+        }
+        $count++;
     }
 
     /* Do The Search */
-    if ( (strlen($linenames) == 0)
-	 AND (count($breedingProgram) == 0)
-	 AND (count($year) == 0)
-	 AND (count($species) == 0)
-         AND (count($propvalids) == 0)
-         AND (count($panel) == 0))
-      $linesfound = 0;
-    else  {
-      $TheQuery = "select line_record_uid, line_record_name from line_records where $where";
-      if ($result=mysqli_query($mysqli, $TheQuery)) {
-          $linesfound = mysqli_num_rows($result);
-      } else {
-          $linesfound = 0;
-      }
+    if ((strlen($linenames) == 0)
+       and (count($breedingProgram) == 0)
+       and (count($year) == 0)
+       and (count($species) == 0)
+       and (count($propvalids) == 0)
+       and (count($panel) == 0)) {
+        $linesfound = 0;
+    } else {
+        $TheQuery = "select line_record_uid, line_record_name from line_records where $where";
+        if ($result=mysqli_query($mysqli, $TheQuery)) {
+            $linesfound = mysqli_num_rows($result);
+        } else {
+            $linesfound = 0;
+        }
     }
     //echo "$TheQuery\n";
 
@@ -401,24 +402,28 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
     /* echo "</div><div class='boxContent'><table width=500px><tr><td>"; */
     echo "<form name='lines' action=".$_SERVER['PHP_SELF']." method='post'>";
     // Show failures from the Name box that don't match any line names.
-    foreach ($nonHits as $i) 
-      if ($i != '') echo "<font color=red><b>Line \"$i\" not found.</font></b><br>";
+    foreach ($nonHits as $i) {
+        if ($i != '') {
+            echo "<font color=red><b>Line \"$i\" not found.</font></b><br>";
+        }
+    }
     print "<b>Lines found: $linesfound </b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 
     /* If any hits. */
     if ($linesfound > 0) {
-      if (!isset($_SESSION['selected_lines']) OR count($_SESSION['selected_lines']) == 0) 
-	echo " <input type='submit' name='WhichBtn' value='Add to Selected' style='color:blue; font-size:9pt'>";
-      print "<br><select name='selLines[]' multiple='multiple' style='height: 17em; width: 13em'>";
-      $_SESSION['linesfound'] = array();
-      while ($row = mysqli_fetch_assoc($result)) {
-	$line_record_name = $row['line_record_name'];
-	$line_record_uid = $row['line_record_uid'];
-	echo "<option value='$line_record_uid' selected>$line_record_name</option>";
-	$_SESSION['linesfound'][] = $line_record_uid;
-      }
-      print "</select><br>";
-      print "<button type='button' onclick=\"location.href='".$config['base_url']."pedigree/pedigree_info.php?lf=yes'\">Show line information</button>";
+        if (!isset($_SESSION['selected_lines']) or count($_SESSION['selected_lines']) == 0) {
+            echo " <input type='submit' name='WhichBtn' value='Add to Selected' style='color:blue; font-size:9pt'>";
+        }
+        print "<br><select name='selLines[]' multiple='multiple' style='height: 17em; width: 13em'>";
+        $_SESSION['linesfound'] = array();
+        while ($row = mysqli_fetch_assoc($result)) {
+	    $line_record_name = $row['line_record_name'];
+	    $line_record_uid = $row['line_record_uid'];
+	    echo "<option value='$line_record_uid' selected>$line_record_name</option>";
+	    $_SESSION['linesfound'][] = $line_record_uid;
+        }
+        print "</select><br>";
+        print "<button type='button' onclick=\"location.href='".$config['base_url']."pedigree/pedigree_info.php?lf=yes'\">Show line information</button>";
 
       // If any Currently Selected, offer to combine.
       if (isset($_SESSION['selected_lines']) AND count($_SESSION['selected_lines']) != 0) {   
@@ -428,8 +433,8 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
 	  <input type="radio" name="selectWithin" value="Add">Add (OR)<br>
 	  <input type="radio" name="selectWithin" value="Yes">Intersect (AND)<br>
 	  <input type="submit" name='WhichBtn' value="Combine" style='color:blue'></td>
-	  <?php 
-	  } // end if(isset($_SESSION['selected_lines'])...
+	  <?php
+      } // end if(isset($_SESSION['selected_lines'])...
     } // end if ($linesfound > 0)
     print "</form>";
 } // end if(!empty($_POST))
