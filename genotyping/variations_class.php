@@ -54,8 +54,8 @@ class Variations
      
         //get list of assemblies
         $sql = "select distinct(assemblies.assembly_uid), assemblies.assembly_name,  data_public_flag, assemblies.description, assemblies.created_on
-        from qtl_annotations, assemblies
-        where qtl_annotations.assembly_name = assemblies.assembly_uid order by created_on";
+        from vep_annotations, assemblies
+        where vep_annotations.assembly_name = assemblies.assembly_uid order by created_on";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($result)) {
             //pick latest assembly as default
@@ -176,20 +176,43 @@ class Variations
         if ($count_vep_list == 0) {
             echo "Warning: no local VEP calculations for $assembly_name, use the link in the gene column to show a table with known variations.<br>\n";
         }
+        $count_sel = count($selected_markers);
+        if ($count_sel == 0) {
+            echo "Warning: no markers selected<br>\n";
+        }
 
         $linkOutIdx = array();
         $vepList = array();
         //echo "using assembly $assembly<br>\n";
         /* check in loaded file first if not found then check marker_report_reference */
         foreach ($selected_markers as $marker_uid) {
+            //echo "marker = $marker_uid<br>\n";
             $found = 0;
             $geno_exp = $_SESSION['geno_exps'][0];
-            $sql = "select marker_name, A_allele, B_allele from markers where marker_uid = $marker_uid";
+            $sql = "select marker_name from markers where marker_uid = $marker_uid";
             $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             if ($row = mysqli_fetch_row($result)) {
                 $marker_name = $row[0];
-                $a_allele = $row[1];
-                $b_allele = $row[2];
+                $jbrowse = "";
+                $linkOut = "<tr><td><a href=\"" . $config['base_url'] . "view.php?table=markers&name=$marker_name\">$marker_name</a><td>$jbrowse";
+                if (isset($geneFound[$marker_name])) {
+                    $gene = $geneFound[$marker_name];
+                    $desc = $geneDesc[$gene];
+                    $link = "<a target=\"_new\" href=" . $varLink[$assembly_name] . "?g=$gene>$gene</a>";
+                } else {
+                    $gene = "";
+                    $desc = "";
+                    $link = "";
+                }
+                $count = count($vep_list[$marker_name]);
+                if ($count > 0) {
+                    $found = 1;
+                    $linkOutSort[] = "$linkOut<td>$link<td>$desc<td>$vep_list[$marker_name]";
+                    $linkOutIndx[] = $chrom . $pos;
+                } else {
+                    $linkOutSort[] = "$linkOut<td>$link<td>$desc";
+                    $linkOutIndx[] = $chrom . $pos;
+                }
             } else {
                 echo "Error: invalid marker id $marker_uid<br>\n";
                 continue;
@@ -202,7 +225,6 @@ class Variations
                 //echo "$sql<br>\n";
                 $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli . "<br>$sql<br>"));
                 if ($row = mysqli_fetch_row($result)) {
-                    $found = 1;
                     $chrom = $row[1];
                     $bin = $row[2];
                     $pos = $row[3];
