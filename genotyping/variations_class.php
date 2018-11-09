@@ -169,6 +169,7 @@ class Variations
 
         $linkOutIdx = array();
         $vepList = array();
+        $notFound = "";
         //echo "using assembly $assembly<br>\n";
         /* check in loaded file first if not found then check marker_report_reference */
         foreach ($selected_markers as $marker_uid) {
@@ -190,23 +191,23 @@ class Variations
                 //$linkOutIndx[] = $chrom . $pos;
             }
 
-                $sql = "select markers.marker_name, chrom, bin, pos, A_allele, B_allele, strand from marker_report_reference, markers
-                where marker_report_reference.marker_uid = markers.marker_uid
-                and assembly_name = \"$assembly_name\"
-                and marker_report_reference.marker_uid = $marker_uid";
-                //echo "$sql<br>\n";
-                $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli . "<br>$sql<br>"));
-                if ($row = mysqli_fetch_row($result)) {
-                    $marker_name = $row[0];
-                    $chrom = $row[1];
-                    $bin = $row[2];
-                    $pos = $row[3];
-                    $strand = $row[6];
-                    $start = $pos - 1000;
-                    if ($start < 0) {
-                        $start = 0;
-                    }
-                    $stop = $pos + 1000;
+            $sql = "select markers.marker_name, chrom, bin, pos, A_allele, B_allele, strand from marker_report_reference, markers
+            where marker_report_reference.marker_uid = markers.marker_uid
+            and assembly_name = \"$assembly_name\"
+            and marker_report_reference.marker_uid = $marker_uid";
+            //echo "$sql<br>\n";
+            $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli . "<br>$sql<br>"));
+            if ($row = mysqli_fetch_row($result)) {
+                $marker_name = $row[0];
+                $chrom = $row[1];
+                $bin = $row[2];
+                $pos = $row[3];
+                $strand = $row[6];
+                $start = $pos - 1000;
+                if ($start < 0) {
+                    $start = 0;
+                }
+                $stop = $pos + 1000;
                     if ($strand == "F") {
                         $strand = "+";
                     } elseif ($strand == "R") {
@@ -242,9 +243,15 @@ class Variations
                         $linkOutSort[] = "$linkOut<td>$link<td>$desc";
                         $linkOutIndx[] = $chrom . $pos;
                     }
-                } else {
-                    $notFound .= "$marker_name<br>\n";
-                }
+            } else {
+                if ($found) {
+                    $linkOutSort[] = "$linkOut<td>$link<td>$desc<td>$feature<td>$consequence<td>$impact";
+                    $linkOutIndx[] = $chrom . $pos;
+                 } else {
+                    $linkOutSort[] = "$linkOut<td>$link<td>$desc";
+                    $linkOutIndx[] = $chrom . $pos;
+                 }
+            }
             
         }
 
@@ -282,6 +289,11 @@ class Variations
                 }
                 echo "</table>\n";
             }
+        } else {
+            echo "Warning: no results found<br>\n";
+        }
+        if ($notFound != "") {
+            echo "Warning, markers not found: $notFound<br>\n";
         }
     }
 }
