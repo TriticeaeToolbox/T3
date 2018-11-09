@@ -162,20 +162,6 @@ class Variations
             $geneDesc[$gene] = $desc;
         }
 
-        $sql = "select marker_name, feature, consequence, impact from vep_annotations where assembly_name = \"$assembly\"";
-        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        while ($row = mysqli_fetch_row($result)) {
-            $marker_name = $row[0];
-            if (isset($vep_list[$marker_name])) {
-                $vep_list[$marker_name] .= "<tr><td><td><td><td><td>$row[1]<td>$row[2]<td>$row[3]";
-            } else {
-                $vep_list[$marker_name] = "$row[1]<td>$row[2]<td>$row[3]";
-            }
-        }
-        $count_vep_list = count($vep_list);
-        if ($count_vep_list == 0) {
-            echo "Warning: no local VEP calculations for $assembly_name, use the link in the gene column to show a table with known variations.<br>\n";
-        }
         $count_sel = count($selected_markers);
         if ($count_sel == 0) {
             echo "Warning: no markers selected<br>\n";
@@ -190,34 +176,20 @@ class Variations
             $found = 0;
             $geno_exp = $_SESSION['geno_exps'][0];
             $sql = "select marker_name from markers where marker_uid = $marker_uid";
+            $sql = "select marker_name, feature, consequence, impact from vep_annotations where marker_uid = $marker_uid and assembly_name = \"$assembly\"";
             $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             if ($row = mysqli_fetch_row($result)) {
+                $found = 1;
                 $marker_name = $row[0];
+                $feature = $row[1];
+                $consequence = $row[2];
+                $impact = $row[3];
                 $jbrowse = "";
                 $linkOut = "<tr><td><a href=\"" . $config['base_url'] . "view.php?table=markers&name=$marker_name\">$marker_name</a><td>$jbrowse";
-                if (isset($geneFound[$marker_name])) {
-                    $gene = $geneFound[$marker_name];
-                    $desc = $geneDesc[$gene];
-                    $link = "<a target=\"_new\" href=" . $varLink[$assembly_name] . "?g=$gene>$gene</a>";
-                } else {
-                    $gene = "";
-                    $desc = "";
-                    $link = "";
-                }
-                $count = count($vep_list[$marker_name]);
-                if ($count > 0) {
-                    $found = 1;
-                    $linkOutSort[] = "$linkOut<td>$link<td>$desc<td>$vep_list[$marker_name]";
-                    $linkOutIndx[] = $chrom . $pos;
-                } else {
-                    $linkOutSort[] = "$linkOut<td>$link<td>$desc";
-                    $linkOutIndx[] = $chrom . $pos;
-                }
-            } else {
-                echo "Error: invalid marker id $marker_uid<br>\n";
-                continue;
+                //$linkOutSort[] = "$linkOut<td>$link<td>$desc<td>$feature<td>$consequence<td>$impact";
+                //$linkOutIndx[] = $chrom . $pos;
             }
-            if (!$found) {
+
                 $sql = "select markers.marker_name, chrom, bin, pos, A_allele, B_allele, strand from marker_report_reference, markers
                 where marker_report_reference.marker_uid = markers.marker_uid
                 and assembly_name = \"$assembly_name\"
@@ -225,6 +197,7 @@ class Variations
                 //echo "$sql<br>\n";
                 $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli . "<br>$sql<br>"));
                 if ($row = mysqli_fetch_row($result)) {
+                    $marker_name = $row[0];
                     $chrom = $row[1];
                     $bin = $row[2];
                     $pos = $row[3];
@@ -242,7 +215,6 @@ class Variations
                     if (empty($bin)) {
                         $bin = $chrom;
                     }
-                    $vepList[] = "<tr><td>$bin $pos $pos $row[4]/$row[5] $strand $marker_name\n";
                     if (isset($browserLink[$assembly_name])) {
                         $link = $browserLink[$assembly_name];
                         if (preg_match("/ensemb/", $link)) {
@@ -263,9 +235,8 @@ class Variations
                         $desc = "";
                         $link = "";
                     }
-                    $count = count($vep_list[$marker_name]);
-                    if ($count > 0) {
-                        $linkOutSort[] = "$linkOut<td>$link<td>$desc<td>$vep_list[$marker_name]";
+                    if ($found) {
+                        $linkOutSort[] = "$linkOut<td>$link<td>$desc<td>$feature<td>$consequence<td>$impact";
                         $linkOutIndx[] = $chrom . $pos;
                     } else {
                         $linkOutSort[] = "$linkOut<td>$link<td>$desc";
@@ -274,7 +245,7 @@ class Variations
                 } else {
                     $notFound .= "$marker_name<br>\n";
                 }
-            }
+            
         }
 
         if ($count_vep_list > 0) {
