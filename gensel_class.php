@@ -345,25 +345,25 @@ class Downloads
             } else {
                 echo "error - no selection found";
             }
-      } elseif ($command == "save_p") {
-           $_SESSION['predict_traits'] = $_SESSION['selected_traits'];
-           $_SESSION['predict_trials'] = $_SESSION['selected_trials'];
-           $_SESSION['predict_lines'] = $_SESSION['selected_lines'];
-      } elseif ($command == "clear") {
-           unset($_SESSION['selected_traits']);
-           unset($_SESSION['selected_trials']);
-           unset($_SESSION['selected_lines']);
-           unset($_SESSION['training_traits']);
-           unset($_SESSION['training_trials']);
-           unset($_SESSION['training_lines']);
-           unset($_SESSION['filtered_lines']);
-           unset($_SESSION['phenotype']);
-      } elseif ($command== "clear_p") {
-          unset($_SESSION['selected_traits']);
-          unset($_SESSION['selected_trials']);
-          unset($_SESSION['selected_lines']);
-      }
-      if (empty($_SESSION['selected_lines']) || empty($_SESSION['training_lines'])) {
+        } elseif ($command == "save_p") {
+            $_SESSION['predict_traits'] = $_SESSION['selected_traits'];
+            $_SESSION['predict_trials'] = $_SESSION['selected_trials'];
+            $_SESSION['predict_lines'] = $_SESSION['selected_lines'];
+        } elseif ($command == "clear") {
+            unset($_SESSION['selected_traits']);
+            unset($_SESSION['selected_trials']);
+            unset($_SESSION['selected_lines']);
+            unset($_SESSION['training_traits']);
+            unset($_SESSION['training_trials']);
+            unset($_SESSION['training_lines']);
+            unset($_SESSION['filtered_lines']);
+            unset($_SESSION['phenotype']);
+        } elseif ($command== "clear_p") {
+            unset($_SESSION['selected_traits']);
+            unset($_SESSION['selected_trials']);
+            unset($_SESSION['selected_lines']);
+        }
+        if (empty($_SESSION['selected_lines']) || empty($_SESSION['training_lines'])) {
         ?>
         <table>
         <tr><td><b>Genome Wide Association (consensus genotype)</b><br>
@@ -386,33 +386,33 @@ class Downloads
         
         <p><a href="downloads/genomic-tools.php">Additional notes on GWAS and G-BLUP methods</a><br>
         <?php
-      }
-      if (!empty($_SESSION['training_traits']) && !empty($_SESSION['training_trials'])) {
-        echo "<table>";
-        echo "<tr><td>Set<td>Trials<td>Lines<td>";
-        $p_uid = $_SESSION['training_traits'];
-        $p_uid = $p_uid[0];
-        $sql = "select phenotypes_name from phenotypes where phenotype_uid = $p_uid";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        $row = mysqli_fetch_array($res);
-        echo "<tr><td>Training<td>";
-        if (!empty($_SESSION['training_trials'])) {
-          $tmp = $_SESSION['training_trials'];
-          $e_uid = implode(",",$tmp);
-          $sql = "select trial_code from experiments where experiment_uid IN ($e_uid)";
-          $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-          while ($row = mysqli_fetch_array($res)) {
-            echo "$row[0]<br>";
-          }
         }
-        echo "<td>";
-        if (count($_SESSION['training_lines']) > 0) {
-                  $selectedlines = implode(",", $_SESSION['training_lines']);
-                  $sql_option = " AND lr.line_record_uid IN ($selectedlines)";
-        } else {
-           $sql_option = "";
-        }
-        $sql = "SELECT count(DISTINCT lr.line_record_uid) 
+        if (!empty($_SESSION['training_traits']) && !empty($_SESSION['training_trials'])) {
+            echo "<table>";
+            echo "<tr><td>Set<td>Trials<td>Lines<td>";
+            $p_uid = $_SESSION['training_traits'];
+            $p_uid = $p_uid[0];
+            $sql = "select phenotypes_name from phenotypes where phenotype_uid = $p_uid";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $row = mysqli_fetch_array($res);
+            echo "<tr><td>Training<td>";
+            if (!empty($_SESSION['training_trials'])) {
+                $tmp = $_SESSION['training_trials'];
+                $e_uid = implode(",", $tmp);
+                $sql = "select trial_code from experiments where experiment_uid IN ($e_uid)";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                while ($row = mysqli_fetch_array($res)) {
+                    echo "$row[0]<br>";
+                }
+            }
+            echo "<td>";
+            if (count($_SESSION['training_lines']) > 0) {
+                $selectedlines = implode(",", $_SESSION['training_lines']);
+                $sql_option = " AND lr.line_record_uid IN ($selectedlines)";
+            } else {
+                $sql_option = "";
+            }
+            $sql = "SELECT count(DISTINCT lr.line_record_uid) 
                 FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
                 WHERE pd.tht_base_uid = tb.tht_base_uid
                 $sql_option
@@ -420,21 +420,21 @@ class Downloads
                 AND lr.line_record_uid = tb.line_record_uid
                 AND pd.phenotype_uid = $p_uid
                 AND tb.experiment_uid IN  ($e_uid)";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        $row = mysqli_fetch_array($res);
-        echo "$row[0]";
-        ?>
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $row = mysqli_fetch_array($res);
+            echo "$row[0]";
+            ?>
         <td>
         <form method="LINK" action="gensel.php">
         <input type="hidden" value="web" name="function">
         <input type="hidden" value="clear" name="cmd">
         <input type="submit" value="Clear Selection">
         </form>
-        <?php
-        if (empty($_SESSION['selected_lines'])) {
-            echo "</table>";
-        }
-      } elseif (!empty($_SESSION['phenotype']) && !empty($_SESSION['selected_trials']) ) {
+            <?php
+            if (empty($_SESSION['selected_lines'])) {
+                echo "</table>";
+            }
+        } elseif (!empty($_SESSION['phenotype']) && !empty($_SESSION['selected_trials'])) {
         ?>
         <table>
         <tr><td>Traits<td>Trials<td>Lines<td>Genetic Map
@@ -446,11 +446,11 @@ class Downloads
         $sql = "select phenotypes_name from phenotypes where phenotype_uid IN ($traits)";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_array($res)) {
-          echo "$row[0]<br>";
+            echo "$row[0]<br>";
         }
         echo "<td>";
         $tmp = $_SESSION['selected_trials'];
-        $e_uid = implode(",",$tmp);
+        $e_uid = implode(",", $tmp);
         $sql = "select trial_code from experiments where experiment_uid IN ($e_uid)";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_array($res)) {
@@ -462,20 +462,22 @@ class Downloads
         if (isset($_SESSION['geno_exps'])) {
             $geno_exp = $_SESSION['geno_exps'];
             $geno_str = $geno_exp[0];
-            $sql = "select marker_uid from allele_bymarker_exp_101 where experiment_uid = $geno_str and pos is not null limit 10";
-            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-            if ($row = mysqli_fetch_array($res)) {
-                $sql = "select trial_code from experiments where experiment_uid = $geno_str";
-                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-                $row = mysqli_fetch_array($res);
-                $name = $row[0];
-                echo "using map from genotype experiment<br>$name";
-            } elseif (isset($_SESSION['selected_map'])) {
+            if (isset($_SESSION['selected_map'])) {
                 $sql = "select mapset_name from mapset where mapset_uid = $map";
                 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
                 $row = mysqli_fetch_assoc($res);
                 $map_name = $row['mapset_name'];
                 echo "$map_name";
+            } else {
+                $sql = "select marker_uid from allele_bymarker_exp_101 where experiment_uid = $geno_str and pos is not null limit 10";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                if ($row = mysqli_fetch_array($res)) {
+                    $sql = "select trial_code from experiments where experiment_uid = $geno_str";
+                    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                    $row = mysqli_fetch_array($res);
+                    $name = $row[0];
+                    echo "using map from genotype experiment<br>$name";
+                }
             }
         } elseif (isset($_SESSION['selected_map'])) {
             $sql = "select mapset_name from mapset where mapset_uid = $map";
@@ -1447,8 +1449,90 @@ class Downloads
 		}
 		
 		return $output;
-	}
+    }
 
+    /**
+    /* @param unknown_type $experiments - genotype experiment
+    /* @param unknown_type $traits - phenotypes
+    */
+    
+    public function type1BuildMetaboliteTraitsDownload($experiments, $traits, $datasets, $subset)
+    {
+        global $mysqli;
+        $delimiter = "\t";
+        $output = '';
+
+        $experiments = implode(",", $experiments);
+        if (isset($_SESSION['filtered_lines'])) {
+            $lines = $_SESSION['filtered_lines'];
+        } else {
+            die("Error: should have lines selected<br>\n");
+        }
+        $count = count($lines);
+        echo "$count lines\n";
+        $selectedlines = implode(",", $lines);
+        $outputheader2 = "gid" . $delimiter . "pheno" . $delimiter . "trial" . $delimiter . "year";
+
+        // get a list of all line names in the selected datasets and experiments,
+        // INCLUDING the check lines
+        // AND tht_base.check_line IN ('no')
+        $sql = "SELECT line_record_name, spectra_merged.line_record_uid
+             FROM line_records, spectra_merged
+             WHERE line_records.line_record_uid = spectra_merged.line_record_uid
+             AND spectra_merged.line_record_uid IN ($selectedlines)";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_array($res)) {
+            $lines_names[] = $row['line_record_name'];
+            $line_uid[] = $row['line_record_uid'];
+        }
+        $nlines = count($lines_names);
+        $output = $outputheader2."\n";
+
+        $sql = "select spectra from spectra_index where experiment_uid IN ($experiments)";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        if ($row = mysqli_fetch_array($res)) {
+            $spectra = $row[0];
+            $header_uids = json_decode($spectra, true);
+            $found = -1;
+            foreach ($header_uids as $key => $val) {
+                if ($val == $traits) {
+                    $found = $key;
+                }
+            }
+            if ($found == -1) {
+                echo "$traits trait not found\n";
+                return;
+            }
+        } else {
+            echo "$experiments experiment not found\n";
+        }
+
+        $sql = "select experiment_year from experiments where experiment_uid IN ($experiments)";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        if ($row = mysqli_fetch_array($res)) {
+            $year = $row[0];
+        } else {
+            echo "$experiment not found $sql\n";
+        }
+
+        // loop through all the lines in the file
+        for ($i=0; $i<$nlines; $i++) {
+            $uid = $line_uid[$i];
+            $sql = "select experiment_uid, spectra from spectra_merged 
+                where experiment_uid IN  ($experiments)
+                and line_record_uid = $uid";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            while ($row = mysqli_fetch_array($res)) {
+                $uid = $row[0];
+                $spectra = $row[1];
+                $line_ary = explode(",", $spectra);
+                $value = $line_ary[$found];
+                $outline = "'$lines_names[$i]'".$delimiter.$value.$delimiter.$uid.$delimiter.$year."\n";
+                $output .= $outline;
+            }
+        }
+        return $output;
+    }
     /**
      * Build trait download file for Tassel program interface
      * @param unknown_type $experiments
