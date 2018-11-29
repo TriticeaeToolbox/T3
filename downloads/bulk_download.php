@@ -10,9 +10,9 @@ $mysqli = connecti();
 
 if (isset($_GET['query'])) {
     header("Content-type: application/vnd.ms-excel");
-    header("Content-Disposition: attachment;Filename=LineRecords.csv");
     $query = $_GET['query'];
     if ($query == "phenotype_data") {
+        header("Content-Disposition: attachment;Filename=PhenotypeData.csv");
         $sql = "select line_record_uid, line_record_name from line_records";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($result)) {
@@ -41,6 +41,7 @@ if (isset($_GET['query'])) {
             echo "$line_name,$exp_name,$phen_name,$value\n";
         }
     } elseif ($query == "lines") {
+        header("Content-Disposition: attachment;Filename=LineRecords.csv");
         $sql = "select line_record_uid, barley_ref_number from barley_pedigree_catalog_ref";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($result)) {
@@ -103,6 +104,7 @@ if (isset($_GET['query'])) {
             echo "\"$row[1]\",\"$gr\",\"$synonym\",\"$row[2]\",\"$parent1\",\"$parent2\",\"$pedigree_string\",\"$row[4]\"\n";
         }
     } elseif ($query == "properties") {
+        header("Content-Disposition: attachment;Filename=LineProperties.csv");
         $sql = "select line_record_uid, line_record_name from line_records";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($result)) {
