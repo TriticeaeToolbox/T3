@@ -1168,7 +1168,9 @@ class Downloads
         $nexp=substr_count($experiments, ',')+1;
       
         //$traits = explode(',', $traits);
-        //$experiments = explode(',', $experiments);
+        if (is_array($experiments)) {
+            $experiments = implode(',', $experiments);
+        }
       
         // figure out which traits are at which location
         if ($experiments=="") {
@@ -1569,8 +1571,8 @@ class Downloads
                   fwrite($h, "$line_name\t$allele_str\n");
 		}
 		if ($nelem == 0) {
-		    die("error - no genotype or marker data for this selection");
-        }
+                    die("error - no genotype or marker data for this selection");
+            }
     }
 
     private function markerDownloadExpFlapjack($geno_exp, $lines, $h)
@@ -1579,7 +1581,6 @@ class Downloads
         global $config;
         $sql = "select marker_index from allele_byline_expidx where experiment_uid = $geno_exp";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-        echo "<br>$sql<br>\n";
         if ($row = mysqli_fetch_array($res)) {
             $marker_uid_list = json_decode($row[0], true);
         } else {
@@ -1596,7 +1597,7 @@ class Downloads
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $marker_list[$row[0]] = $row[1];
-        } 
+        }
         $outputheader = "# fjFile = GENOTYPE\n";
         $outputheader .= "# fjDatabaseLineSearch = https:" . $config['base_url'] . "view.php?table=line_records&name=\$LINE\n";
         $outputheader .= "# fjDatabaseMarkerSearch = https:" . $config['base_url'] . "view.php?table=markers&name=\$MARKER\n\t";

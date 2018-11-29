@@ -1545,44 +1545,49 @@ class Downloads
      * if trait measured more than once then add AVG() and GROUP by
      * for R script the line names have to be quoted or special characters will cause problems
      */
-    function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset) {
-      global $mysqli;
-      $delimiter = "\t";
-      $output = '';
-      $outputheader1 = '';
-      $outputheader3 = "<Trial>";
-      $removeOutlier = "";
-      
-      //only use first trait
-      $pattern = "/([0-9]+)/";
-      if (preg_match($pattern,$traits,$match)) {
-        $traits = $match[1];
-      } else {
-        echo "error - can not identify trait $traits\n";
-        die();
-      }
-      
-      if (isset($_SESSION['filtered_lines'])) {
-        $lines = $_SESSION['filtered_lines'];
-      } else {
-        die("Error: should have lines selected<br>\n");
-      }
-      $selectedlines = implode(",", $lines);
-      $outputheader2 = "gid" . $delimiter . "pheno" . $delimiter . "trial" . $delimiter . "year";
+    public function type1_build_tassel_traits_download($experiments, $traits, $datasets, $subset)
+    {
+        global $mysqli;
+        $delimiter = "\t";
+        $output = '';
+        $outputheader1 = '';
+        $outputheader3 = "<Trial>";
+        $removeOutlier = "";
+     
+        if (is_array($experiments)) {
+            $experiments = implode(',', $experiments);
+        }
 
-		$sql_option = "";
-		if ($subset == "yes" && count($_SESSION['filtered_lines']) > 0) {
-		  $selectedlines = implode(",", $_SESSION['filtered_lines']);
-		  $sql_option = " AND lr.line_record_uid IN ($selectedlines)";
-                } else {
-                  die("Error: should have lines selected<br>\n");
-                }
-		if (preg_match("/\d/",$experiments)) {
-		  $sql_option .= "AND tb.experiment_uid IN ($experiments)";
-		}
-		if (preg_match("/\d/",$datasets)) {
-		  $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
-		}
+        //only use first trait
+        $pattern = "/([0-9]+)/";
+        if (preg_match($pattern, $traits, $match)) {
+            $traits = $match[1];
+        } else {
+            echo "error - can not identify trait $traits\n";
+            die();
+        }
+      
+        if (isset($_SESSION['filtered_lines'])) {
+            $lines = $_SESSION['filtered_lines'];
+        } else {
+            die("Error: should have lines selected<br>\n");
+        }
+        $selectedlines = implode(",", $lines);
+        $outputheader2 = "gid" . $delimiter . "pheno" . $delimiter . "trial" . $delimiter . "year";
+
+	$sql_option = "";
+	if ($subset == "yes" && count($_SESSION['filtered_lines']) > 0) {
+            $selectedlines = implode(",", $_SESSION['filtered_lines']);
+            $sql_option = " AND lr.line_record_uid IN ($selectedlines)";
+        } else {
+            die("Error: should have lines selected<br>\n");
+        }
+	if (preg_match("/\d/",$experiments)) {
+            $sql_option .= "AND tb.experiment_uid IN ($experiments)";
+	}
+	if (preg_match("/\d/",$datasets)) {
+            $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
+	}
 			
           // get a list of all line names in the selected datasets and experiments,
 	  // INCLUDING the check lines // AND tht_base.check_line IN ('no')
