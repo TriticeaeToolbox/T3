@@ -12,7 +12,35 @@ if (isset($_GET['query'])) {
     header("Content-type: application/vnd.ms-excel");
     header("Content-Disposition: attachment;Filename=LineRecords.csv");
     $query = $_GET['query'];
-    if ($query == "lines") {
+    if ($query == "phenotype_data") {
+        $sql = "select line_record_uid, line_record_name from line_records";
+        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_row($result)) {
+            $line_list[$row[0]] = $row[1];
+        }
+        $sql = "select experiment_uid, trial_code from experiments";
+        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_row($result)) {
+            $exp_list[$row[0]] = $row[1];
+        }
+        $sql = "select phenotype_uid, phenotypes_name from phenotypes";
+        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_row($result)) {
+            $phen_list[$row[0]] = $row[1];
+        }
+        
+        echo "Line name,Trial,Trait,Value\n";
+        $sql = "select line_record_uid, experiment_uid, phenotype_uid, value from phenotype_data, tht_base
+            where phenotype_data.tht_base_uid = tht_base.tht_base_uid";
+        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_row($result)) {
+            $line_name = $line_list[$row[0]];
+            $exp_name = $exp_list[$row[1]];
+            $phen_name = $phen_list[$row[2]];
+            $value = $row[3];
+            echo "$line_name,$exp_name,$phen_name,$value\n";
+        }
+    } elseif ($query == "lines") {
         $sql = "select line_record_uid, barley_ref_number from barley_pedigree_catalog_ref";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($result)) {
@@ -59,6 +87,8 @@ if (isset($_GET['query'])) {
             if (isset($parent_list[$lineuid])) {
                 $parent1 = $parent_list[$lineuid]['parent1Name'];
                 $parent2 = $parent_list[$lineuid]['parent2Name'];
+                $parent1 = str_replace("\"", "_", $parent1);
+                $parent2 = str_replace("\"", "_", $parent2);
             } else {
                 $parent1 = "";
                 $parent2 = "";
@@ -68,7 +98,9 @@ if (isset($_GET['query'])) {
             } else {
                 $synonym = "";
             }
-            echo "\"$row[1]\",\"$gr\",\"$synonym\",\"$row[2]\",\"$parent1\",\"$parent2\",\"$row[3]\",\"$row[4]\"\n";
+            $pedigree_string = $row[3];
+            $pedigree_string = str_replace("\"", "_", $pedigree_string);
+            echo "\"$row[1]\",\"$gr\",\"$synonym\",\"$row[2]\",\"$parent1\",\"$parent2\",\"$pedigree_string\",\"$row[4]\"\n";
         }
     } elseif ($query == "properties") {
         $sql = "select line_record_uid, line_record_name from line_records";
@@ -110,6 +142,8 @@ if (isset($_GET['query'])) {
     }
     $url = $config['base_url'] . "downloads/bulk_download.php?query=properties";
     echo "<br><a href=\"$url\">Genetic characters</a>";
+    $url = $config['base_url'] . "downloads/bulk_download.php?query=phenotype_data";
+    echo "<br><a href=\"$url\">Phenotype data</a>";
     echo "</div>";
     include $config['root_dir'].'theme/footer.php';
 }
