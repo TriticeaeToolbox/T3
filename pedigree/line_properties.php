@@ -417,24 +417,24 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
         print "<br><select name='selLines[]' multiple='multiple' style='height: 17em; width: 13em'>";
         $_SESSION['linesfound'] = array();
         while ($row = mysqli_fetch_assoc($result)) {
-	    $line_record_name = $row['line_record_name'];
-	    $line_record_uid = $row['line_record_uid'];
-	    echo "<option value='$line_record_uid' selected>$line_record_name</option>";
-	    $_SESSION['linesfound'][] = $line_record_uid;
+            $line_record_name = $row['line_record_name'];
+            $line_record_uid = $row['line_record_uid'];
+            echo "<option value='$line_record_uid' selected>$line_record_name</option>";
+            $_SESSION['linesfound'][] = $line_record_uid;
         }
         print "</select><br>";
         print "<button type='button' onclick=\"location.href='".$config['base_url']."pedigree/pedigree_info.php?lf=yes'\">Show line information</button>";
 
-      // If any Currently Selected, offer to combine.
-      if (isset($_SESSION['selected_lines']) AND count($_SESSION['selected_lines']) != 0) {   
-	?>
-	<td style="width: 130px; padding: 8px">Combine with <font color=blue>currently<br>selected lines</font>:<br>
-	  <input type="radio" name="selectWithin" value="Replace" checked>Replace<br>
-	  <input type="radio" name="selectWithin" value="Add">Add (OR)<br>
-	  <input type="radio" name="selectWithin" value="Yes">Intersect (AND)<br>
-	  <input type="submit" name='WhichBtn' value="Combine" style='color:blue'></td>
-	  <?php
-      } // end if(isset($_SESSION['selected_lines'])...
+        // If any Currently Selected, offer to combine.
+        if (isset($_SESSION['selected_lines']) and count($_SESSION['selected_lines']) != 0) {
+        ?>
+        <td style="width: 130px; padding: 8px">Combine with <font color=blue>currently<br>selected lines</font>:<br>
+        <input type="radio" name="selectWithin" value="Replace" checked>Replace<br>
+        <input type="radio" name="selectWithin" value="Add">Add (OR)<br>
+        <input type="radio" name="selectWithin" value="Yes">Intersect (AND)<br>
+        <input type="submit" name='WhichBtn' value="Combine" style='color:blue'></td>
+        <?php
+        } // end if(isset($_SESSION['selected_lines'])...
     } // end if ($linesfound > 0)
     print "</form>";
 } // end if(!empty($_POST))
@@ -507,18 +507,22 @@ if (count($verify_selected_lines)!=0 or count($verify_session)!=0) {
     $display = $_SESSION['selected_lines'] ? "":" style='display: none;'";
     echo "<div id='squeeze' $display>";
     echo "<td><b><font color=blue>Currently selected lines</font>: $selectedcount</b>";
-    //print "<form id=\"deselLinesForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\" $display>";
     print "<form id=\"deselLinesForm\" action=\"".$_SERVER['PHP_SELF']."\" method=\"post\">";
     print "<select name=\"deselLines[]\" multiple=\"multiple\" style=\"height: 15em;width: 13em\">";
     foreach ($_SESSION['selected_lines'] as $lineuid) {
         $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
         if ($row=mysqli_fetch_assoc($result)) {
             $selval=$row['line_record_name'];
-            print "<option value=\"$lineuid\" selected>$selval</option>\n";
         } else {
-            print "<option value=\"$lineuid\" selected>unknown</option>\n";
+            $selval="unknown";
         }
+        $sortedLines[$lineuid] = $selval;
     }
+    sort($sortedLines);
+    foreach ($sortedLines as $lineuid => $selval) {
+        print "<option value=\"$lineuid\" selected>$selval</option>\n";
+    }
+     
     print "</select>";
     print "<br><input type='submit' name='WhichBtn[sel]' value='Select highlighted lines' />";
     print "<br><input type='submit' name='WhichBtn[del]' value='Deselect highlighted lines' />";
