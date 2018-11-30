@@ -518,7 +518,7 @@ if (count($verify_selected_lines)!=0 or count($verify_session)!=0) {
         }
         $sortedLines[$lineuid] = $selval;
     }
-    sort($sortedLines);
+    asort($sortedLines);
     foreach ($sortedLines as $lineuid => $selval) {
         print "<option value=\"$lineuid\" selected>$selval</option>\n";
     }
