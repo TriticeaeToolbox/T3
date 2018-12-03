@@ -32,8 +32,8 @@ if (isset($_GET['page'])) {
 }
 
 /* Array of our supported calls */
-$ourcalls['allelematrices'] = ['dataTypes' => ["flapjack","csv"], 'methods' => ["GET"], 'versions' => ["1.3"]];
-$ourcalls['allelematrix-search'] = ['dataTypes' => ["json", "flapjack","tsv"], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
+$ourcalls['allelematrices'] = ['dataTypes' => ["csv"], 'methods' => ["GET"], 'versions' => ["1.3"]];
+$ourcalls['allelematrix-search'] = ['dataTypes' => ["json", "tsv"], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
 $ourcalls['allelematrix-search/status'] = ['dataTypes' => ["json" ], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
 $ourcalls['allelematrices/{studyDbId}'] = ['dataTypes' => ["json"], 'methods' => ["GET"], 'versions' => ["1.3"]];
 $ourcalls['markerprofiles'] = ['dataTypes' => ["json"], 'methods' => ["GET"], 'versions' => ["1.3"]];

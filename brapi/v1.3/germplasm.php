@@ -96,7 +96,7 @@ if ($rest[1] == "pedigree") {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $line_record_name, $pedigree);
         if (mysqli_stmt_fetch($stmt)) {
-            $response["germplasmDbId"] = "$lineuidi";
+            $response["germplasmDbId"] = "$lineuid";
             $response['defaultDisplayName'] = $line_record_name;
             if (preg_match("/[A-Za-z0-9]/", $pedigree)) {
                 $response['pedigree'] = $pedigree;
