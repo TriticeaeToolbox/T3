@@ -84,14 +84,23 @@ class Genes
 
     private function displayQuery($assembly)
     {
+        global $config;
         if (isset($_GET['search'])) {
             $query = $_GET['search'];
         } else {
             $query = "";
         }
         ?>
+        Search Gene Id, Name, Description, or Functional annotation:<br>
+        Example Queries:
+        <?php
+        echo "<a href=" . $config['base_url'] . "genes/?assembly=" . $assembly . "&search=Maturase>Maturase</a>, ";
+        echo "<a href=" . $config['base_url'] . "genes/?assembly=" . $assembly . "&search=TraesCS3D02G273600>TraesCS3D02G273600</a>, ";
+        //echo "<a href=" . $config['base_url'] . "genes/?assembly=" . $assembly . "&search=HORVU2Hr1G069650>HORVU2Hr1G069650</a>, ";
+        //echo "<a href=" . $config['base_url'] . "genes/?assembly=" . $assembly . "&search=abp1>abp1</a>, ";
+        echo "<a href=" . $config['base_url'] . "genes/?assembly=" . $assembly . "&search=Dormancy>Dormancy</a><br><br>";
+        ?>
         <form>
-        Search Gene Id, Name, or Description:
         <input type="hidden" name="assembly" value=<?php echo $assembly ?>>
         <input type="text" name="search" value=<?php echo $query ?>>
         <input type="submit" value="Search">
@@ -125,7 +134,7 @@ class Genes
         if (isset($_GET['search'])) {
             $query = $_GET['search'];
             $param = "%" . $query . "%";
-            $sql = "select gene_annotation_uid, gene_id, transcript, gene_name, description, bin, uniprot from gene_annotations
+            $sql = "select gene_annotation_uid, gene_id, transcript, type, gene_name, description, bin, uniprot from gene_annotations
                 where assembly_name = ? 
                 and (description like ? OR gene_name like ? OR gene_id like ? OR uniprot like ?)";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
@@ -136,41 +145,30 @@ class Genes
             $sql .= " limit 10 offset $offset";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
             $stmt->bind_param("sssss", $assembly, $param, $param, $param, $param) or die(mysqli_error($mysqli));
-        } else {
-            $sql = "select gene_annotation_uid, gene_id, transcript, gene_name, description, bin, uniprot from gene_annotations
-                where assembly_name = \"$assembly\"
-                order by type='mRNA' desc, transcript";
-            $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
-            $stmt->execute();
-            $stmt->store_result();
-            $count_rows = $stmt->num_rows;
-            $sql .= " limit 10 offset $offset";
-            $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
-        }
-        if ($count_rows > 10) {
-            $next = $pageNum + 1;
-            $prev = $pageNum -1;
-            echo "<br>$count_rows found, Page = $pageNum ";
-            echo "<button type=\"button\" onclick=\"javascript: nextPage($prev)\">Prev Page</button>";
-            echo "<button type=\"button\" onclick=\"javascript: nextPage($next)\">Next Page</button>";
-            echo "<br>";
-        }
-   
-        $count = 0;
-        $stmt->execute();
-        $stmt->bind_result($uid, $gene_id, $transcript, $gene_name, $desc, $bin, $uniprot);
-        while ($stmt->fetch()) {
-            if ($count == 0) {
-                echo "<table><tr><td>Gene Id<td>Transcript<td>Name<td>Bin<td>Description<td>Functional annotation\n";
+            if ($count_rows > 10) {
+                $next = $pageNum + 1;
+                $prev = $pageNum -1;
+                echo "<br><button type=\"button\" onclick=\"javascript: nextPage($prev)\">Prev Page</button>";
+                echo "<button type=\"button\" onclick=\"javascript: nextPage($next)\">Next Page</button>";
+                echo "    $count_rows found, Page = $pageNum <br>";
             }
-            $count++;
-            echo "<tr><td><a href=\"view.php?table=gene_annotations&uid=$uid\">$gene_id</a><td>$transcript<td>$gene_name<td>$bin<td>$desc<td>$uniprot\n";
-        }
-        $stmt->close();
-        if ($count > 0) {
-            echo "</table><br>";
-        } else {
-            echo "No matches found<br>\n";
+   
+            $count = 0;
+            $stmt->execute();
+            $stmt->bind_result($uid, $gene_id, $transcript, $type, $gene_name, $desc, $bin, $uniprot);
+            while ($stmt->fetch()) {
+                if ($count == 0) {
+                    echo "<table><tr><td>Gene Id<td>Transcript<td>Type<td>Name<td>Bin<td>Description<td>Functional annotation\n";
+                }
+                $count++;
+                echo "<tr><td><a href=\"view.php?table=gene_annotations&uid=$uid\">$gene_id</a><td>$transcript<td>$type<td>$gene_name<td>$bin<td>$desc<td>$uniprot\n";
+            }
+            $stmt->close();
+            if ($count > 0) {
+                echo "</table><br>";
+            } else {
+                echo "No matches found<br>\n";
+            }
         }
     }
 }

@@ -31,7 +31,8 @@ function hide_index(pheno_uid) {
 
 function run_compare(unq_file) {
     var url = php_self + "?function=calculate" + "&unq=" + unq_file + "&index=" + index + "&formula=" + formula2 + "&type=" + ptype;
-    var tmp = new Ajax.Updater($('step3'), url, {
+    new Ajax.Updater($('step3'), url, {
+        method : 'get',
         onComplete : function () {
             $('step3').show();
             document.title = title;
@@ -41,7 +42,8 @@ function run_compare(unq_file) {
 
 function run_compare2(unq_file) {
     var url = php_self + "?function=plotManyTrials" + "&unq=" + unq_file + "&index=" + index + "&formula=" + formula2 + "&type=" + ptype;
-    var tmp = new Ajax.Updater($('step3'), url, {
+    new Ajax.Updater($('step3'), url, {
+        method : 'get',
         onComplete : function () {
             $('step3').show();
             document.title = title;
@@ -63,13 +65,14 @@ function twoTrials(frm) {
         e= document.getElementById("pheno");
         pheno = e.options[e.selectedIndex].value;
 	var url = php_self + "?function=download_session_v4&unq=" + unq_file + "&pheno=" + pheno + "&trial1=" + trial1 + "&trial2=" + trial2;
-	var tmp = new Ajax.Updater($('step2'), url, {
-        onComplete : function() {
-            $('step2').show();
-            document.title = title;
-            run_compare(unq_file);
-        }
-    });
+	new Ajax.Updater($('step2'), url, {
+            method : 'get',
+            onComplete : function() {
+                $('step2').show();
+                document.title = title;
+                run_compare(unq_file);
+            }
+        });
 }
 
 function manyTrials(frm) {
@@ -78,7 +81,8 @@ function manyTrials(frm) {
     var e= document.getElementById("pheno");
     pheno = e.options[e.selectedIndex].value;
     var url = php_self + "?function=download_session_v4&unq=" + unq_file + "&pheno=" + pheno;
-        var tmp = new Ajax.Updater($('step2'), url, {
+    new Ajax.Updater($('step2'), url, {
+        method : 'get',
         onComplete : function() {
             $('step2').show();
             document.title = title;
@@ -114,11 +118,12 @@ function update_pheno(options) {
                 }
             });
         var url = php_self + "?function=status&pheno=" + pheno;
-        var tmp = new Ajax.Updater($('step2'), url, {
-        onComplete : function() {
-            $('step2').show();
-            document.title = title;
-        }
+        new Ajax.Updater($('step2'), url, {
+            method : 'get',
+            onComplete : function() {
+                $('step2').show();
+                document.title = title;
+            }
         });
 }
 
