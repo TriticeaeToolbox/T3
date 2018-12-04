@@ -134,7 +134,7 @@ if ($action == "list") {
             $data["programName"] = $row2[0];
         }
         if ($row[2] == "phenotype") {
-            $seasons = array();
+            $seasons = null;
             $sql = "select planting_date, harvest_date from phenotype_experiment_info where experiment_uid = $uid";
             $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
             if ($row2 = mysqli_fetch_row($res2)) {
@@ -164,7 +164,7 @@ if ($action == "list") {
                 }
             }
         } else {
-            $seasons = array();
+            $seasons = null;
             $sql = "select processing_date from genotype_experiment_info where experiment_uid = $uid";
             $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
             if ($row2 = mysqli_fetch_row($res2)) {
