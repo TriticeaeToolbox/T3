@@ -15,9 +15,11 @@ function displayPathways()
     }
 
     echo "<h2>Pathways</h2>";
-    echo "Information provided by <a href=\"https://www.ncbi.nlm.nih.gov/pubmed/27799469\" target=\"_new\">Plant Reactome</a>: ";
-    echo "a resource for plant pathways and comparative analysis. Using curated rice pathways as a reference,<br> the Plant Reactome predicts ";
-    echo "pathways in other plant species on the basis of Compara and Inparanoid super-cluster orthology. Using the Feb 2018 (58b) release.<br>\n";
+    echo "Information provided by <a href=\"https://www.ncbi.nlm.nih.gov/pubmed/27799469\" target=\"_new\">";
+    echo "Plant Reactome</a>: a resource for plant metabolic and regulatory pathways and comparative analysis. ";
+    echo "Using curated rice pathways as a reference,<br> the Plant Reactome predicts ";
+    echo "pathways in other plant species on the basis of Compara and Inparanoid super-cluster orthology. ";
+    echo "The database uses the Oct 2018 (59) release of Plant Reactome.<br>\n";
     echo "The Plant Reactome Id links to the \"Pathway Browser\" at plantreactome.gramene.org.<br>";
     echo "The Pathway Name links to a list of genes contained in the given pathway.<br><br>";
 
