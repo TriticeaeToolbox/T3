@@ -246,49 +246,47 @@ function display_uploaded_file($filename)
     $data->setOutputEncoding('CP1251');
     $data->read($filename);
 
-    //$data->trimSheet(0); 	//new function that I added to trim columns
-
     /* Setting Error Reporting */
-	error_reporting(E_ALL ^ E_NOTICE);
-		
-	/* Show in table format */
-	print "<table class=\"tableclass1\">";
-	for ($i = 1; $i <= $data->sheets[0]['numRows']; $i++) {
+    error_reporting(E_ALL ^ E_NOTICE);
 
-		/* Determine Row Colors */
-		if($i == 1) 
-			echo "<thead>";
-		if($i == 3)
-			echo "</thead>";
-
-		/* Print Row */
-		print "\n\t<tr>";
-		for ($j = 1; $j <= $data->sheets[0]['numCols']; $j++) {
-			echo "\n\t\t<td class=\"$class\">".$data->sheets[0]['cells'][$i][$j]."</td>";
-		}
-		echo "\n\t</tr>";
-	}
-	print "\n</table>";
+    /* Show in table format */
+    print "<table class=\"tableclass1\">";
+    for ($i = 1; $i <= $data->sheets[0]['numRows']; $i++) {
+        /* Determine Row Colors */
+        if ($i == 1) {
+            echo "<thead>";
+        } elseif ($i == 3) {
+            echo "</thead>";
+        }
+        /* Print Row */
+        print "\n\t<tr>";
+        for ($j = 1; $j <= $data->sheets[0]['numCols']; $j++) {
+            echo "\n\t\t<td class=\"$class\">".$data->sheets[0]['cells'][$i][$j]."</td>";
+        }
+        echo "\n\t</tr>";
+    }
+    print "\n</table>";
 }
 
 /**
- * add_attribute 
+ * add_attribute
  * try to add an attribute to a table in a MySQL database
- * 
+ *
  * @params string $key, string $value, string $tablename, string $keyid
  * @return array ( int $flag, int $id) $flag=-1->N/A, 0->duplicate, 1->OK, $id the record number
- */ 
-function add_attribute ($key, $value, $tablename, $keyid) {
-global $mysqli;
-	$id=-1;
-	$flag=-1;
-	$value = addslashes($value);
+ */
+function add_attribute($key, $value, $tablename, $keyid)
+{
+    global $mysqli;
+    $id=-1;
+    $flag=-1;
+    $value = addslashes($value);
 
-	if (! isset($value) || $value=='') {
-		$value="N/A";
-	}
+    if (! isset($value) || $value=='') {
+	$value="N/A";
+    }
 
-	$result=mysqli_query($mysqli, "SELECT * FROM $tablename WHERE $key=\"$value\"");
+    $result=mysqli_query($mysqli, "SELECT * FROM $tablename WHERE $key=\"$value\"");
 	$num_rows=mysqli_num_rows($result);
 
 	if ($num_rows <= 0) {
@@ -1088,7 +1086,7 @@ function displayTable($query, $sortable=FALSE, $link="") {
 
 		foreach($row as $k=>$v) {
 			if(isset($tables[$k])) {
-				$v = "<a href=\"view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
+				$v = "<a href=" . $config['base_url']."view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
 			}
 			$ret .= "\t<td>$v</td>\n";
 		}
@@ -1141,7 +1139,7 @@ function displayTableConvert($query, $sortable=FALSE, $lookup) {
 
                 foreach($row as $k=>$v) {
                         if(isset($tables[$k])) {
-                                $v = "<a href=\"view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
+                                $v = "<a href=".$config['base_url']."view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
                                 $ret .= "\t<td>$v</td>\n";
                         } else {
                                 $ret .= "\t<td>$lookup[$v]</td>\n";
@@ -1190,7 +1188,7 @@ function displayTableSigdig($query, $sortable=FALSE, $sigdig, $link="") {
     // table body contents
     foreach($row as $k=>$v) {
       if (isset($tables[$k])) 
-        $v = "<a href=\"view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
+        $v = "<a href=".$config['base_url']."view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
       if (strcmp($k, "trial_code") == 0) { 
         $v = "<a href=\"display_phenotype.php?trial_code=" . urlencode($v) . "\">$v</a>";
       }
@@ -1243,9 +1241,9 @@ function displayLinePheno($query, $sortable=TRUE, $sigdig, $link="") {
     // table body contents
     foreach($row as $k=>$v) {
       if(isset($tables[$k])) 
-	$v = "<a href=\"view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
+	$v = "<a href=".$config['base_url']."view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
       if(strcmp($k,"Trait") == 0) 
-	$v = "<a href=\"view.php?table=phenotypes" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
+	$v = "<a href=".$config['base_url']."view.php?table=phenotypes" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
       if(strcmp($k,"Trial") == 0) 
 	$v = "<a href=\"display_phenotype.php?trial_code=" . urlencode($v) . "\">$v</a>";
       if(strcmp($k,"value") == 0 && $sigdig>=0) {
