@@ -442,12 +442,13 @@ function HTMLProcessForgot()
     if (isRegistered($email)) {
         $key = setting('passresetkey');
         $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-        send_email($email, "T3: Reset Your Password",
-        "Hi,
-Per your request, please visit the following URL to reset your password:
-https:{$root}resetpass.php?token=$urltoken");
-        return "An email has been sent to you with a link to reset your
-password.";
+        send_email(
+            $email,
+            "T3: Reset Your Password",
+            "Hi, Per your request, please visit the following URL to reset your password:
+            {$root}resetpass.php?token=$urltoken"
+        );
+        return "An email has been sent to you with a link to reset your password.";
     } else {
         return "<h3 style='color: red'>No such user, please register.</h3>";
     }
@@ -541,18 +542,20 @@ if (isset($_POST['submit_login'])) {
         }
         $key = setting('encryptionkey');
         $urltoken = urlencode(AESEncryptCtr($email, $key, 128));
-        send_email($email, "T3 registration in progress",
-"Thank you for requesting an account on T3.
+        send_email(
+            $email,
+            "T3 registration in progress",
+            "Thank you for requesting an account on T3.
 
-To complete your registration, please confirm that you requested it 
-by visiting the following URL:
-https:{$root}fromemail.php?token=$urltoken
+    To complete your registration, please confirm that you requested it 
+    by visiting the following URL:
+    {$root}fromemail.php?token=$urltoken
 
-Your registration will be complete when you have performed this step.
+    Your registration will be complete when you have performed this step.
 
-Sincerely,
-The Triticeae Toolbox Team
-");
+    Sincerely,
+    The Triticeae Toolbox Team"
+        );
     }
     echo HTMLRegistrationSuccess($name, $email);
 } elseif (isset($_POST['submit_registration'])) {
@@ -571,21 +574,19 @@ The Triticeae Toolbox Team
         $error = true;
         $error_msg .= "- You must provide your name.\n";
     }
-   if (empty($email)) {
-     $error = true;
-     $error_msg .= "- You must provide your e-mail addresses.\n";
-   }
-   else {
-     if (empty($cemail) || $email != $cemail) {
-       $error = true;
-       $error_msg .= "- The e-mail address you provided don't match.\n";
-     }
-   }	
-   if (empty($password)) {
-     $error = true;
-     $error_msg .= "- You must provide a password.\n";
-   }
-   else {
+    if (empty($email)) {
+        $error = true;
+        $error_msg .= "- You must provide your e-mail addresses.\n";
+    } else {
+        if (empty($cemail) || $email != $cemail) {
+            $error = true;
+            $error_msg .= "- The e-mail address you provided don't match.\n";
+        }
+    }
+    if (empty($password)) {
+        $error = true;
+        $error_msg .= "- You must provide a password.\n";
+    } else {
      if (empty($cpassword) || $password != $cpassword) {
        $error = true;
        $error_msg .= "- The passwords you provided don't match.\n";
@@ -650,7 +651,7 @@ Thank you for requesting an account on T3.
 
 To complete your registration, please confirm that you requested it 
 by visiting the following URL:
-https:{$root}fromemail.php?token=$urltoken
+{$root}fromemail.php?token=$urltoken
 
 Your registration will be complete when you have performed this step.
 
@@ -670,11 +671,11 @@ Institution: $institution
 
 Please use the following link to confirm or reject participant status
 of this user:
-https:{$root}fromcapemail.php?token=$capurltoken
+{$root}fromcapemail.php?token=$capurltoken
 
 A message has been sent to the user that he must confirm his email
 address at
-https:{$root}fromemail.php?token=$urltoken
+{$root}fromemail.php?token=$urltoken
 ");
      }
 
