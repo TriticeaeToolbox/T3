@@ -14,6 +14,7 @@
  * 09/02/2010   J.Lee modify to add new snippet Gbrowse tracks
 */
 
+set_time_limit(0);
 ini_set('memory_limit', '4G');
 require_once 'config.php';
 require_once $config['root_dir'].'includes/bootstrap.inc';
@@ -85,7 +86,7 @@ class Maps
     private function typeMapSetDisplay()
     {
         global $mysqli;
-    ?>
+        ?>
 <!--Style sheet for better user interface-->
 
 <style type="text/css">
@@ -105,18 +106,18 @@ h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
         { border: 1 !important; }
         </style>
 <a href="map_flapjack.php">Download a complete Map Set</a>, all chromosomes.<p>
-<?php
-$sql = "select value from settings where name = \"database\"";
-$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-if ($row = mysqli_fetch_array($res)) {
-    $value = $row[0];
-    $jb_path = "../jbrowse/$value";
-    $jb_url = "/jbrowse/?data=$value";
-    if (file_exists($jb_path)) {
-        echo "<a href=\"$jb_url\" target=\"_new\">View in JBrowse.</a><br><br>";
-    }
-}
-?>
+        <?php
+        $sql = "select value from settings where name = \"database\"";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        if ($row = mysqli_fetch_array($res)) {
+            $value = $row[0];
+            $jb_path = "../jbrowse/$value";
+            $jb_url = "/jbrowse/?data=$value";
+            if (file_exists($jb_path)) {
+                echo "<a href=\"$jb_url\" target=\"_new\">View in JBrowse.</a><br><br>";
+            }
+        }
+        ?>
 <script type="text/javascript">
 
       var all_mapSets = <?php echo json_encode($mapsetStr); ?>;
@@ -192,9 +193,8 @@ if ($row = mysqli_fetch_array($res)) {
 
     function load_maps()
     {
-				
                 $('maps_loader').hide();
-                
+          
                 new Ajax.Updater(
                     $('maps_loader'),
                     '<?php echo $_SERVER['PHP_SELF'] ?>?function=typeMaps'+ '&mset=' + mapset_str, {
@@ -203,15 +203,13 @@ if ($row = mysqli_fetch_array($res)) {
                             $('maps_loader').show();
                         }
                     }
-		);
-		maps_loaded = true;
+                );
+                maps_loaded = true;
+                }
 
-		}
-			
-			
-		/*
-			Function for loading Markers dropdown table
-		*/			
+/*
+Function for loading Markers dropdown table
+*/			
 
 		function load_markers()
 		{
@@ -630,17 +628,8 @@ private function type_Marker_Excel()
     global $mysqli;
     require_once 'Spreadsheet/Excel/Writer.php';
 	
-		$excel_markername = $_GET['mxls1'];
-		$excel_mapname = $_GET['mxls2'];  
-		
-/* For debugging
-			$firephp = FirePHP::getInstance(true);
-			$firephp->log($excel_markername,"excel_markername");
-			$firephp->log($excel_mapname,"excel_mapname");
-		*/
-
-
-
+	$excel_markername = $_GET['mxls1'];
+	$excel_mapname = $_GET['mxls2'];  
 
 $workbook = new Spreadsheet_Excel_Writer();
 $format_header =& $workbook->addFormat();
@@ -673,12 +662,9 @@ $worksheet->write(0, 12, "U35_RICE_DESCRIPTION_Link", $format_header);
 $fullquery="SELECT mk.marker_name, mim.start_position, mim.end_position, mim.chromosome, mim.arm 
 						FROM map m, markers mk, markers_in_maps mim
 						where m.map_name = '".$excel_mapname."' AND
-						
 						m.map_uid = mim.map_uid AND
 						mim.marker_uid = mk.marker_uid
 						order by mim.start_position";
-						
-
 
 $result=mysqli_query($mysqli, $fullquery);
 
@@ -707,19 +693,13 @@ $worksheet->write($i, 4, "$row[arm]",$format_row);
 
 /* Start of Inner Query */
 
-/* For debugging
-		$firephp->log($row[marker_name],"Marker Name in Excel");
-*/
-
 $innerquery = "SELECT ma.value, mat.name_annotation as Annotation_Name, mat.linkout_string_for_annotation as Annotation_Link, mat.comments
-							 from markers mk, marker_annotations ma, marker_annotation_types mat
-							 where mk.marker_name = '".$row[marker_name]."' AND
-							 mk.marker_uid = ma.marker_uid AND
-							 ma.marker_annotation_type_uid = mat.marker_annotation_type_uid ";
+		 from markers mk, marker_annotations ma, marker_annotation_types mat
+		 where mk.marker_name = '".$row[marker_name]."' AND
+		 mk.marker_uid = ma.marker_uid AND
+		 ma.marker_annotation_type_uid = mat.marker_annotation_type_uid ";
 
 $innerresult=mysqli_query($mysqli, $innerquery);
-
-
 
 /* start of inner while loop */
 

@@ -2,11 +2,45 @@
 /**
  * brapi/v1/maps.php
  * Deliver genome maps according to http://docs.brapi.apiary.io
+ *
+ * this call is slow so use cache file
+ * todo - if file is old then regenerate
  */
 
 require '../../includes/bootstrap.inc';
 $mysqli = connecti();
 mysqli_set_charset($mysqli, 'utf8');
+
+$sql = "select database()";
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+if ($row = mysqli_fetch_row($res)) {
+    $db = $row[0];
+} else {
+    die("Can not identify database\n");
+}
+$cachefile = '/tmp/tht/cache_maps_' . $db . '.txt';
+if (file_exists($cachefile)) {
+    $fh = fopen($cachefile, 'r');
+    while (!feof($fh)) {
+        $line = fgetcsv($fh);
+        $uid = $line[0];
+        $count = $line[1];
+        $linkageCount[$uid] = $count;
+    }
+} else {
+    $fh = fopen($cachefile, 'w');
+    $sql = "select mapset_uid, count(distinct(chromosome)) from markers_in_maps, map
+        where map.map_uid = markers_in_maps.map_uid
+        group by mapset_uid";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    while ($row = mysqli_fetch_row($res)) {
+        $uid = $row[0];
+        $count = $row[1];
+        fwrite($fh, "$uid,$count\n");
+        $linkageCount[$uid] = $count;
+    }
+}
+fclose($fh);
 
 $self = $_SERVER['PHP_SELF'];
 $script = $_SERVER["SCRIPT_NAME"]."/";
@@ -104,15 +138,7 @@ if ($action == "list") {
             $temp["publishedDate"] = $row[6];
         }
         $temp["markerCount"] = (integer) $row[0];
-        $sql = "select count(distinct(chromosome)) from markers_in_maps, map
-        where map.map_uid = markers_in_maps.map_uid
-        and mapset_uid = $uid";
-        $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        if ($row2 = mysqli_fetch_row($res2)) {
-            $temp["linkageGroupCount"] = (integer) $row2[0];
-        } else {
-            $temp["linkageGroupCount"] = "Error";
-        }
+        $temp["linkageGroupCount"] = $linkageCount[$uid];
         $temp["comments"] = $row[7];
         $linearray['result']['data'][] = $temp;
     }
