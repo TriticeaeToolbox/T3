@@ -1143,34 +1143,40 @@ function DispMarkers($arr)
 {
     global $mysqli;
     if (! isset($arr['mapuid']) || ! isset($arr['mapstt']) || ! isset($arr['mapend'])) {
-	print "Invalid inputs";
-	return;
+        print "Invalid inputs";
+        return;
     }
     $mapuid=$arr['mapuid'];
     $mapstt=$arr['mapstt'];
     $mapend=$arr['mapend'];
     if (! is_numeric($mapstt) || ! is_numeric($mapend) || $mapstt>=$mapend) {
-	print "Invalid inputs";
-	return;
+        print "Invalid inputs";
+        return;
     }
     $result=mysqli_query($mysqli, "select marker_uid from markers_in_maps where map_uid=$mapuid and start_position between $mapstt and $mapend order by start_position");
-	if (mysqli_num_rows($result)>0) {
-		print "<select name=\"selMkrs[]\" multiple=\"multiple\" size=10>";
-		while ($row=mysqli_fetch_assoc($result)) {
-			$mkruid=$row['marker_uid'];
-			$res2=mysqli_query($mysqli, "select marker_name from markers where marker_uid=$mkruid") or die("invalid marker uid\n");
-			while ($row2=mysqli_fetch_assoc($res2)) {
-				$selval=$row2['marker_name'];
-				print "<option value=\"$mkruid\">$selval</option>\n";
-			}
-		}
-		print "</select>";
-		print "<p><input type='submit' value='Select markers' style='color: blue'>";
-
-	}
+    $count1 = mysqli_num_rows($result);
+    $count2 = ini_get('max_input_vars');
+    if ($count1 == 0) {
+        echo "none found";
+    } else {
+        if ($count1 > $count2) {
+            echo "warning: selected markers limited to $count2<br>";
+        }
+        print "<select name=\"selMkrs[]\" multiple=\"multiple\" size=10>";
+        while ($row=mysqli_fetch_assoc($result)) {
+            $mkruid=$row['marker_uid'];
+            $res2=mysqli_query($mysqli, "select marker_name from markers where marker_uid=$mkruid") or die("invalid marker uid\n");
+            while ($row2=mysqli_fetch_assoc($res2)) {
+                $selval=$row2['marker_name'];
+                print "<option value=\"$mkruid\">$selval</option>\n";
+            }
+        }
+        print "</select>";
+        print "<p><input type='submit' value='Select markers' style='color: blue'>";
+    }
 }
 
-function DispMarkerSet ($arr) {
+function DispMarkerSet($arr) {
     global $mysqli;
     if (! isset($arr)) {
         print "Invalid inputs";
