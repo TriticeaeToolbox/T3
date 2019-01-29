@@ -1054,18 +1054,9 @@ class Downloads
                         $exp1 = "";
                         $exp2 = "";
                     }
-                    if ($assembly == 6) {
-                        $gene_set = "RefSeq1.1";
-                    } elseif ($assembly == 5) {
-                        $gene_set = "RefSeq1.0";
-                    } elseif ($assembly == 4) {
-                        $gene_set = "TGACv1";
-                    } else {
-                        $gene_set = "";
-                    }
                     if (isset($annot_gene[$marker])) {
                         $gene = $annot_gene[$marker];
-                        $exp1 = "<a target=\"_new\" href=\"http://www.wheat-expression.com/genes/show?gene_set=$gene_set&name=$gene&search_by=gene\">expVIP</a>";
+                        $exp1 = "<a target=\"_new\" href=\"http://www.wheat-expression.com/genes/show?gene_set=$assembly_name&name=$gene&search_by=gene\">expVIP</a>";
                     } else {
                         $gene = "";
                         $exp1 = "";
