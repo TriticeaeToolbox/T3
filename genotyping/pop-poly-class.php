@@ -132,11 +132,14 @@ class SelectMarkers
             $uid_list = json_decode($line_index, true);
             $name_list = json_decode($line_name, true);
             //echo "uid_list $line_index<br>\n";
+        } else {
+            die("Error: genotype experiment not found\n");
         }
  
         $count = 0;
         $count_inpos = 0;
         $count_inmap = 0;
+        $poly = array();
         $found_list = array();
         if (isset($_GET['value']) && !empty($_GET['value'])) {
             $geno_exp = $_SESSION['geno_exps'][0];
@@ -178,7 +181,7 @@ class SelectMarkers
                             //echo "$count $pos $alleles<br>\n";
                             foreach ($allele_ary as $key => $allele) {
                                 $uid = $uid_list[$key];
-                                if (in_array($uid, $line_ary)) {
+                                if (in_array($uid, $line_ary)) { // in selected lines
                                     if ($allele == "NN") {
                                         $allele = "--";
                                     } elseif ($allele == "N") {
@@ -199,8 +202,6 @@ class SelectMarkers
                                     } elseif ($firstAllele != $allele) {
                                         $found = true;
                                     }
-                                } else {
-                                    echo "Error: $uid not found\n";
                                 }
                             }
                             if ($found) {
@@ -272,6 +273,10 @@ class SelectMarkers
                 echo "$count markers within $option<br>\n";
             }
             $countp = count($poly);
+            if ($countp == 0) {
+                echo "No polymorphic markers found. Select new options.<br>\n";
+                return;
+            }
             $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
             $dir = "/tmp/tht/download_" . $unique_str;
             mkdir($dir);
@@ -310,27 +315,29 @@ class SelectMarkers
             }
             fclose($h1);
             fclose($h2);
-            $_SESSION['selected_markers'] = $found_list;
-            $cmd = "Rscript --vanilla " . $config['root_dir'] . "genotyping/transpose.R $filename1 $filename3 > /dev/null 2> $filename4";
-            //echo "$cmd<br>\n";
-            exec($cmd);
-            if (file_exists("$filename3")) {
-                $h1 = fopen($filename3, "r");
-                $h2 = fopen("$dir/$filename5", "w");
-                fwrite($h2, "\t");
-                while ($line=fgets($h1)) {
-                    fwrite($h2, $line);
+
+            if ($countp > 0) {
+                $_SESSION['selected_markers'] = $found_list;
+                $cmd = "Rscript --vanilla " . $config['root_dir'] . "genotyping/transpose.R $filename1 $filename3 > /dev/null 2> $filename4";
+                exec($cmd);
+                if (file_exists("$filename3")) {
+                    $h1 = fopen($filename3, "r");
+                    $h2 = fopen("$dir/$filename5", "w");
+                    fwrite($h2, "\t");
+                    while ($line=fgets($h1)) {
+                        fwrite($h2, $line);
+                    }
+                    fclose($h1);
+                    fclose($h2);
+                    exec("cd $dir; /usr/bin/zip -r $filename $filename5 map.tsv proc_error.txt");
+                } else {
+                    echo "Error: no output file from R script<br>\n";
                 }
-                fclose($h1);
-                fclose($h2);
-                exec("cd $dir; /usr/bin/zip -r $filename $filename5 map.tsv proc_error.txt");
-            } else {
-                echo "Error: no output file from R script<br>\n";
-            }
-            if (file_exists("$filename4")) {
-                $h = fopen($filename4, "r");
-                while ($line=fgets($h)) {
-                    echo "$line<br>\n";
+                if (file_exists("$filename4")) {
+                    $h = fopen($filename4, "r");
+                    while ($line=fgets($h)) {
+                        echo "$line<br>\n";
+                    }
                 }
             }
         }
