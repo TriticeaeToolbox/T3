@@ -192,7 +192,7 @@ function show_gene_annotations($id)
                 echo "<table><tr><td>Pathway<td>Species<td>Plant Reactome";
                 $count++;
             }
-            echo "<tr><td><a href=\"view.php?table=pathways&uid=$row[0]\">$row[2]</a><td>$row[3]<td>$row[1]\n";
+            echo "<tr><td><a href=".$config['base_url']."view.php?table=pathways&uid=$row[0]\">$row[2]</a><td>$row[3]<td>$row[1]\n";
         }
         if ($count > 0) {
             echo "</table><br>";
@@ -211,7 +211,7 @@ function show_gene_annotations($id)
             echo "<tr><td>Marker<td>distance\n";
             $count++;
         }
-        echo "<tr><td><a href=\"view.php?table=markers&uid=$row[0]\">$row[1]</a><td>$row[2]\n";
+        echo "<tr><td><a href=".$config['base_url']."view.php?table=markers&uid=$row[0]\">$row[1]</a><td>$row[2]\n";
     }
     if ($count > 0) {
         echo "</table>";
@@ -249,7 +249,7 @@ function show_pathways($id)
     while ($row = mysqli_fetch_row($genes)) {
         $uid = $row[0];
         $gene = $row[2];
-        echo "<tr><td><a href=\"view.php?table=gene_annotations&uid=$gene_list[$gene]\">$gene</a>\n";
+        echo "<tr><td><a href=".$config['base_url']."view.php?table=gene_annotations&uid=$gene_list[$gene]\">$gene</a>\n";
     }
     echo "</table></div>";
 }
@@ -712,7 +712,7 @@ function viewTable($resource, $table)
                 $ret .= "\t<td>$v</td>\n";
             }
         }
-        $ret .= "\t<td><a href=\"view.php?table=$table&uid=$row[$pkey]\">View</a></td>\n\t</tr>\n";
+        $ret .= "\t<td><a href=".$config['base_url']."view.php?table=$table&uid=$row[$pkey]\">View</a></td>\n\t</tr>\n";
     }
     $ret .= "</tbody>\n</table>\n";
     return $ret;

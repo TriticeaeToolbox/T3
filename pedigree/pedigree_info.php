@@ -73,6 +73,7 @@ class Pedigree
         // Find which Properties this set of lines has any values for.
         $ourprops = array();
         foreach ($linelist as $lineuid) {
+            $lineuid = intval($lineuid);
             $propresult = mysqli_query($mysqli, "select property_uid
 	    from line_properties lp, property_values pv
 	    where lp.property_value_uid = pv.property_values_uid
@@ -125,34 +126,39 @@ foreach ($ourprops as $pr) {
  </div>
 
 <div style="padding: 0; height: 400px; overflow-y: scroll; border: 1px solid #5b53a6; clear: both">
-<table style="table-layout:fixed; width: 940px">	
-<?php
+<table style="table-layout:fixed; width: 940px">
+    <?php
     // Get the data for each line.
     foreach ($linelist as $lineuid) {
-      $result=mysqli_query($mysqli, "select line_record_name, breeding_program_code, pedigree_string, generation, description from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
-      $syn_result=mysqli_query($mysqli, "select line_synonym_name from line_synonyms where line_record_uid=$lineuid") or die("No Synonym\n");
-      $syn_names="";
-      $sn = "";
-      while ($syn_row = mysqli_fetch_assoc($syn_result)) 
-	$syn_names[] = $syn_row['line_synonym_name'];
-      if (is_array($syn_names))
-	$sn = implode(', ', $syn_names);
-
-      $grin_result=mysqli_query($mysqli, "select barley_ref_number from barley_pedigree_catalog_ref 
+        $lineuid = intval($lineuid);
+        $result=mysqli_query($mysqli, "select line_record_name, breeding_program_code, pedigree_string, generation, description from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
+        $syn_result=mysqli_query($mysqli, "select line_synonym_name from line_synonyms where line_record_uid=$lineuid") or die("No Synonym\n");
+        $syn_names="";
+        $sn = "";
+        while ($syn_row = mysqli_fetch_assoc($syn_result)) {
+            $syn_names[] = $syn_row['line_synonym_name'];
+        }
+        if (is_array($syn_names)) {
+            $sn = implode(', ', $syn_names);
+        }
+        $grin_result=mysqli_query($mysqli, "select barley_ref_number from barley_pedigree_catalog_ref 
            where line_record_uid=$lineuid") or die(mysqli_error($mysqli));
-      $grin_names=""; $gr = "";
-      while ($grin_row = mysqli_fetch_assoc($grin_result)) 
-	$grin_names[] = $grin_row['barley_ref_number'];
-      if (is_array($grin_names))
-	$gr = implode(', ', $grin_names);
+        $grin_names="";
+        $gr = "";
+        while ($grin_row = mysqli_fetch_assoc($grin_result)) {
+            $grin_names[] = $grin_row['barley_ref_number'];
+        }
+        if (is_array($grin_names)) {
+            $gr = implode(', ', $grin_names);
+        }
 
-      while ($row=mysqli_fetch_assoc($result)) {
+        while ($row=mysqli_fetch_assoc($result)) {
 ?>
-	<tr>
+        <tr>
         <td style="width: 80px; text-align: center" class="marker">
         <?php $line_name = $row['line_record_name'];
-	   $GETable_name = str_replace('#', '%23', $line_name);
-	echo "<a href='pedigree/show_pedigree.php?line=$GETable_name'>$line_name</a>" ?>
+        $GETable_name = str_replace('#', '%23', $line_name);
+        echo "<a href='pedigree/show_pedigree.php?line=$GETable_name'>$line_name</a>" ?>
         <td style="width: 50px; text-align: center" class="marker">
         <?php echo $gr ?>
         <td style="width: 80px; text-align: center" class="marker">

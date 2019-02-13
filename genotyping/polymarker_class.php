@@ -34,7 +34,7 @@ class DownloadPrimers
         include $config['root_dir'].'theme/admin_header2.php';
         echo "<h2>PolyMarker designed primers</h2>";
         if ($count == 0) {
-            echo "<a href=\"genotyping/marker_selection.php\">Select a marker</a> using the \"Wheat CAP 2017\" map to see design results.<br><br>\n";
+            echo "<a href=\"genotyping/marker_selection.php\">Select one or more markers</a> using the \"Wheat CAP 2017\" map to see design results.<br><br>\n";
         }
         echo "The PolyMarker program was used to design primers on all the markers in the <a href=display_genotype.php?trial_code=2017_WheatCAP>2017_WheatCAP</a> experiment. ";
         echo "<a href=\"genotyping/marker_selection.php\">Select a marker</a> using the \"Wheat CAP 2017\" map to see design results.";
@@ -46,7 +46,7 @@ class DownloadPrimers
         echo "<br>Interpreting output:<ul>The <b>SNP type</b>, non-homoeologous SNPs are preferred  <li>homoeologous (polymorphic between the subgenomes) <li>non-homoeologous (monomorphic in all the subgenomes)</ul>";
         echo "<ul>The <b>Primer type</b>, chromosome_specific primers are preferred <li>chromosome_specific</b>: subgenome specific to the target chromosome.";
         echo "<li>chromosome_semispecific</b>: discriminates between the target subgenome and one, but not both, of the other two subgenomes. <li>chromosome_nonspecific</b>: no variation between the target subgenome and non-target subgenomes</ul>";
-        if ($count < 2) {
+        if ($count == 1) {
             $found = 0;
             foreach ($selected as $marker) {
                 $stmt->bind_param("s", $marker);
@@ -68,9 +68,11 @@ class DownloadPrimers
                 }
             }
             $stmt->close();
-        } else {
+        } elseif ($count > 0) {
             echo "<h3>Designed Primers</h3>";
             echo "<a href=" . $config['base_url'] . "/genotyping/polymarker.php?function=download>Download designed primers</a><br></div>\n";
+        } else {
+            echo "Error: Please select on or more markers\n";
         }
         echo "</div>";
         include $config['root_dir'].'theme/footer.php';

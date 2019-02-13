@@ -89,14 +89,14 @@ foreach ($nm as $n) {
     $sql = "SELECT DISTINCT(l.breeding_program_code), c.data_program_name FROM line_records l, CAPdata_programs c WHERE l.breeding_program_code = c.data_program_code ORDER by l.breeding_program_code";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($resp = mysqli_fetch_assoc($res)) {
-    ?>
-    <option value="<?php echo $resp['breeding_program_code'] ?>" <?php echo $breeding[$resp['breeding_program_code']]?>><?php echo $resp['breeding_program_code'] ?><?php echo "--".$resp['data_program_name'] ?></option>
-<?php
+        ?>
+        <option value="<?php echo $resp['breeding_program_code'] ?>" <?php echo $breeding[$resp['breeding_program_code']]?>><?php echo $resp['breeding_program_code'] ?><?php echo "--".$resp['data_program_name'] ?></option>
+        <?php
     }
-?>
-      </select><br><br>
-      <td><b>Year</b><br>
-      <select name="year[]" multiple="multiple" size="6">
+    ?>
+    </select><br><br>
+    <td><b>Year</b><br>
+    <select name="year[]" multiple="multiple" size="6">
 <?php
 $sql = "select distinct experiment_year from experiments order by experiment_year DESC";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -427,13 +427,13 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
 
         // If any Currently Selected, offer to combine.
         if (isset($_SESSION['selected_lines']) and count($_SESSION['selected_lines']) != 0) {
-        ?>
-        <td style="width: 130px; padding: 8px">Combine with <font color=blue>currently<br>selected lines</font>:<br>
-        <input type="radio" name="selectWithin" value="Replace" checked>Replace<br>
-        <input type="radio" name="selectWithin" value="Add">Add (OR)<br>
-        <input type="radio" name="selectWithin" value="Yes">Intersect (AND)<br>
-        <input type="submit" name='WhichBtn' value="Combine" style='color:blue'></td>
-        <?php
+            ?>
+            <td style="width: 130px; padding: 8px">Combine with <font color=blue>currently<br>selected lines</font>:<br>
+            <input type="radio" name="selectWithin" value="Replace" checked>Replace<br>
+            <input type="radio" name="selectWithin" value="Add">Add (OR)<br>
+            <input type="radio" name="selectWithin" value="Yes">Intersect (AND)<br>
+            <input type="submit" name='WhichBtn' value="Combine" style='color:blue'></td>
+            <?php
         } // end if(isset($_SESSION['selected_lines'])...
     } // end if ($linesfound > 0)
     print "</form>";
@@ -462,11 +462,11 @@ if (count($verify_selected_lines)!=0 or count($verify_session)!=0) {
             }
             $_SESSION['selected_lines'] = $selected_lines;
         }
-    ?>
-    <script type="text/javascript">
-       update_side_menu();
-    </script>
-    <?php
+        ?>
+        <script type="text/javascript">
+        update_side_menu();
+        </script>
+        <?php
     }
     // Select/Deselect highlighted cookie lines.
     if (isset($_POST['deselLines'])) {
@@ -518,7 +518,9 @@ if (count($verify_selected_lines)!=0 or count($verify_session)!=0) {
         }
         $sortedLines[$lineuid] = $selval;
     }
-    asort($sortedLines);
+    if (!empty($sortedLines)) {
+        asort($sortedLines);
+    }
     foreach ($sortedLines as $lineuid => $selval) {
         print "<option value=\"$lineuid\" selected>$selval</option>\n";
     }

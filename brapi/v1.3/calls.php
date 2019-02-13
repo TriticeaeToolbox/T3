@@ -32,36 +32,36 @@ if (isset($_GET['page'])) {
 }
 
 /* Array of our supported calls */
-$ourcalls['allelematrices'] = ['dataTypes' => ["csv"], 'methods' => ["GET"], 'versions' => ["1.3"]];
-$ourcalls['allelematrix-search'] = ['dataTypes' => ["json", "tsv"], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
-$ourcalls['allelematrix-search/status'] = ['dataTypes' => ["json" ], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
-$ourcalls['allelematrices/{studyDbId}'] = ['dataTypes' => ["json"], 'methods' => ["GET"], 'versions' => ["1.3"]];
-$ourcalls['markerprofiles'] = ['dataTypes' => ["json"], 'methods' => ["GET"], 'versions' => ["1.3"]];
-$ourcalls['markerprofiles/{markerprofileDbId}'] = ['dataTypes' => ["json"], 'methods' => ["GET"]];
-$ourcalls['markerprofiles/{germplasmDbId}'] = ['dataTypes' => ["json"], 'methods' => ["GET"], 'versions' => ["1.3"]];
-$ourcalls['calls'] = ['dataTypes' => ['json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
-$ourcalls['germplasm-search'] = ['dataTypes' => ['json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
-$ourcalls['germplasm'] = ['dataTypes' => ['json'], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
-$ourcalls['germplasm/{germplasmDbId}'] = ['dataTypes' => ['json'], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
-$ourcalls['germplasm/{germplasmDbId}/pedigree'] = ['dataTypes' => ['json'], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
-$ourcalls['germplasm/{germplasmDbId}/progeny'] = ['dataTypes' => ['json'], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
-$ourcalls['studies-search'] = ['dataTypes' => ['json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
-$ourcalls['studies-search/{studyType}'] = ['dataTypes' => ['json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
-$ourcalls['studies'] = ['dataTypes' => ['json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
-$ourcalls['studies/{studyDbId}'] = ['dataTypes' => ['json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
-$ourcalls['trials'] = ['dataTypes' => ['json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
-$ourcalls['trials/{trialDbId}'] = ['dataTypes' => ['json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
-$ourcalls['traits'] = ['dataTypes' => ['json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
-$ourcalls['maps'] = ['dataTypes' => ['json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
-$ourcalls['maps/{mapDbId}'] = ['dataTypes' => ['json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
-$ourcalls['maps/{mapDbId}/positions'] = ['dataTypes' => ['json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
-$ourcalls['crops'] = ['dataTypes' => ['json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
-$ourcalls['locations'] = ['dataTypes' => ['json'], 'methods' => ["GET"], 'versions' => ["1.3"]];
-$ourcalls['markers'] = ['dataTypes' => ["json"], 'methods' => ["GET"], 'versions' => ["1.3"]];
-$ourcalls['markers/{markerDbId}'] = ['dataTypes' => ["json"], 'methods' => ["GET"], 'versions' => ["1.3"]];
-$ourcalls['markers-search'] = ['dataTypes' => ["json"], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
-$ourcalls['markers-search/{markerDbIds}'] = ['dataTypes' => ["json"], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
-$ourcalls['phenotypes-search'] = ['dataTypes' => ["json"], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
+$ourcalls['allelematrices'] = ['dataTypes' => ["application/flapjack","text/csv"], 'methods' => ["GET"], 'versions' => ["1.3"]];
+$ourcalls['allelematrix-search'] = ['dataTypes' => ["application/flapjack", "application/json", "text/tsv"], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
+$ourcalls['allelematrix-search/status'] = ['dataTypes' => ["application/json" ], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
+$ourcalls['allelematrices/{studyDbId}'] = ['dataTypes' => ["application/json"], 'methods' => ["GET"], 'versions' => ["1.3"]];
+$ourcalls['markerprofiles'] = ['dataTypes' => ["application/json"], 'methods' => ["GET"], 'versions' => ["1.3"]];
+$ourcalls['markerprofiles/{markerprofileDbId}'] = ['dataTypes' => ["application/json"], 'methods' => ["GET"]];
+$ourcalls['markerprofiles/{germplasmDbId}'] = ['dataTypes' => ["application/json"], 'methods' => ["GET"], 'versions' => ["1.3"]];
+$ourcalls['calls'] = ['dataTypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
+$ourcalls['germplasm-search'] = ['dataTypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
+$ourcalls['germplasm'] = ['dataTypes' => ['application/json'], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
+$ourcalls['germplasm/{germplasmDbId}'] = ['dataTypes' => ['application/json'], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
+$ourcalls['germplasm/{germplasmDbId}/pedigree'] = ['dataTypes' => ['application/json'], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
+$ourcalls['germplasm/{germplasmDbId}/progeny'] = ['dataTypes' => ['application/json'], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
+$ourcalls['studies-search'] = ['dataTypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
+$ourcalls['studies-search/{studyType}'] = ['dataTypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
+$ourcalls['studies'] = ['dataTypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
+$ourcalls['studies/{studyDbId}'] = ['dataTypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
+$ourcalls['trials'] = ['dataTypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
+$ourcalls['trials/{trialDbId}'] = ['dataTypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
+$ourcalls['traits'] = ['dataTypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
+$ourcalls['maps'] = ['dataTypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
+$ourcalls['maps/{mapDbId}'] = ['dataTypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
+$ourcalls['maps/{mapDbId}/positions'] = ['dataTypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
+$ourcalls['crops'] = ['dataTypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
+$ourcalls['locations'] = ['dataTypes' => ['application/json'], 'methods' => ["GET"], 'versions' => ["1.3"]];
+$ourcalls['markers'] = ['dataTypes' => ['application/json'], 'methods' => ["GET"], 'versions' => ["1.3"]];
+$ourcalls['markers/{markerDbId}'] = ['dataTypes' => ["application/json"], 'methods' => ["GET"], 'versions' => ["1.3"]];
+$ourcalls['markers-search'] = ['dataTypes' => ["application/json"], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
+$ourcalls['markers-search/{markerDbIds}'] = ['dataTypes' => ["application/json"], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
+$ourcalls['phenotypes-search'] = ['dataTypes' => ["application/json"], 'methods' => ["GET", "POST"], 'versions' => ["1.3"]];
 
 /* If no request parameters, list all calls supported. */
 if (!$call && !$datatype) {

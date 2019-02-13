@@ -252,7 +252,7 @@ class Downloads
              $selectedlines= $_SESSION['selected_lines'];
              $selectedlines = implode(',', $selectedlines);
         }
-                ?><br>
+        ?><br>
         <table id="phenotypeSelTab" class="tableclass1">
                 <tr>
                         <th>Traits</th>
@@ -1045,6 +1045,7 @@ class Downloads
                         }
                     } else {
                         $knetminer1 = "";
+                        $knetminer2 = "";
                     }
                     if (isset($annot_list2[$marker])) {
                         $gene = $annot_list2[$marker];
@@ -1053,18 +1054,9 @@ class Downloads
                         $exp1 = "";
                         $exp2 = "";
                     }
-                    if ($assembly == 6) {
-                        $gene_set = "RefSeq1.1";
-                    } elseif ($assembly == 5) {
-                        $gene_set = "RefSeq1.0";
-                    } elseif ($assembly == 4) {
-                        $gene_set = "TGACv1";
-                    } else {
-                        $gene_set = "";
-                    }
                     if (isset($annot_gene[$marker])) {
                         $gene = $annot_gene[$marker];
-                        $exp1 = "<a target=\"_new\" href=\"http://www.wheat-expression.com/genes/show?gene_set=$gene_set&name=$gene&search_by=gene\">expVIP</a>";
+                        $exp1 = "<a target=\"_new\" href=\"http://www.wheat-expression.com/genes/show?gene_set=$assembly_name&name=$gene&search_by=gene\">expVIP</a>";
                     } else {
                         $gene = "";
                         $exp1 = "";
@@ -1165,11 +1157,13 @@ class Downloads
             echo "<a href=\"qtl/qtl_report.php?function=downloadDetailQTL&pi=" . $puid . "&method=" . $_GET['method'] . "&assembly=" . $assembly . "\">Download detail data</a><br>";
             $count_display = 0;
             if ($gb == "marker") {
-                //echo "<table><tr><td>marker<td><a id=\"sort2\" onclick=\"sort('pos')\">location</a>";
                 echo "<table><tr><td>marker<td>chromosome<td>location";
-                echo "<td>gene<td>feature<td nowrap>Z-score<td>Trial Count<td>Trial Details<td>Genome Browser<td>Expression<td>Knetminer";
+                if ($_GET['method'] == 'set') {
+                    echo "<td>gene<td>feature<td nowrap>Z-score<td>Experiment Count<td>Trial Details<td>Genome Browser<td>Expression<td>Knetminer";
+                } else {
+                    echo "<td>gene<td>feature<td nowrap>Z-score<td>Trial Count<td>Trial Details<td>Genome Browser<td>Expression<td>Knetminer";
+                }
             } else {
-                //echo "<table><tr><td>gene<td><a id=\"sort2\" onclick=\"sort('pos')\">location</a>";
                 echo "<table><tr><td>gene<td>location";
                 echo "<td>feature<td>Z-score<td>Count<td>Geneome Browser<td>Knetminer";
             }

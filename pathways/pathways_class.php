@@ -15,22 +15,22 @@ function displayPathways()
     }
 
     echo "<h2>Pathways</h2>";
-    echo "Information provided by <a href=\"https://www.ncbi.nlm.nih.gov/pubmed/27799469\" target=\"_new\">Plant Reactome</a>: ";
-    echo "a resource for plant pathways and comparative analysis. Using curated rice pathways as a reference,<br> the Plant Reactome predicts ";
-    echo "pathways in other plant species on the basis of Compara and Inparanoid super-cluster orthology. Using the Feb 2018 (58b) release.<br>\n";
-    echo "The Plant Reactome Id links to the \"Pathway Browser\" at plantreactome.gramene.org.<br>";
-    echo "The Pathway Name links to a list of genes contained in the given pathway.<br><br>";
+    echo "Information provided by <a href=\"https://www.ncbi.nlm.nih.gov/pubmed/27799469\" target=\"_new\">";
+    echo "Plant Reactome</a>: a resource for plant metabolic and regulatory pathways and comparative analysis. ";
+    echo "Using curated rice pathways as a reference,<br> the Plant Reactome predicts ";
+    echo "pathways in other plant species on the basis of Compara and Inparanoid super-cluster orthology.<br>";
+    echo "The database uses the Feb 2019 (Gramene r60) release of Plant Reactome.<br><br>\n";
 
     echo "<div id=\"results\">\n";
     $sql = "select pathway_uid, pathway_reference, pathway_name, species from pathways order by pathway_name";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    echo "<table><tr><td>Pathway Reference<td>Pathway Name<td>Species\n";
+    echo "<table><tr><td>Pathway Name<td><td>\n";
     while ($row = mysqli_fetch_array($res)) {
         $uid = $row[0];
         $path_ref = $row[1];
-        $gene_name = $row[2];
+        $path_name = $row[2];
         $species = $row[3];
-        $link2 = "<a href=\"view.php?table=pathways&uid=$uid\">$gene_name</a>";
-        echo "<tr><td>$path_ref<td>$link2<td>$species\n";
+        $link2 = "<a href=\"view.php?table=pathways&uid=$uid\">Gene List</a>";
+        echo "<tr><td>$path_name<td>$path_ref<td>$link2\n";
     }
 }
