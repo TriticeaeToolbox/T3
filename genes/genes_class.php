@@ -29,6 +29,7 @@ class Genes
 
         echo "<h2>Search Gene Annotation</h2>";
         echo "The <b>Gene Id</b> link provides information on markers in T3 and external links to protein, expression, and pathway information.<br>\n";
+        echo "The gene annotation information is provided by <a href=\"http://plants.ensembl.org/index.html\" target=\"_new\">EnsemblPlants</a> includes protein-coding and non-coding genes, splice variants, cDNA and protein sequences, non-coding RNAs.<br><br>\n";
 
         //get list of assemblies
         $sql = "select distinct(assemblies.assembly_uid), assemblies.assembly_name, data_public_flag, assemblies.description, assemblies.created_on
