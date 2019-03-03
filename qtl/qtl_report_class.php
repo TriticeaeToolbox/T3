@@ -166,10 +166,8 @@ class Downloads
         foreach ($assemblyList as $key => $ver) {
             if ($key == $assembly) {
                 $selected = "checked";
-            } else {
-                $selected = "";
+                echo "<tr><td nowrap><input type=\"radio\" name=\"assembly\" value=\"$key\" $selected> $ver<td>$assemblyDesc[$key]<br>";
             }
-            echo "<tr><td nowrap><input type=\"radio\" name=\"assembly\" value=\"$key\" $selected> $ver<td>$assemblyDesc[$key]<br>";
         }
         $sql = "select * from assemblies where data_public_flag = 0";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -476,6 +474,15 @@ class Downloads
                     $zvalue = number_format($val[3], 3);
                     $qvalue = number_format($val[4], 3);
                     $pvalue = number_format($val[5], 5);
+                    $sql = "select chrom, pos, bin from marker_report_reference where marker_name = \"$marker\" and assembly_name = \"$assembly_name\"";
+                    $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                    if ($row2 = mysqli_fetch_array($res2)) {
+                        $chrom = $row2[0];
+                        $pos = $row2[1];
+                    } else {
+                        $chrom = "";
+                        $pos = "";
+                    }
                     $location = "$chrom $pos";
                     $link1 = "/jbrowse/?data=wheat&loc=$chrom:$pos";
                     $link2 = "<a target=\"_new\" href=\"$target_url" . "THTdownload_gwa1_" . $gexp . "_" . $pexp . "_" . $puid . ".png\">Manhattan</a>";
@@ -789,6 +796,7 @@ class Downloads
         $browserLink['IWGSC1+popseq'] = "http://imar2016-plants.ensembl.org/Triticum_aestivum/Location/View?r=";
         $browserLink['Wheat_TGACv1'] = "http://plants.ensembl.org/Triticum_aestivum/Location/View?r=";
         $browserLink['RefSeq_v1'] = "https://triticeaetoolbox.org/jbrowse/?data=wheat2016&loc=";
+        $browserLink['RefSeq1.1'] = "https://triticeaetoolbox.org/jbrowse/?data=wheat2016&loc=";
         $browserLink['Wheat_Pangenome'] = "https://triticeaetoolbox.org/jbrowse/?data=wheat2017&loc=";
         $browserLink['OatSeedRef90'] = "https://triticeaetoolbox.org/jbrowse/?data=oat&loc=";
         // get species
@@ -898,29 +906,6 @@ class Downloads
         echo "<input type=\"radio\" name=\"sort\" id=\"sort\" onclick=\"sort('posit')\" $select_posit> position<br>";
         echo "</table><br>";
 
-        /**
-         * Get knetminer, only accepts RefSeq1.0
-         **/
-        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = 5";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-        while ($row = mysqli_fetch_array($res)) {
-            $marker = $row[0];
-            $gene = $row[1];
-            $desc = $row[2];
-            $annot_list1[$marker] = $gene;
-        }
-        /**
-         * Get Expression Atlas, only accepts TGACv1
-         **/
-        $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = 4";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-        while ($row = mysqli_fetch_array($res)) {
-            $marker = $row[0];
-            $gene = $row[1];
-            $desc = $row[2];
-            $annot_list2[$marker] = $gene;
-        }
-
         $sql = "select marker_name, gene, description from qtl_annotations where assembly_name = $assembly";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
@@ -937,7 +922,6 @@ class Downloads
             $pheno_exp = $row[0];
             $count = $row[1];
             $linesInExp[$pheno_exp] = $row[1];
-            //echo "$geno_exp $count<br>\n";
         }
 
         //get z-stat
@@ -1029,37 +1013,31 @@ class Downloads
                             $start = 0;
                         }
                         $stop = $pos + 1000;
+                        //JBrowse Wheat currently requires "chr" chromosome
+                        if (!preg_match("/chr/", $chrom)) {
+                            $chrom = "chr" . $chrom;
+                        }
                     } else {
                         $chrom = "";
                         $pos = "";
                         $start = "";
                         $stop = "";
                     }
-                    if (isset($annot_list1[$marker])) {
-                        $gene = $annot_list1[$marker];
-                        $knetminer1 = "<a target=\"_new\" href=\"http://knetminer.rothamsted.ac.uk/wheat_api/genepage?keyword=" . urlencode($phenotype_name) . "&list=$gene\">keyword</a>";
+                    if (isset($annot_gene[$marker])) {
+                        $gene = $annot_gene[$marker];
+                        $exp1 = "<a target=\"_new\" href=\"http://www.wheat-expression.com/genes/show?gene_set=$assembly_name&name=$gene&search_by=gene\">expVIP</a>";
+                        $exp2 = "<a target=\"_new\" href=\"https://www.ebi.ac.uk/gxa/genes/$gene\">EMBL-EBI</a>";
+                        $knetminer1 = "<a target=\"_new\" href=\"http://knetminer.rothamsted.ac.uk/wheatknet/genepage?keyword=" . urlencode($phenotype_name) . "&list=$gene\">keyword</a>";
                         if (empty($TO)) {
                             $knetminer2 = "";
                         } else {
-                            $knetminer2 = "<a target=\"_new\" href=\"http://knetminer.rothamsted.ac.uk/wheat_api/genepage?keyword=$TO&list=$gene\">ontology</a>";
+                            $knetminer2 = "<a target=\"_new\" href=\"http://knetminer.rothamsted.ac.uk/wheatknet/genepage?keyword=$TO&list=$gene\">ontology</a>";
                         }
                     } else {
                         $knetminer1 = "";
                         $knetminer2 = "";
-                    }
-                    if (isset($annot_list2[$marker])) {
-                        $gene = $annot_list2[$marker];
-                        $exp2 = "<a target=\"_new\" href=\"https://www.ebi.ac.uk/gxa/genes/$gene\">EMBL-EBI</a>";
-                    } else {
                         $exp1 = "";
                         $exp2 = "";
-                    }
-                    if (isset($annot_gene[$marker])) {
-                        $gene = $annot_gene[$marker];
-                        $exp1 = "<a target=\"_new\" href=\"http://www.wheat-expression.com/genes/show?gene_set=$assembly_name&name=$gene&search_by=gene\">expVIP</a>";
-                    } else {
-                        $gene = "";
-                        $exp1 = "";
                     }
                     if (isset($annot_desc[$marker])) {
                         $desc2 = $annot_desc[$marker];
@@ -1108,9 +1086,11 @@ class Downloads
                     }
                     if ($pos == "") {
                         $jbrowse = "";
-                    } elseif (preg_match("/RefSeq/", $assembly)) {
+                    } elseif (!isset($browserLink[$assembly_name])) {
+                        $jbrowse = "$assembly_name not defined";
+                    } elseif (preg_match("/RefSeq/", $assembly_name)) {
                         $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly_name] . "$chrom:$start..$stop\">JBrowse</a>";
-                    } elseif (preg_match("/TGAC/", $assembly)) {
+                    } elseif (preg_match("/TGAC/", $assembly_name)) {
                         $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly_name] . "$bin:$start-$stop\">Ensembl Browser</a>";
                     } else {
                         $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly_name] . "$chrom:$start-$stop\">JBrowse</a>";
