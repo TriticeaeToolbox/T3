@@ -175,6 +175,9 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         <li><a href="<?php echo $config['base_url']; ?>genes" title="Browse Genes">Genes</a>
         <?php
     }
+    ?>
+    <li><a href="<?php echo $config['base_url']; ?>protein" title="Browse Proteins">Proteins</a>
+    <?php
     $results = mysql_grab("SHOW tables like 'pathways'");
     if ($results == "pathways") {
         ?>
