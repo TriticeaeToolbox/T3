@@ -96,11 +96,19 @@ class Protein
 
         //echo "Index to genes<br>\n";
         if (isset($_GET['search'])) {
+            //get links to gene
+            $sql = "select gene_annotation_uid, transcript from gene_annotations";
+            $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
+            $stmt->execute();
+            $stmt->bind_result($uid, $transcript);
+            while ($stmt->fetch()) {
+                $gene_link[$transcript] = $uid;
+            }
+            
             $query = $_GET['search'];
             $param = "%" . $query . "%";
             $sql = "select prot_annotation_uid, prot_id, prot_name, gene_name, gene_link, function, go_process, go_function from protein_annotations
                 where (prot_id like ? OR prot_name like ? OR gene_name like ? OR function like ? OR go_function like ? OR go_process like ?)";
-            //echo "$sql<br>$param<br>\n";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
             $stmt->bind_param("ssssss", $param, $param, $param, $param, $param, $param) or die(mysqli_error($mysqli));
             $stmt->execute();
@@ -119,16 +127,21 @@ class Protein
    
             $count = 0;
             $stmt->execute();
-            $stmt->bind_result($uid, $prot_id, $prot_name, $gene_name, $gene_link, $function, $go_process, $go_function);
+            $stmt->store_result();
+            $stmt->bind_result($uid, $prot_id, $prot_name, $gene_name, $transcript, $function, $go_process, $go_function);
             while ($stmt->fetch()) {
                 if ($count == 0) {
                     echo "<table><tr><td>Protein Id<td>Protein Name<td>Gene Name<td>Gene Id<td>Function<td>GO Process<td>GO Function\n";
                 }
                 $count++;
-                $gene_link = "<a href=genes?search=$gene_link>$gene_link</a>";
-                echo "<tr><td><a href=\"view.php?table=protein_annotations&uid=$uid\">$prot_id</a><td>$prot_name<td>$gene_name<td>$gene_link<td>$function<td>$go_process<td>$go_function<td>$uniprot<td>$goa\n";
+                if (isset($gene_link[$transcript])) {
+                    $gene_uid = $gene_link[$transcript];
+                } else {
+                    $gene_uid = "";
+                }
+                echo "<tr><td><a href=\"view.php?table=protein_annotations&uid=$uid\">$prot_id</a><td>$prot_name<td>$gene_name";
+                echo "<td><a href=\"view.php?table=gene_annotations&uid=$gene_uid\">$transcript</a><td>$function<td>$go_process<td>$go_function<td>$uniprot<td>$goa\n";
             }
-            $stmt->close();
             if ($count > 0) {
                 echo "</table><br>";
             } else {
