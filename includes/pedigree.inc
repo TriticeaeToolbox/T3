@@ -66,63 +66,64 @@ function show_barley_pedigree_catalog_ref($id)
  */
 function show_line_records($id)
 {
-  global $mysqli;
-  $name = getAccessionName($id);
-  // Passport info
-  echo "<div style='float: left; margin-left: 10px;'>";
-  echo "<h3>Passport</h3>";
-  echo "<table>";
-  // Custom instead of show_general():
-  $res= mysqli_query($mysqli, "
+    global $mysqli;
+    $name = getAccessionName($id);
+    // Passport info
+    echo "<div style='float: left; margin-left: 10px;'>";
+    echo "<h3>Passport</h3>";
+    echo "<table>";
+    // Custom instead of show_general():
+    $res= mysqli_query($mysqli, "
      select line_record_name, breeding_program_code, pedigree_string, generation, description, updated_on
      from line_records where line_record_uid = $id") or die(mysqli_error($mysqli));
-  $row = mysqli_fetch_assoc($res);
-  $bpcode = $row['breeding_program_code'];
-  $bpname = mysql_grab("select data_program_name from CAPdata_programs where data_program_code = '$bpcode'");
-  foreach ($row as $k=>$v) {
-    // If there's no value, ignore completely.
-    if (!empty($v)) {
-      if ($k == 'breeding_program_code')
-	echo "<tr><td><b>Breeding program</b><td>$bpname ($bpcode)";
-      else {
-	echo "<tr><td><strong>". ucfirst(str_replace("_", " ", $k)) . "</strong>";
-	echo "<td>$v";
-      }
+    $row = mysqli_fetch_assoc($res);
+    $bpcode = $row['breeding_program_code'];
+    $bpname = mysql_grab("select data_program_name from CAPdata_programs where data_program_code = '$bpcode'");
+    foreach ($row as $k => $v) {
+        // If there's no value, ignore completely.
+        if (!empty($v)) {
+            if ($k == 'breeding_program_code') {
+                echo "<tr><td><b>Breeding program</b><td>$bpname ($bpcode)";
+            } else {
+                echo "<tr><td><strong>". ucfirst(str_replace("_", " ", $k)) . "</strong>";
+                echo "<td>$v";
+            }
+        }
     }
-  }
-  echo "</table></div>";
+    echo "</table></div>";
 
-  // Synonyms and links to GRIN
-  echo "<div style='float: left; margin-left: 10px;'>";
-  echo "<h3>Synonyms</h3>";
-  echo "<table cellspacing=0 cellpadding=0>";
-  $synonyms = getSynonymNames($id);
-  if ($synonyms===FALSE)
-    echo "<tr><td>No synonyms";
-  else 
-    echo "<tr><td>". implode(", ",  $synonyms);
-  $bpc = getBarleyPedigreeCatalogIDs($id);
-  if ($bpc===FALSE)
-    echo "<tr><td>No database links";
-  else {
-    foreach ($bpc as $key => $val) {
-      echo "<tr><td><a href=".$val.">".$key."</a>";
+    // Synonyms and links to GRIN
+    echo "<div style='float: left; margin-left: 10px;'>";
+    echo "<h3>Synonyms</h3>";
+    echo "<table cellspacing=0 cellpadding=0>";
+    $synonyms = getSynonymNames($id);
+    if ($synonyms===false) {
+         echo "<tr><td>No synonyms";
+    } else {
+         echo "<tr><td>". implode(", ", $synonyms);
     }
-  }
-  echo "</table>";
-  // Pheno/Geno data links
-  // part of the Synonyms div
-  echo "<h3>Phenotype,<br>Genotype Data</h3>";
-  echo "<table>";
-  $phenotype = lineHasPhenotypeData($id) ? "<a href=\"phenotype/show.php?line=$id\">Show</a>" : "None";
-  echo "<tr><td><strong>Phenotype Results</strong>";
-  echo "<td>$phenotype";
-  $genotype = lineHasGenotypeData($id) ? "<a href=\"genotyping/show.php?line=$id\">Show</a>" : "None";
-  echo "<tr>";
-  echo "<td><strong>Marker Alleles</strong>";
-  echo "<td>$genotype";
-  echo "</table><br>";
-  echo "</div>";
+    $bpc = getBarleyPedigreeCatalogIDs($id);
+    if ($bpc===false) {
+        echo "<tr><td>No database links";
+    } else {
+        foreach ($bpc as $key => $val) {
+            echo "<tr><td><a href=".$val.">".$key."</a>";
+        }
+    }
+    echo "</table>";
+    // Pheno/Geno data links
+    // part of the Synonyms div
+    echo "<h3>Phenotype,<br>Genotype Data</h3>";
+    echo "<table>";
+    $phenotype = lineHasPhenotypeData($id) ? "<a href=\"phenotype/show.php?line=$id\">Show</a>" : "None";
+    echo "<tr><td><strong>Phenotype Results</strong>";
+    echo "<td>$phenotype";
+    $genotype = lineHasGenotypeData($id) ? "<a href=\"genotyping/show.php?line=$id\">Show</a>" : "None";
+    echo "<tr>";
+    echo "<td><strong>Marker Alleles</strong>";
+    echo "<td>$genotype";
+    echo "</table><br>";
+    echo "</div>";
 
   // Properties
   echo "<div style='float: left; margin-left: 10px;'>";
@@ -131,13 +132,14 @@ function show_line_records($id)
 	where line_record_uid = $id
 	and lp.property_value_uid = pv.property_values_uid
 	and properties.properties_uid = pv.property_uid";
-  $res = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli));
+  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
   if (mysqli_num_rows($res) > 0) {
     echo "<h3>Genetic Properties</h3>";
     echo "<table><tr>";
     echo "<th>Attribute/Gene<th>Value/Allele";
-    while ($r = mysqli_fetch_row($res))
+    while ($r = mysqli_fetch_row($res)) {
       echo "<tr><td>$r[0]<td>$r[1]";
+    }
     echo "</table>";
   }
   echo "</div>";
@@ -158,21 +160,23 @@ function show_line_records($id)
   // Parents
   echo "<tr><td><strong>Parents</strong><td>";
   $prnts = getParents($id);
-  if (empty($prnts))
+  if (empty($prnts)) {
     echo "Not found";
-  else {
+  } else {
     $lnkpts = "";
-    foreach ($prnts as $pt) 
+    foreach ($prnts as $pt) {
       $lnkpts .= "<a href=".$config['base_url']."view.php?table=line_records&name=$pt>$pt</a>, ";
+    }
     echo rtrim($lnkpts, ' ,');
   }
   // Children
   echo "<tr><td><strong>Children</strong><td>";
   $kids = implode(", ", getChildren($id));
-  if (empty($kids))
+  if (empty($kids)) {
     echo "Not found";
-  else 
+  } else {
     echo "$kids<br><a href=\"pedigree/reverse_pedigree.php?line=".urlencode($name)."\">Descendants";
+  }
   echo "</table><br>";
   echo "</div>";
 
@@ -201,21 +205,23 @@ function show_line_records($id)
     echo "<table cellspacing=0 cellpadding=0>";
     echo "<th>Name<th>Description";
     $i = 0;
-    foreach ($panelset as $paname)
+    foreach ($panelset as $paname) {
       echo "<tr><td>$paname[name]<td>$paname[desc]";
+    }
     echo "</table><br>";
     echo "</div>";
   }
 }
 
 /*
- * This function gets the parents of a particular line. 
+ * This function gets the parents of a particular line.
  * It uses a subquery for efficency.
  *
  * @param $id - the id of the line of which to get the parents of.
  * @return $names - an array containing the names of the parents.
  */
-function getParents($id) {
+function getParents($id)
+{
     global $mysqli;
 	$parents = mysqli_query($mysqli, "
 			SELECT line_record_name
@@ -229,7 +235,7 @@ function getParents($id) {
 
 	$names = array();
 
-	while($row = mysqli_fetch_assoc($parents)) {
+	while ($row = mysqli_fetch_assoc($parents)) {
 		array_push($names, $row['line_record_name']);
 	}
 
@@ -237,75 +243,75 @@ function getParents($id) {
 }
 
 /*
- * This function gets the children of a particular line. 
+ * This function gets the children of a particular line.
  * It uses a subquery for efficency.
  *
  * @param $id - the id of the line of which to get the children of.
  * @return $names - an array containing the names of the children.
  */
-function getChildren($id) {
+function getChildren($id)
+{
     global $mysqli;
-	$children = mysqli_query($mysqli, "
-			SELECT line_record_name
-			FROM line_records
-			WHERE line_record_uid = ANY (
-				SELECT line_record_uid 
-				FROM pedigree_relations 
-				WHERE parent_id = '$id'
-				) 
-			") or die(mysqli_error($mysqli));
+    $children = mysqli_query($mysqli, "
+	SELECT line_record_name
+	FROM line_records
+	WHERE line_record_uid = ANY (
+	SELECT line_record_uid 
+	FROM pedigree_relations 
+	WHERE parent_id = '$id'
+	) 
+    ") or die(mysqli_error($mysqli));
 
-	$names = array();
+    $names = array();
 
-	while($row = mysqli_fetch_assoc($children )) {
-		array_push($names, $row['line_record_name']);
-	}
+    while ($row = mysqli_fetch_assoc($children)) {
+        array_push($names, $row['line_record_name']);
+    }
 
-	return $names;
+    return $names;
 }
 
-function getPedigrees($name) {
-	return array($name=>getPedigrees_r($name, array()));
+function getPedigrees($name)
+{
+    return array($name=>getPedigrees_r($name, array()));
 }
 
 /*
- * This function generates a pedigree tree. It has to have a starting element to act as root. 
- * The algorithm is slightly hard to follow and recursive in nature. 
+ * This function generates a pedigree tree. It has to have a starting element to act as root.
+ * The algorithm is slightly hard to follow and recursive in nature.
  */
-function getPedigrees_r ($qname, $nvisited) {
-	global $nvisited;
+function getPedigrees_r($qname, $nvisited)
+{
+    global $nvisited;
 
-	if(!is_array($nvisited))
-		$nvisited = array();
+    if (!is_array($nvisited)) {
+        $nvisited = array();
+    }
+    if (! isset($qname) || $qname=='') {
+        return "Error: Wrong Parameters!";
+    } elseif (array_key_exists($qname, $nvisited)) {
+        return "Folded";
+    } else {
+        $parents = getParents(getPedigreeId($qname));
 
-	if (! isset($qname) || $qname==''){ 
-		return "Error: Wrong Parameters!";
+        $nvisited[$qname] = 1;
+
+        if (count($parents) < 1) {
+            return "N/A";
+        } else {
+            $tree=array();
+	    foreach ($parents as $key => $val) {
+                $tree[$val] = getPedigrees_r($val, $nvisited);
+	    }
+            return $tree;
 	}
-	elseif (array_key_exists($qname, $nvisited)) {
-		return "Folded";
-	}
-	else {
-
-		$parents = getParents(getPedigreeId($qname));
-
-		$nvisited[$qname] = 1;
-
-		if (count($parents) < 1) {
-			return "N/A";
-		}
-		else {
-			$tree=array();
-			foreach ($parents as $key=>$val) {
-				$tree[$val] = getPedigrees_r($val, $nvisited);
-			}
-			return $tree;
-		}
-	}	
+    }	
 }
 
 
-function getReversePedigrees($name) {
-	return array($name=>getReversePedigrees_r($name, array()));
+function getReversePedigrees($name)
+{
+    return array($name=>getReversePedigrees_r($name, array()));
 }
 
 /*
@@ -313,35 +319,32 @@ function getReversePedigrees($name) {
  * It has to have a starting element to act as root. 
  * The algorithm is slightly hard to follow and recursive in nature. 
  */
-function getReversePedigrees_r($name, $visited=array()) {
-	global $visited;
+function getReversePedigrees_r($name, $visited = array())
+{
+    global $visited;
 
-	if(!is_array($visited))
-		$visited = array();
+    if (!is_array($visited)) {
+	$visited = array();
+    }
+    if ($name == "") {
+	return "Error: Wrong Parameters";
+    } elseif (array_key_exists($name, $visited)) {
+	return "Folded";
+    } else {
+	$children = getChildren(getPedigreeId($name));
 
-	if($name == "") {
-		return "Error: Wrong Parameters";
+	$visited[$name] = 1;
+
+	if (count($children)<1) {
+		return "N/A";
+        } else {
+            $tree=array();
+            foreach ($children as $key => $val) {
+                   $tree[$val] = getReversePedigrees_r($val, $visited);
+	    }
+	    return $tree;
 	}
-	elseif (array_key_exists($name, $visited)) {
-		return "Folded";
-	}
-	else {
-
-		$children = getChildren(getPedigreeId($name));
-
-		$visited[$name] = 1;
-
-		if (count($children)<1) {
-			return "N/A";
-		}
-		else {
-			$tree=array();
-			foreach ($children as $key=>$val) {
-				$tree[$val] = getReversePedigrees_r($val, $visited);
-			}
-			return $tree;
-		}
-	}	
+    }	
 }
 
 /**
@@ -679,7 +682,7 @@ function getAccessionName($id) {
 function getSynonymNames($id) {
     global $mysqli;
     $sql = "SELECT line_synonym_name FROM line_synonyms WHERE line_record_uid = '$id'";
-    $sql_syn = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli));
+    $sql_syn = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     if (mysqli_num_rows($sql_syn) < 1) {
         return false;
     }
