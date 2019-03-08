@@ -143,6 +143,9 @@ class ShowData
         }
         $line_total = count($line_ids);
         $line_list = implode(",", $line_ids);
+        if ($line_total > 0) {
+            $found_data = 1;
+        }
 
         $sql_lines = "select line_index from allele_bymarker_expidx where experiment_uid = $experiment_uid";
         $res_lines = mysqli_query($mysqli, $sql_lines) or die("Error: unable to retrieve lines for this experiment.<br>" . mysqli_error($mysqli));
@@ -246,13 +249,15 @@ class ShowData
 <input type="submit" value="Select experiment" style="color:blue"> (lines and markers)
 </form>
 <br>
-    <?php
-    if ($gbs_exp == "yes") {
-        calculate_afe($experiment_uid, $min_maf, $max_missing, $max_miss_line);
-    } else {
-        calculate_af($line_ids, $min_maf, $max_missing, $max_miss_line);
-    }
-    ?>
+        <?php
+        if ($found_data) {
+            if ($gbs_exp == "yes") {
+                calculate_afe($experiment_uid, $min_maf, $max_missing, $max_miss_line);
+            } else {
+                calculate_af($line_ids, $min_maf, $max_missing, $max_miss_line);
+            }
+        }
+        ?>
 
 <p>
   Maximum Missing Data: <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />%&nbsp;&nbsp;&nbsp;&nbsp;
@@ -261,18 +266,18 @@ class ShowData
   <div id="status"></div>
   <div id="results">
   <img alt="creating download file" id="spinner" src="images/ajax-loader.gif" style="display:none;">
-    <?php
-    if ($gbs_exp == "yes") {
-        ?>
-        <input type="button" value="Download allele data" onclick="javascript:load_tab_delimiter_GBS('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
         <?php
-    } else {
+        if ($gbs_exp == "yes") {
+            ?>
+            <input type="button" value="Download allele data" onclick="javascript:load_tab_delimiter_GBS('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
+            <?php
+        } else {
+            ?>
+            <input type="button" value="Download allele data" onclick="javascript:load_tab_delimiter('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
+            <?php
+        }
+        $url = "genotyping/display_markers.php?geno_exp=" . $experiment_uid;
         ?>
-        <input type="button" value="Download allele data" onclick="javascript:load_tab_delimiter('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
-        <?php
-    }
-    $url = "genotyping/display_markers.php?geno_exp=" . $experiment_uid;
-    ?>
     <button onclick="location.href='<?php echo $url ?>'">Download marker data</button><br>
     <?php
     echo "</div><p><br>";
