@@ -257,6 +257,16 @@ class Downloads
             $lines = $_SESSION['selected_lines'];
             $lines_str = implode(",", $lines);
             $experiments_g = $_SESSION['geno_exps'];
+            if (is_array($experiments_g)) {
+                $geno_str = $experiments_g[0];
+            } else {
+                $geno_str = $experiments_g;
+            }
+            $sql = "select trial_code from experiments where experiment_uid = $geno_str";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $row = mysqli_fetch_array($res);
+            $trial_code = $row[0];
+
             $geno_str = $experiments_g[0];
             $sql = "SELECT marker_uid from allele_bymarker_exp_ACTG where experiment_uid = ?";
             if ($stmt = mysqli_prepare($mysqli, $sql)) {
@@ -326,6 +336,7 @@ class Downloads
         }
         $filename = "selection_parameters.txt";
         $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+        fwrite($h, "Trial Code = $trial_code\n");
         fwrite($h, "Minimum MAF = $min_maf\n");
         fwrite($h, "Maximum Missing = $max_missing\n");
         fclose($h);

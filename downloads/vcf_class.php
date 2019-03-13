@@ -80,22 +80,22 @@ function filterVCF()
 
 /** used to create VCF file from genotype experiment selection for TASSEL **/
 /** does not sort by position and does not work for large exeriments **/
-function createVcfDownload($unique_str, $min_maf, $max_missing, $impute = false)
+function createVcfDownload($unique_str, $min_maf = 5, $max_missing = 50, $impute = false)
 {
     global $config;
     global $mysqli;
     global $tmpdir;
-    $max_missing = 50;
-    $min_maf = 5;
-    include_once $config['root_dir'].'downloads/marker_filter.php';
     $selected_map = $_SESSION['selected_map'];
     if (isset($_SESSION['geno_exps'])) {
         $geno_exp = $_SESSION['geno_exps'];
-        $geno_exp = $geno_exp[0];
+        if (is_array($geno_exp)) {
+            $geno_exp = $geno_exp[0];
+        }
         $sql = "select trial_code from experiments where experiment_uid = $geno_exp";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         $row = mysqli_fetch_array($res);
         $trial_code = $row[0];
+        //echo "using $geno_exp $trial_code\n";
     } else {
         die("Error: no genotype experiment selected");
     }
@@ -128,7 +128,7 @@ function createVcfDownload($unique_str, $min_maf, $max_missing, $impute = false)
     $filename1 = "$tmpdir/download_$unique_str/genotype.vcf";
     $filename2 = "$tmpdir/download_$unique_str/genotype_imputed";
     $logfile1 = "$tmpdir/download_$unique_str/process_error1.txt";
-    $fh1 = fopen("$filename1", "w");
+    $fh1 = fopen("$filename1", "w") or die("Error: can not open file\n");
 
     //get filtered markers
     $sql = "SELECT marker_uid, maf, missing, total from allele_frequencies where experiment_uid = $geno_exp";
@@ -183,8 +183,9 @@ function createVcfDownload($unique_str, $min_maf, $max_missing, $impute = false)
         'NA' => './.',   //--
         '' => './.'
     );
+    $unk_cnt = 0;
     $unk_loc = "";
-    $dup_loc = "";
+    $dup_loc = array();
     $sql = "select markers.marker_uid, markers.marker_name, A_allele, B_allele, chrom, pos, alleles
         from allele_bymarker_exp_101, markers 
         where allele_bymarker_exp_101.marker_uid = markers.marker_uid
@@ -207,6 +208,7 @@ function createVcfDownload($unique_str, $min_maf, $max_missing, $impute = false)
         }
         if (isset($marker_lookup[$marker_uid])) {
             if (empty($chrom)) {
+                $unk_cnt++;
                 $unk_loc .= " $marker_name";
                 continue;
             }
@@ -218,30 +220,60 @@ function createVcfDownload($unique_str, $min_maf, $max_missing, $impute = false)
             $allele_str = implode("\t", $allele_ary2);
             $index = $chrom . $pos;
             
-            //can not find a way sort chrom, pos, marker that it will not cause and error in TASSEL so we have to remove them
-            if (isset($unique[$index])) {
-                $dup_loc .= " $marker_name";
+            //Beagle does not allow markers at duplicate position to remove them
+            if (isset($unique[$index]) && $impute) {
+                $dup_loc[] = $marker_name;
                 continue;
             } else {
+                $chr_list[$chrom] = 1;
                 $index_list[] = $index;
-                $out_list[] = "$chrom\t$pos\t$marker_name\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n";
+                $chrom_list[$marker_name] = $chrom;
+                $pos_list[$marker_name] = $pos;
+                $mark_list[$marker_name] = $marker_name;
+                $out_list[$marker_name] = "$chrom\t$pos\t$marker_name\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n";
             }
             $unique[$index] = 1;
         }
     }
-    asort($index_list, SORT_NATURAL);
-    foreach ($index_list as $key => $val) {
+    //asort($index_list, SORT_NATURAL);
+    array_multisort($chrom_list, $pos_list, $mark_list);
+    //foreach ($index_list as $key => $val) {
+    foreach ($chrom_list as $key => $val) {
         fwrite($fh1, $out_list[$key]);
     }
     fclose($fh1);
+    $density =  (count($index_list) / count($chr_list));
+    if (($density < 500) && $impute) {
+        $options = "window=500 overlap=50";
+        echo "Warning: low marker density using $options<br>\n";
+    } else {
+        $options = "";
+    }
     if (!empty($unk_loc)) {
-        echo "location not defined in map: $unk_loc<br><br>\n";
+        if ($unk_cnt < 10) {
+            echo "location not defined in map: $unk_loc<br><br>\n";
+        } else {
+            echo "<font color=red>Warning:</font> $unk_cnt markers have no location and will not be in download file.<br><br>\n";
+        }
     }
     if (!empty($dup_loc)) {
-        echo "duplicate location in map: $dup_loc<br>\n";
+        $count = count($dup_loc);
+        echo "removed $count markers that have duplicate locations<br>\n";
+        if ($count < 20) {
+            foreach ($dup_loc as $val) {
+                echo "$val ";
+            }
+            echo "<br>\n";
+        }
     }
     if ($impute) {
-        $cmd = "java -jar /usr/local/bin/beagle.10Jun18.811.jar window=500 overlap=50 gt=$filename1 out=$filename2 > /dev/null 2> $logfile1";
+        $count = count($out_list);
+        if ($count > 10000) {
+            $cmd = "java -jar /usr/local/bin/beagle.10Jun18.811.jar $options gt=$filename1 out=$filename2 > /dev/null 2> $logfile1 &";
+            echo "For over 10,000 markers the process will run in background. Check link until genotype_imputed.log indicates the job has finished<br>\n";
+        } else {
+            $cmd = "java -jar /usr/local/bin/beagle.10Jun18.811.jar $options gt=$filename1 out=$filename2 > /dev/null 2> $logfile1";
+        }
         exec($cmd);
     }
 }
@@ -257,7 +289,6 @@ function createVcfBeagle()
     $max_missing = 50;
     $min_maf = 5;
     $unique_str = $_GET['unq'];
-    include_once $config['root_dir'].'downloads/marker_filter.php';
     ini_set("auto_detect_line_endings", true);
     if (isset($_GET['mm'])) {
         $max_missing = $_GET['mm'];
@@ -284,8 +315,6 @@ function createVcfBeagle()
         $ref_line[$line_name] = 1;
     }
     $chr = $_GET['chr'];
-    //$f1 = "raw/genotype/WEC_filtered_SNPs.vcf";
-    //$ref_marker = typeVcfGetMarkerRef($chr, $f1);
     if (isset($_SESSION['geno_exps']) || isset($_SESSION['selected_lines'])) {
         //$unique_str = chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90));
         $filename = "download_" . $unique_str;
