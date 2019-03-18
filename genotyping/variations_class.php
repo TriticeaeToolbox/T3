@@ -167,6 +167,7 @@ class Variations
             echo "Warning: no markers selected<br>\n";
         }
 
+        $count_vep_list = 0;
         $linkOutIdx = array();
         $vepList = array();
         $notFound = "";
@@ -181,6 +182,7 @@ class Variations
             $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             if ($row = mysqli_fetch_row($result)) {
                 $found = 1;
+                $count_vep_list++;
                 $marker_name = $row[0];
                 $feature = $row[1];
                 $consequence = $row[2];
@@ -208,51 +210,50 @@ class Variations
                     $start = 0;
                 }
                 $stop = $pos + 1000;
-                    if ($strand == "F") {
-                        $strand = "+";
-                    } elseif ($strand == "R") {
-                        $strand = "-";
-                    }
-                    if (empty($bin)) {
-                        $bin = $chrom;
-                    }
-                    if (isset($browserLink[$assembly_name])) {
-                        $link = $browserLink[$assembly_name];
-                        if (preg_match("/ensemb/", $link)) {
-                            $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly_name] . "$bin:$start-$stop\">$bin:$pos</a>";
-                        } else {
-                            $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly_name] . "$chrom:$start..$stop\">$chrom:$pos</a>";
-                        }
+                if ($strand == "F") {
+                    $strand = "+";
+                } elseif ($strand == "R") {
+                    $strand = "-";
+                }
+                if (empty($bin)) {
+                    $bin = $chrom;
+                }
+                if (isset($browserLink[$assembly_name])) {
+                    $link = $browserLink[$assembly_name];
+                    if (preg_match("/ensemb/", $link)) {
+                        $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly_name] . "$bin:$start-$stop\">$bin:$pos</a>";
                     } else {
-                        $jbrowse = "$chrom:$pos";
+                        $jbrowse = "<a target=\"_new\" href=\"" . $browserLink[$assembly_name] . "$chrom:$start..$stop\">$chrom:$pos</a>";
                     }
-                    $linkOut = "<tr><td><a href=\"" . $config['base_url'] . "view.php?table=markers&name=$marker_name\">$marker_name</a><td>$jbrowse";
-                    if (isset($geneFound[$marker_name])) {
-                        $gene = $geneFound[$marker_name];
-                        $desc = $geneDesc[$gene];
-                        $link = "<a target=\"_new\" href=" . $varLink[$assembly_name] . "?g=$gene>$gene</a>";
-                    } else {
-                        $gene = "";
-                        $desc = "";
-                        $link = "";
-                    }
-                    if ($found) {
-                        $linkOutSort[] = "$linkOut<td>$link<td>$desc<td>$feature<td>$consequence<td>$impact";
-                        $linkOutIndx[] = $chrom . $pos;
-                    } else {
-                        $linkOutSort[] = "$linkOut<td>$link<td>$desc";
-                        $linkOutIndx[] = $chrom . $pos;
-                    }
+                } else {
+                    $jbrowse = "$chrom:$pos";
+                }
+                $linkOut = "<tr><td><a href=\"" . $config['base_url'] . "view.php?table=markers&name=$marker_name\">$marker_name</a><td>$jbrowse";
+                if (isset($geneFound[$marker_name])) {
+                    $gene = $geneFound[$marker_name];
+                    $desc = $geneDesc[$gene];
+                    $link = "<a target=\"_new\" href=" . $varLink[$assembly_name] . "?g=$gene>$gene</a>";
+                } else {
+                    $gene = "";
+                    $desc = "";
+                    $link = "";
+                }
+                if ($found) {
+                    $linkOutSort[] = "$linkOut<td>$link<td>$desc<td>$feature<td>$consequence<td>$impact";
+                    $linkOutIndx[] = $chrom . $pos;
+                } else {
+                    $linkOutSort[] = "$linkOut<td>$link<td>$desc";
+                    $linkOutIndx[] = $chrom . $pos;
+                }
             } else {
                 if ($found) {
                     $linkOutSort[] = "$linkOut<td>$link<td>$desc<td>$feature<td>$consequence<td>$impact";
                     $linkOutIndx[] = $chrom . $pos;
-                 } else {
+                } else {
                     $linkOutSort[] = "$linkOut<td>$link<td>$desc";
                     $linkOutIndx[] = $chrom . $pos;
-                 }
+                }
             }
-            
         }
 
         if ($count_vep_list > 0) {
