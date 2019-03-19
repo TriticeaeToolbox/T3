@@ -1039,6 +1039,7 @@ class Downloads
                             $knetminer2 = "<a target=\"_new\" href=\"http://knetminer.rothamsted.ac.uk/wheatknet/genepage?keyword=$TO&list=$gene\">ontology</a>";
                         }
                     } else {
+                        $gene = "";
                         $knetminer1 = "";
                         $knetminer2 = "";
                         $exp1 = "";
