@@ -37,7 +37,7 @@ function check_session()
             $trial_code = $row[0];
             $date = $row[1];
             $desc = $row[2];
-            print "<tr><td><a href='".$config['base_url']."display_genotype.php?trial_code=$trial_code'>$trial_code</a><td>$date<td>$desc\n";
+            print "<tr><td><a href='".$config['base_url']."genotyping/display_genotype.php?trial_code=$trial_code'>$trial_code</a><td>$date<td>$desc\n";
         }
     }
     echo "</table><br><br>";
@@ -77,7 +77,7 @@ function display_list()
         if ($row2 = mysqli_fetch_row($res2)) {
             $count = number_format($row2[0]);
         }
-        print "<tr><td><a href='".$config['base_url']."display_genotype.php?trial_code=$trial_code'>$trial_code</a><td>$date<td style=\"text-align:right\">$count<td>$desc\n";
+        print "<tr><td><a href='".$config['base_url']."genotyping/display_genotype.php?trial_code=$trial_code'>$trial_code</a><td>$date<td style=\"text-align:right\">$count<td>$desc\n";
     }
     echo "</table></div>";
 }
