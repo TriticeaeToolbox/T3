@@ -175,7 +175,7 @@ if (count($found) < 1) {
         if ($expttype == 1) {
             echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."display_phenotype.php?trial_code=$trialcode\">";
         } elseif ($expttype == 2) {
-            echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."display_genotype.php?trial_code=$trialcode\">";
+            echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."genotyping/display_genotype.php?trial_code=$trialcode\">";
         } elseif ($expttype == 3) {
             echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."compounds/display_metabolite.php?trial_code=$trialcode\">";
         } else {
@@ -270,11 +270,11 @@ if (isset($_POST['haplotype'])) {
 
 /*****************************************************************************************/
 /* DEM jun 2013: This section currently unused?  Replaced by phenotype/compare.php? */
-  //phenotype search has been made.
-  if(isset($_POST['phenotypecategory'])) {
+//phenotype search has been made.
+if (isset($_POST['phenotypecategory'])) {
     // Find all lines associated with the given phenotype data.
     $phenotype = $_POST['phenotype'];
-    if(isset($_POST['na_value']) && $_POST['na_value'] != "") {	// no range specified, single value
+    if (isset($_POST['na_value']) && $_POST['na_value'] != "") {	// no range specified, single value
       $value = $_POST['na_value'] == "" ? " " : $_POST['na_value'];
       $search = mysqli_query($mysqli, "
 		  SELECT line_records.line_record_uid, line_record_name

@@ -101,7 +101,7 @@ class ShowData
         $footer_div = 1;
         include $config['root_dir'].'theme/footer.php';
         ?>
-        <script type="text/javascript" src="display_genotype01.js"></script>
+        <script type="text/javascript" src="genotyping/display_genotype01.js"></script>
         <?php
     }
 
@@ -233,6 +233,10 @@ class ShowData
         echo "<tr> <td>Software version</td><td>".$row_Gen_Info['BGST_version_number']."</td></tr>";
         echo "<tr> <td>Comments</td><td>".$row_Gen_Info['comments']."</td></tr>";
         echo "</table><p>";
+
+        if (preg_match("/Download at/", $comments)) {
+            return;    //data not in T3 because too large
+        }
         ?>
 
 <h3>Download</h3>
@@ -279,18 +283,18 @@ class ShowData
         $url = "genotyping/display_markers.php?geno_exp=" . $experiment_uid;
         ?>
     <button onclick="location.href='<?php echo $url ?>'">Download marker data</button><br>
-    <?php
-    echo "</div><p><br>";
-    echo "<h3>Additional files available</h3><p>";
-    echo "<table>";
+        <?php
+        echo "</div><p><br>";
+        echo "<h3>Additional files available</h3><p>";
+        echo "<table>";
 
-    echo "<tr> <td>Samples (germplasm lines)</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['sample_sheet_filename']."'>".$row_Gen_Info['sample_sheet_filename']."</a></td></tr>";
-    echo "<tr> <td>Manifest (markers used)</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['manifest_file_name']."'>". $row_Gen_Info['manifest_file_name']." </a></td></tr>";
+        echo "<tr> <td>Samples (germplasm lines)</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['sample_sheet_filename']."'>".$row_Gen_Info['sample_sheet_filename']."</a></td></tr>";
+        echo "<tr> <td>Manifest (markers used)</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['manifest_file_name']."'>". $row_Gen_Info['manifest_file_name']." </a></td></tr>";
 
-    echo "<tr> <td>Cluster File</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['cluster_file_name']."'>".$row_Gen_Info['cluster_file_name']."</a></td></tr>";
+        echo "<tr> <td>Cluster File</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['cluster_file_name']."'>".$row_Gen_Info['cluster_file_name']."</a></td></tr>";
 
-    echo "<tr> <td>Raw data</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['raw_datafile_archive']."'>".$row_Gen_Info['raw_datafile_archive']."</a></td></tr>";
-    echo "</table>";
+        echo "<tr> <td>Raw data</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['raw_datafile_archive']."'>".$row_Gen_Info['raw_datafile_archive']."</a></td></tr>";
+        echo "</table>";
     } /* End of function type_DataInformation*/
 
     private function type_Tab_Delimiter_GBS()

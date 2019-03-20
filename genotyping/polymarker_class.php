@@ -36,7 +36,7 @@ class DownloadPrimers
         if ($count == 0) {
             echo "<a href=\"genotyping/marker_selection.php\">Select one or more markers</a> using the \"Wheat CAP 2017\" map to see design results.<br><br>\n";
         }
-        echo "The PolyMarker program was used to design primers on all the markers in the <a href=display_genotype.php?trial_code=2017_WheatCAP>2017_WheatCAP</a> experiment. ";
+        echo "The PolyMarker program was used to design primers on all the markers in the <a href=genotypine/display_genotype.php?trial_code=2017_WheatCAP>2017_WheatCAP</a> experiment. ";
         echo "<a href=\"genotyping/marker_selection.php\">Select a marker</a> using the \"Wheat CAP 2017\" map to see design results.";
         echo "<br>Description of the design process: <a href=genotyping/20180821_mapping_stats.pdf>PolyMarker for WheatCAP</a>, ";
         echo "<a href=http://www.wheat-training.com/wp-content/uploads/TILLING/pdfs/Designing-genome-specific-primers.pdf target=_blank>Designing genome specific primers</a>";
