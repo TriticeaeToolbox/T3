@@ -177,13 +177,34 @@ function show_gene_annotations($id)
     //To simply things, just refer to this function.
     show_general("gene_annotations", $id);
 
-    $gene_id = mysql_grab("select gene_id from gene_annotations where gene_annotation_uid = $id");
-
-    echo "KnetMiner network - <a href=http://knetminer.rothamsted.ac.uk/wheatknet/genepage?list=$gene_id target=_new>$gene_id</a><br>";
+    $sql = "select value from settings where name like \"assembly%\" order by name desc";
+    $res = mysqli_query($mysqli, $sql) or die("Error in show gene annotation<br>");
+    if ($row = mysqli_fetch_row($res)) {
+        $tmp = explode(",", $row[0]);
+        $jbrowse_db = $tmp[0];
+        $jbrowse_name = $tmp[1];
+    }
+    echo "<table>";
+    $sql = "select gene_id, start, stop, bin from gene_annotations where gene_annotation_uid = $id";
+    $res = mysqli_query($mysqli, $sql) or die("Error in show gene annotation<br>");
+    if ($row = mysqli_fetch_row($res)) {
+        $gene_id = $row[0];
+        $start = $row[1] - 1000;
+        $stop = $row[2] + 1000;
+        if (!preg_match("/chr/", $row[3])) {
+            $bin = "chr" . $row[3];
+        } else {
+            $bin = $row[3];
+        }
+        if (preg_match("/wheat/", $jbrowse_db)) {
+            echo "<tr><td>KnetMiner<td>$jbrowse_name<td><a href=http://knetminer.rothamsted.ac.uk/wheatknet/genepage?list=$gene_id target=_new>$gene_id</a>";
+        }
+        echo "<tr><td>JBrowse<td>$jbrowse_name<td><a href=https://triticeaetoolbox.org/jbrowse/?data=$jbrowse_db&loc=$bin:$start..$stop target=_new>$gene_id</a>";
+    }
 
     $results = mysql_grab("SHOW tables like 'pathways'");
     if ($results == "pathways") {
-        echo "<br>Pathways from Plant Reactome";
+        //echo "<tr><td>Pathways from Plant Reactome";
         $count = 0;
         $sql = "SELECT pathways.pathway_uid, pathway_reference, pathway_name, species
             from pathways, pathway_gene
@@ -191,18 +212,10 @@ function show_gene_annotations($id)
         and pathway_gene.gene_id = \"$gene_id\"";
         $res = mysqli_query($mysqli, $sql) or die("Error in show gene annotation<br>");
         while ($row = mysqli_fetch_row($res)) {
-            if ($count == 0) {
-                echo "<table><tr><td>Pathway<td>Species<td>Plant Reactome";
-                $count++;
-            }
-            echo "<tr><td><a href=".$config['base_url']."view.php?table=pathways&uid=$row[0]\">$row[2]</a><td>$row[3]<td>$row[1]\n";
-        }
-        if ($count > 0) {
-            echo "</table><br>";
-        } else {
-            echo " - none<br><br>";
+            echo "<tr><td>Pathway<td><a href=".$config['base_url']."view.php?table=pathways&uid=$row[0]\">$row[2]</a><td>$row[1]\n";
         }
     }
+    echo "</table><br>";
 
     $count = 0;
     echo "Markers near this gene";
