@@ -114,7 +114,8 @@ function generalTermSearch(array $tableTree, $searchQ)
     // DEM apr2015: Set a limit, for memory and execution time's sake.
     $limit = 1000000;
     if (count($ret) > $limit) {
-        die("More than 1 million records were found.  Please narrow your search.<p>");
+        echo "More than 1 million records were found.  Only showing first 100.<p>";
+        $ret = array_slice($ret, 0, 100);
     }
     return $ret;
 }
@@ -197,44 +198,42 @@ function desperateTermSearch(array $tables, $searchQ)
  * a paragraph list. They aren't shown in actual HTML list format but rather <p> format.
  *
  * Example:  MOREX - Line Record
- * 
+ *
  * Note: This will perform a fairly simple query on the database to pull the desired information. Sometimes in the
- *          search, this information is already obtained, in which case you may just want to display those results 
- *          independent of this function. However, for the sake of code reuse, this function provides a sure fire 
- *          way for consistent output. 
- * 
+ *          search, this information is already obtained, in which case you may just want to display those results
+ *          independent of this function. However, for the sake of code reuse, this function provides a sure fire
+ *          way for consistent output.
+ *
  *  @param array $found. The parameter given must be an array. Its contents must be in the formatted order or else warnings
- *                will be generated.  
+ *          will be generated.
  *
  * DEM mar2015: First show only the number of hits in each class.
  */
-function displayTermSearchResults(array $found, $keywords) {
-  global $mysqli;
-  foreach ($found as $v) {
-    // $v is "<table>@@<column>@@<uid>".
-    $line = explode("@@", $v);
-    $type = beautifulTableName($line[0]);
-    // Intercept marker synonyms that are identical to marker name.
-    $skip = "";
-    if (($line[0] == "marker_synonyms") && ($line[1] == "value")) {
-      $msquery = mysqli_query($mysqli, "select marker_name 
+function displayTermSearchResults(array $found, $keywords)
+{
+    global $mysqli;
+    foreach ($found as $v) {
+        // $v is "<table>@@<column>@@<uid>".
+        $line = explode("@@", $v);
+        $type = beautifulTableName($line[0]);
+        // Intercept marker synonyms that are identical to marker name.
+        $skip = "";
+        if (($line[0] == "marker_synonyms") && ($line[1] == "value")) {
+            $msquery = mysqli_query($mysqli, "select marker_name 
                     from markers, marker_synonyms 
                     where marker_synonym_uid = '$line[2]'
                     and markers.marker_uid = marker_synonyms.marker_uid
                     and markers.marker_name = marker_synonyms.value");
-      if (mysqli_num_rows($msquery) > 0) 
-	$skip = "yes"; 
-    }
-    // Intercept experiments and route to display_phenotype.php or display_genotype.php.
-    if ($type == "Experiment") {
-      $type = "Trial";
-      $trialcode = mysql_grab("select trial_code from experiments where experiment_uid = $line[2]");
-      $expttype = mysql_grab("select experiment_type_uid from experiments where experiment_uid = $line[2]");
-      /* if ($expttype == 1)  */
-      /* 	echo "<p><strong><a href=\"display_phenotype.php?trial_code=$trialcode\">$trialcode</a></strong> &mdash; " . $type . "</p>\n";		   */
-      /* else */
-      /* 	echo "<p><strong><a href=\"display_genotype.php?trial_code=$trialcode\">$trialcode</a></strong> &mdash; " . $type . "</p>\n"; */
-    }
+            if (mysqli_num_rows($msquery) > 0) {
+                $skip = "yes";
+            }
+         }
+         // Intercept experiments and route to display_phenotype.php or display_genotype.php.
+         if ($type == "Experiment") {
+             $type = "Trial";
+             $trialcode = mysql_grab("select trial_code from experiments where experiment_uid = $line[2]");
+             $expttype = mysql_grab("select experiment_type_uid from experiments where experiment_uid = $line[2]");
+         }
     // Use a better class name than the table name:
     if ($type == 'Experiment Set')
       $type = 'Experiment';
