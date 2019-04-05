@@ -140,6 +140,7 @@ if ($action == "list") {
         $temp["markerCount"] = (integer) $row[0];
         $temp["linkageGroupCount"] = (integer) $linkageCount[$uid];
         $temp["comments"] = $row[7];
+        $temp["commonCropName"] = "Wheat";
         $linearray['result']['data'][] = $temp;
     }
     $return = json_encode($linearray);
