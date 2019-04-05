@@ -138,7 +138,7 @@ if ($action == "list") {
             $temp["publishedDate"] = $row[6];
         }
         $temp["markerCount"] = (integer) $row[0];
-        $temp["linkageGroupCount"] = $linkageCount[$uid];
+        $temp["linkageGroupCount"] = (integer) $linkageCount[$uid];
         $temp["comments"] = $row[7];
         $linearray['result']['data'][] = $temp;
     }
