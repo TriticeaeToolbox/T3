@@ -13,7 +13,7 @@ require $config['root_dir'].'theme/admin_header2.php';
 <li><a href=tutorials/Tutorial_TASSEL.pdf>Exporting data for TASSEL</a>
 <li><a href=tutorials/Tutorial_Flapjack.pdf>Exporting data for Flapjack</a>
 <li><a href=tutorials/Tutorial_RScript.pdf>Exporting data for R Scripts</a>
-<li><a href=tutorials/How_to_translate_gene_names.pdf>How_to_translate_gene_names</a>
+<li><a href=tutorials/How_to_translate_gene_names.pdf>How to translate gene names</a>
 <?php
 $database = mysql_grab("select database()");
 if (preg_match("/wheat/", $database)) {
