@@ -58,6 +58,7 @@ class ShowData
      */
     private function typeSelectLines()
     {
+        global $config;
         $_SESSION[selected_lines] = explode(",", $_POST[linelist]);
         echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."pedigree/line_properties.php\">";
     }
@@ -66,6 +67,7 @@ class ShowData
     private function typeSelectMarkers()
     {
         global $mysqli;
+        global $config;
         $_SESSION[selected_lines] = explode(",", $_POST[linelist]);
         $exps_str = $_POST[genoexp];
         $experiments = explode(',', $exps_str);
@@ -101,7 +103,7 @@ class ShowData
         $footer_div = 1;
         include $config['root_dir'].'theme/footer.php';
         ?>
-        <script type="text/javascript" src="genotyping/display_genotype01.js"></script>
+        <script type="text/javascript" src="genotyping/display_genotype02.js"></script>
         <?php
     }
 
@@ -241,12 +243,12 @@ class ShowData
 
 <h3>Download</h3>
 <b><?php echo ($num_mark) ?></b> markers were assayed for <b><?php echo ($line_total) ?></b> lines.
-<form method=POST action="<?php echo $SERVER[PHP_SELF] ?>">
+<form method=POST action="<?php echo $_SERVER['PHP_SELF'] ?>">
 <input type=hidden name=function value=select_lines>
 <input type=hidden name=linelist value=<?php echo "\"$line_list\""; ?>>
 <input type="submit" value="Select lines" style="color:blue">
 </form>
-<form method=POST action="<?php echo $SERVER[PHP_SELF] ?>">
+<form method=POST action="<?php echo $_SERVER['PHP_SELF'] ?>">
 <input type=hidden name=function value=select_markers>
 <input type=hidden name=linelist value=<?php echo "\"$line_list\""; ?>>
 <input type=hidden name=genoexp value=<?php echo "\"$experiment_uid\""; ?>>
@@ -299,24 +301,26 @@ class ShowData
 
     private function type_Tab_Delimiter_GBS()
     {
-      $dtype = "";
-      $experiment_uid = $_GET['expuid'];
-      $max_missing = 99.9;//IN PERCENT
-      if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm'])) {
-          $max_missing = $_GET['mm'];
-      }
-      if ($max_missing > 100)
-          $max_missing = 100;
-      elseif ($max_missing < 0)
-          $max_missing = 0;
-      $min_maf = 0.01;//IN PERCENT
-      if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
-          $min_maf = $_GET['mmaf'];
-      if ($min_maf > 100)
-          $min_maf = 100;
-      elseif ($min_maf < 0)
-          $min_maf = 0;
-
+        $dtype = "";
+        $experiment_uid = $_GET['expuid'];
+        $max_missing = 99.9;//IN PERCENT
+        if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm'])) {
+            $max_missing = $_GET['mm'];
+        }
+        if ($max_missing > 100) {
+            $max_missing = 100;
+        } elseif ($max_missing < 0) {
+            $max_missing = 0;
+        }
+        $min_maf = 0.01;//IN PERCENT
+        if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf'])) {
+            $min_maf = $_GET['mmaf'];
+        }
+        if ($min_maf > 100) {
+            $min_maf = 100;
+        } elseif ($min_maf < 0) {
+            $min_maf = 0;
+        }
       $unique_str = chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90));
       $filename = "download_" . $unique_str;
       mkdir("/tmp/tht/$filename");
