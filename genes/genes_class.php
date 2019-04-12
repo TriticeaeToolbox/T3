@@ -34,7 +34,7 @@ class Genes
         //get list of assemblies
         $sql = "select distinct(assemblies.assembly_uid), assemblies.assembly_name, data_public_flag, assemblies.description, assemblies.created_on
             from gene_annotations, assemblies
-            where gene_annotations.assembly_name = assemblies.assembly_uid order by assemblies.created_on";
+            where gene_annotations.assembly_name = assemblies.assembly_uid order by assemblies.assembly_uid";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($result)) {
             //pick latest assembly as default
@@ -135,17 +135,17 @@ class Genes
         if (isset($_GET['search'])) {
             $query = $_GET['search'];
             $param = "%" . $query . "%";
-            $sql = "select gene_annotation_uid, gene_id, transcript, type, gene_name, description, bin, uniprot from gene_annotations
+            $sql = "select gene_annotation_uid, gene_id, transcript, type, gene_name, description, bin, uniprot, goa from gene_annotations
                 where assembly_name = ? 
-                and (description like ? OR gene_name like ? OR gene_id like ? OR uniprot like ?)";
+                and (description like ? OR gene_name like ? OR gene_id like ? OR uniprot like ? OR goa like ?)";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
-            $stmt->bind_param("sssss", $assembly, $param, $param, $param, $param) or die(mysqli_error($mysqli));
+            $stmt->bind_param("ssssss", $assembly, $param, $param, $param, $param, $param) or die(mysqli_error($mysqli));
             $stmt->execute();
             $stmt->store_result();
             $count_rows = $stmt->num_rows;
             $sql .= " limit 10 offset $offset";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
-            $stmt->bind_param("sssss", $assembly, $param, $param, $param, $param) or die(mysqli_error($mysqli));
+            $stmt->bind_param("ssssss", $assembly, $param, $param, $param, $param, $param) or die(mysqli_error($mysqli));
             if ($count_rows > 10) {
                 $next = $pageNum + 1;
                 $prev = $pageNum -1;
@@ -156,13 +156,13 @@ class Genes
    
             $count = 0;
             $stmt->execute();
-            $stmt->bind_result($uid, $gene_id, $transcript, $type, $gene_name, $desc, $bin, $uniprot);
+            $stmt->bind_result($uid, $gene_id, $transcript, $type, $gene_name, $desc, $bin, $uniprot, $goa);
             while ($stmt->fetch()) {
                 if ($count == 0) {
-                    echo "<table><tr><td>Gene Id<td>Transcript<td>Type<td>Name<td>Bin<td>Description<td>Functional annotation\n";
+                    echo "<table><tr><td>Gene Id<td>Transcript<td>Name<td>Bin<td>Description<td>protein annotation<td>gene ontology\n";
                 }
                 $count++;
-                echo "<tr><td><a href=\"view.php?table=gene_annotations&uid=$uid\">$gene_id</a><td>$transcript<td>$type<td>$gene_name<td>$bin<td>$desc<td>$uniprot\n";
+                echo "<tr><td><a href=\"view.php?table=gene_annotations&uid=$uid\">$gene_id</a><td>$transcript<td>$gene_name<td>$bin<td>$desc<td>$uniprot<td nowrap>$goa\n";
             }
             $stmt->close();
             if ($count > 0) {
