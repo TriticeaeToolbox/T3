@@ -135,9 +135,9 @@ class Genes
         if (isset($_GET['search'])) {
             $query = $_GET['search'];
             $param = "%" . $query . "%";
-            $sql = "select gene_annotation_uid, gene_id, transcript, type, gene_name, description, bin, uniprot, goa from gene_annotations
+            $sql = "select gene_annotation_uid, gene_id, transcript, type, gene_name, description, bin, uniprot, goa, function from gene_annotations
                 where assembly_name = ? 
-                and (description like ? OR gene_name like ? OR gene_id like ? OR uniprot like ? OR goa like ?)";
+                and (description like ? OR gene_name like ? OR gene_id like ? OR function like ? OR goa like ?)";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
             $stmt->bind_param("ssssss", $assembly, $param, $param, $param, $param, $param) or die(mysqli_error($mysqli));
             $stmt->execute();
@@ -156,13 +156,13 @@ class Genes
    
             $count = 0;
             $stmt->execute();
-            $stmt->bind_result($uid, $gene_id, $transcript, $type, $gene_name, $desc, $bin, $uniprot, $goa);
+            $stmt->bind_result($uid, $gene_id, $transcript, $type, $gene_name, $desc, $bin, $uniprot, $goa, $function);
             while ($stmt->fetch()) {
                 if ($count == 0) {
-                    echo "<table><tr><td>Gene Id<td>Transcript<td>Name<td>Bin<td>Description<td>protein annotation<td>gene ontology\n";
+                    echo "<table><tr><td>Gene Id<td>Transcript<td>Name<td>Bin<td>Description<td>UniProt<td nowrap>gene ontology<td>Interpro Description\n";
                 }
                 $count++;
-                echo "<tr><td><a href=\"view.php?table=gene_annotations&uid=$uid\">$gene_id</a><td>$transcript<td>$gene_name<td>$bin<td>$desc<td>$uniprot<td nowrap>$goa\n";
+                echo "<tr><td><a href=\"view.php?table=gene_annotations&uid=$uid\">$gene_id</a><td>$transcript<td>$gene_name<td>$bin<td>$desc<td>$uniprot<td>$goa<td>$function\n";
             }
             $stmt->close();
             if ($count > 0) {
