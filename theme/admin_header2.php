@@ -31,7 +31,6 @@
 
 <link href="theme/sm-core-css.css" rel="stylesheet" type="text/css">
 <link href="theme/sm-cleant3.css" rel="stylesheet" type="text/css">
-<link rel="manifest" href="theme/manifest.json">
 <script>
 jQuery( document ).ready(function( $ ) {
     $('#main-menu').smartmenus();
@@ -58,7 +57,7 @@ if (empty($title)) {
 echo "<title>$title</title>";
 require_once $config['root_dir'].'includes/analyticstracking.php';
 
-    ?>
+?>
 </head>
 <body onload="javascript:setup();">
 <div id="container">
@@ -72,16 +71,16 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
   <h1 style="color: white; text-shadow: 2px 2px 5px black; font-size: 400%;">&nbsp;&nbsp;<?php echo $title; ?></h1>
 
 <?php
-  //The navigation tab menus
-  //Tooltips:
-  $lang = array(
+//The navigation tab menus
+//Tooltips:
+$lang = array(
     "desc_sc1" => "Search by germplasm and phenotype information",
     "desc_sc2" => "Credits, data status ... ",
     "desc_sc3" => "Search by genotyping information",
     "desc_sc4" => "Search by Expression Related information.",
     "desc_sc5" => "Database administration",
     "desc_sc6" => "Visualization tools",
-  );
+);
 ?>
 <div id="nav">
   <ul id="main-menu" class="sm sm-clean">
@@ -246,8 +245,8 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
    
     <?php
     if (authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
-    ?> 
-    <li> <a href="" title="Add, edit or delete data">Curate</a>
+        ?> 
+      <li> <a href="" title="Add, edit or delete data">Curate</a>
       <ul>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_line_names.php" title="Must precede loading data about the lines">
       Lines</a></li>
@@ -303,10 +302,10 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
       <li><a href="http://google.com/analytics/web/?hl=en#home/a37631546w66043588p67910931/" title="Google Analytics, if you're permitted" target="_blank">Usage Analytics</a>
     </ul>
     </li>
-    <?php
+        <?php
     }
 
-?>
+    ?>
 
   <li>
   <a href="" title="<?php echo $lang["desc_sc2"]; ?>">Resources</a>
