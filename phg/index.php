@@ -24,7 +24,7 @@ genotyping-by-sequencing (GBS) and exome capture on Illumina HiSeq 2000
 genotyping-by-sequencing (GBS) on Illumina HiSeq 2000
 <td>(EBI - ENA) Study: <a href="https://www.ebi.ac.uk/ena/data/view/PRJNA309190" target="_blank">PRJNA309190</a>
 
-<tr><td>17 fastq from Australia bpa-wheat-cultivars<tr>Whole‐genome sequence
+<tr><td>17 fastq from Australia bpa-wheat-cultivars<br>Whole‐genome sequence
 <td><a href="https://data.bioplatforms.com/organization/bpa-wheat-cultivars" target="_blank">BioPlatforms Austrailia</a>
 <td><a href="http://www.wheatgenome.info/" target="_blank">Wheat Genome Info</a>
 <br><a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/tpj.13515" target="_blank">The pangenome of hexaploid bread wheat</a>
