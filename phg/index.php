@@ -24,7 +24,7 @@ genotyping-by-sequencing (GBS) and exome capture on Illumina HiSeq 2000
 genotyping-by-sequencing (GBS) on Illumina HiSeq 2000
 <td>(EBI - ENA) Study: <a href="https://www.ebi.ac.uk/ena/data/view/PRJNA309190" target="_blank">PRJNA309190</a>
 
-<tr><td>17 fastq from Australia bpa-wheat-cultivars
+<tr><td>17 fastq from Australia bpa-wheat-cultivars<tr>Whole‐genome sequence
 <td><a href="https://data.bioplatforms.com/organization/bpa-wheat-cultivars" target="_blank">BioPlatforms Austrailia</a>
 <td><a href="http://www.wheatgenome.info/" target="_blank">Wheat Genome Info</a>
 <br><a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/tpj.13515" target="_blank">The pangenome of hexaploid bread wheat</a>
@@ -32,7 +32,8 @@ genotyping-by-sequencing (GBS) on Illumina HiSeq 2000
 <tr><td>199 Watkins bread wheat landrace collection<br>
 gene based sequence capture (12Mb) to focus on the functionally relevant portion of the genome,<br>followed by paired end sequencing on the Hiseq4000
 <td>(EBI - ENA) Study: <a href="https://www.ebi.ac.uk/ena/data/view/PRJEB23320" target="_blank">PRJEB23320</a>
-<td><a href="https://link.springer.com/article/10.1007/s00122-014-2344-5" target="_blank">Watkins landrace cultivar collection</a>
+<td><a href="https://link.springer.com/article/10.1007/s00122-014-2344-5" target="_blank">Watkins landrace cultivar collection</a><br>
+<a href="https://opendata.earlham.ac.uk/wheat/under_license/toronto/Gardiner_2018-01-29_Watkins-diversity-12Mb">Grassroots Data Repository</a>
 
 <tr><td>500 European wheat lines, exome sequence
 <td><td><a href="http://www.whealbi.eu/" target="_blank">Whealbi</a>
@@ -45,6 +46,12 @@ gene based sequence capture (12Mb) to focus on the functionally relevant portion
 
 <tr><td>48 elite bread wheat lines
 <td><td><a href="http://plantsciences.montana.edu/" target="_new">Montana State University</a>
+
+<tr><td>1000 wheat exomes project
+<td><a href="http://wheatgenomics.plantpath.ksu.edu/1000EC/files/PassportData_160809.xlsx">Meta data</a>,
+    <a href="https://www.ebi.ac.uk/ena/data/view/PRJEB31218">VCF data</a>,
+    <a href="https://www.ncbi.nlm.nih.gov/sra">NCBI SRA</a>
+<td><a href="http://wheatgenomics.plantpath.ksu.edu/1000EC/">Kansas Statue University</a>
 </table>
 <?php
 $footer_div=1;
