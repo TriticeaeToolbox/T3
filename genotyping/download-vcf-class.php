@@ -51,7 +51,7 @@ class SelectMarkers
         <table>
         <tr><td>Genotype trial:<td><select id="trial">
             <option value="1kEC_genotype01222019">2019_Diversity_GBS</option>
-            <option value="1kEC_genotype01222019">2019_Diversity_GBS filtered</options>
+            <option value="1kEC_genotype01222019f">2019_Diversity_GBS filtered</option>
             </select>
         <tr><td>Chromosome:<td><select id="chrom">
         <option>select</option>
