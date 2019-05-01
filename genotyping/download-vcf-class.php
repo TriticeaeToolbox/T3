@@ -34,7 +34,7 @@ class SelectMarkers
         echo "<h2>Download Genotype Experiment</h2>\n";
         echo "This tool allows you to quickly download a portion of a genotype experiment.<br>\n";
         echo "Select a genotype experiment, chromosome, and range.<br>\n";
-        echo "The oputput format is Variant Call Format (VCF)<br><br>\n";
+        echo "The output format is Variant Call Format (VCF)<br><br>\n";
 
         if (isset($_GET['start']) && !empty($_GET['start'])) {
             $start = $_GET['start'];
@@ -50,8 +50,8 @@ class SelectMarkers
         ?>
         <table>
         <tr><td>Genotype trial:<td><select id="trial">
-            <option value="1kEC_genotype01222019">2019_Diversity_90K</option>
-            <option value="1kEC_genotype01222019">2019_Diversity_90K filtered</options>
+            <option value="1kEC_genotype01222019">2019_Diversity_GBS</option>
+            <option value="1kEC_genotype01222019">2019_Diversity_GBS filtered</options>
             </select>
         <tr><td>Chromosome:<td><select id="chrom">
         <option>select</option>
