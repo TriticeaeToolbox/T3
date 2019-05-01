@@ -28,8 +28,9 @@ class Genes
         include $config['root_dir'].'theme/admin_header2.php';
 
         echo "<h2>Search Gene Annotation</h2>";
-        echo "The <b>Gene Id</b> link provides information on markers in T3 and external links to protein, expression, and pathway information.<br>\n";
-        echo "The gene annotation information provided by <a href=\"http://plants.ensembl.org/index.html\" target=\"_new\">EnsemblPlants</a> includes protein-coding and non-coding genes, splice variants, cDNA and protein sequences, non-coding RNAs.<br><br>\n";
+        echo "The <b>Gene Id</b> link provides information on markers in T3 and links to JBrowse. The Gene Id link also provides external links to protein, KnetMiner, and pathway information.<br>\n";
+        echo "The gene annotation information provided by <a href=\"http://plants.ensembl.org/biomart/martview\" target=\"_new\">EnsemblPlants</a> BioMart. The annotation is done with\n";
+        echo "mostly automated tools.<br> To search for gene common names it is best to search <a href=protein>Protein Annotation</a> first then follow Gene Id link to the gene description.<br><br>\n";
 
         //get list of assemblies
         $sql = "select distinct(assemblies.assembly_uid), assemblies.assembly_name, data_public_flag, assemblies.description, assemblies.created_on
