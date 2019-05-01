@@ -120,13 +120,31 @@ class SelectMarkers
                     $line = fgets($fh);
                     echo "$line<br>\n";
                 }
+                fclose($fh);
             }
-
-            ?>
-            <input type="button" value="Download file of results"
+            $count = 0;
+            if (file_exists("$filename1")) {
+                $fh = fopen($filename1, "r");
+                $header = fgets($fh);
+                while (!feof($fh)) {
+                    $line = fgets($fh);
+                    if (preg_match("/\w/", $line)) {
+                        $count++;
+                    }
+                }
+                fclose($fh);
+            } else {
+                echo "Error: not results file<br>\n";
+            }
+            if ($count > 0) {
+                ?>
+                <input type="button" value="Download <?php echo "$count entries from $chrom:$start-$stop" ?>" 
                 onclick="javascript:window.open('<?php echo $filename1 ?>');">
                 <br><br>
-            <?php
+                <?php
+            } else {
+                echo "Error: no results from $chrom:$start-$stop<br>\n";
+            }
         }
     }
     private function displayAll()
