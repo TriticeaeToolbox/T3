@@ -109,7 +109,7 @@ class SelectMarkers
             $filename2 = $dir . "/proc_error.txt";
 
             $cmd = "tabix $file $chrom:$start-$stop > $filename1 2> $filename2";
-            echo "$cmd<br>\n";
+            //echo "$cmd<br>\n";
             exec($cmd);
             $header .= "\n" . file_get_contents($filename1);
             file_put_contents($filename1, $header);
