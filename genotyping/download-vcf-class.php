@@ -44,14 +44,23 @@ class SelectMarkers
         }
         if (isset($_GET['chrom']) && !empty($_GET['chrom'])) {
             $selected_chrom = $_GET['chrom'];
-            //echo "chromosome = $selected_chrom<br>\n";
+        }
+        if (isset($_GET['trial']) && !empty($_GET['trial'])) {
+            $trial = $_GET['trial'];
         }
 
+        $option1 = "1kEC_genotype01222019";
+        $option2 = "1kEC_genotype01222019f";
+        if ($trial == $option1) {
+            $option1 .= " selected";
+        } elseif ($trial == $option2) {
+            $option2 .= " selected";
+        }
         ?>
         <table>
         <tr><td>Genotype trial:<td><select id="trial">
-            <option value="1kEC_genotype01222019">2019_Diversity_GBS</option>
-            <option value="1kEC_genotype01222019f">2019_Diversity_GBS filtered</option>
+            <option value=<?php echo $option1 ?>>2019_Diversity_GBS</option>
+            <option value=<?php echo $option2 ?>>2019_Diversity_GBS filtered</option>
             </select>
         <tr><td>Chromosome:<td><select id="chrom">
         <option>select</option>
