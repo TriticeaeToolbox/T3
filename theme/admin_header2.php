@@ -23,7 +23,7 @@
 <script type="text/javascript" src="includes/core.js"></script>
 <script type="text/javascript" src="theme/new.js"></script>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-<script src="//code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="//code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script src="theme/jquery.smartmenus.min.js" type="text/javascript"></script>
 <script src='https://www.google.com/recaptcha/api.js'></script>
@@ -166,7 +166,7 @@ $lang = array(
             Weather Data</a>
       <li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
       </ul>
-    <li><a href="" title="">Browse</a><ul>
+    <li><a href="" title="">Search</a><ul>
     <?php
     $results = mysql_grab("SHOW tables like 'gene_annotations'");
     if ($results == "gene_annotations") {

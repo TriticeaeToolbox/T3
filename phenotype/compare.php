@@ -7,7 +7,7 @@ require 'config.php';
  * 3/29/2012 C.Birkett changed intersect option to use SESSION variable, then DispPhenotype will show trial only if it is in selected lines
  */
 require $config['root_dir'] . 'includes/bootstrap.inc';
-require $config['root_dir'] . 'theme/admin_header.php';
+require $config['root_dir'] . 'theme/admin_header2.php';
 $mysqli = connecti();
 
 /*******************************/ ?>
@@ -115,19 +115,17 @@ if (isset($_POST['selectWithin']) && ($_SESSION['selectWithin'] != $_POST['selec
         /* $out = "jpeg(\\\"".$config['root_dir']."downloads/temp/bighistogram.jpg\\\", width=444, height=333)"; */
         $out = "jpeg(\\\"/tmp/tht/bighistogram.jpg\\\", width=444, height=333)";
         $title = "main='Histogram for " . $pname[0] . "'";
-	$xlab = "xlab='" . html_entity_decode($pname[1]) . "'";
-	//$xlab "xlab='" . $pname[1] . "'";
+        $xlab = "xlab='" . html_entity_decode($pname[1]) . "'";
         $rcmd = "hist(x,$title,$xlab)";
         exec("echo \"$x;$out;$rcmd\" | R --vanilla");
         echo "<img src=\"/tmp/tht/bighistogram.jpg?d=$date\">\n";
-	//
 
-	// Get units.
-	$unit = mysql_grab("select unit_name from units, phenotypes
-	 where phenotypes.phenotype_uid = $phenotype 
-	 and units.unit_uid=phenotypes.unit_uid");
-	// Show mean, std. dev., and number of entries
-	$meanquery = mysqli_query($mysqli, "
+        // Get units.
+        $unit = mysql_grab("select unit_name from units, phenotypes
+        where phenotypes.phenotype_uid = $phenotype 
+         and units.unit_uid=phenotypes.unit_uid");
+        // Show mean, std. dev., and number of entries
+        $meanquery = mysqli_query($mysqli, "
 select avg(value) as avg,
        stddev_samp(value) as std,
        count(value) as num
@@ -138,54 +136,49 @@ and phenotype_data.tht_base_uid = tht_base.tht_base_uid
 and phenotype_data.phenotype_uid = phenotypes.phenotype_uid
 $in_these_trials
 ") or die(mysqli_error($mysqli));
-	$row = mysqli_fetch_assoc($meanquery);
-	$avg = number_format($row['avg'],1);
-	$std = number_format($row['std'],1);
-	$num = $row['num'];
-	echo "<br>Mean: <b>$avg</b> &plusmn; <b>$std</b> $unit<br>";
-	echo "n = <b>$num</b><br><hr><p>";
+    $row = mysqli_fetch_assoc($meanquery);
+    $avg = number_format($row['avg'], 1);
+    $std = number_format($row['std'], 1);
+    $num = $row['num'];
+    echo "<br>Mean: <b>$avg</b> &plusmn; <b>$std</b> $unit<br>";
+    echo "n = <b>$num</b><br><hr><p>";
 
-	//setting for sort callback
-	$_GET['phenotype'] = $phenotype;
+    //setting for sort callback
+    $_GET['phenotype'] = $phenotype;
 
-	//deal with case 1, ranges
-	if( ! isset($_REQUEST['na_value'])) {
+    //deal with case 1, ranges
+    if (!isset($_REQUEST['na_value'])) {
+        $first = !$_REQUEST['first_value'] ? getMaxMinPhenotype("min", $phenotype) : $_REQUEST['first_value'];
+        $last = !$_REQUEST['last_value'] ? getMaxMinPhenotype("max", $phenotype) : $_REQUEST['last_value'];
 
-		$first = !$_REQUEST['first_value'] ? getMaxMinPhenotype("min", $phenotype) : $_REQUEST['first_value'];
-		$last = !$_REQUEST['last_value'] ? getMaxMinPhenotype("max", $phenotype) : $_REQUEST['last_value'];
+        //setting for sort callback
+        $_GET['first_value'] = $first;
+        $_GET['last_value'] = $last;
 
-		//setting for sort callback
-		$_GET['first_value'] = $first;
-		$_GET['last_value'] = $last;
+        $searchVal = "BETWEEN $first AND $last";
+    } else { //deal with case 2, single value
+             //setting for sort callback
+        $_GET['na_value'] = $_REQUEST['na_value'];
+        $searchVal = "REGEXP '". $_REQUEST['na_value'] ."'";
+    }
 
-		$searchVal = "BETWEEN $first AND $last";
-		
-	}
-	else {	//deal with case 2, single value
-
-		//setting for sort callback
-		$_GET['na_value'] = $_REQUEST['na_value'];
-
-		$searchVal = "REGEXP '". $_REQUEST['na_value'] ."'";
-	}
-
-	$_GET['selectWithin'] = $_REQUEST['selectWithin'];
-	$in_these_lines = "";
-	if((is_array($_SESSION['selected_lines'])) && (count($_SESSION['selected_lines']) > 0) && ($_REQUEST['selectWithin'] == "Yes") ) {
-		$in_these_lines = "AND lr.line_record_uid IN (" . implode(",", $_SESSION['selected_lines']) . ")";
-	}
-	$query = "	SELECT lr.line_record_uid, lr.line_record_name Line, lr.breeding_program_code Breeding_Program, pd.value, e.trial_code Trial
-				FROM line_records as lr, tht_base, phenotype_data as pd, phenotypes as p, experiments as e
-				WHERE e.experiment_uid = tht_base.experiment_uid
-					AND lr.line_record_uid = tht_base.line_record_uid
-					AND tht_base.tht_base_uid = pd.tht_base_uid
-					AND pd.value $searchVal
-					AND pd.phenotype_uid = p.phenotype_uid
-					AND p.phenotype_uid = '$phenotype'
-					$in_these_lines
-                                        $in_these_trials
+    $_GET['selectWithin'] = $_REQUEST['selectWithin'];
+    $in_these_lines = "";
+    if ((is_array($_SESSION['selected_lines'])) && (count($_SESSION['selected_lines']) > 0) && ($_REQUEST['selectWithin'] == "Yes")) {
+	$in_these_lines = "AND lr.line_record_uid IN (" . implode(",", $_SESSION['selected_lines']) . ")";
+    }
+    $query = "	SELECT lr.line_record_uid, lr.line_record_name Line, lr.breeding_program_code Breeding_Program, pd.value, e.trial_code Trial
+			FROM line_records as lr, tht_base, phenotype_data as pd, phenotypes as p, experiments as e
+			WHERE e.experiment_uid = tht_base.experiment_uid
+				AND lr.line_record_uid = tht_base.line_record_uid
+				AND tht_base.tht_base_uid = pd.tht_base_uid
+				AND pd.value $searchVal
+				AND pd.phenotype_uid = p.phenotype_uid
+				AND p.phenotype_uid = '$phenotype'
+				$in_these_lines
+                                       $in_these_trials
 				$order";
-	$search = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
+    $search = mysqli_query($mysqli, $query) or die(mysqli_error($mysqli));
 
 	if ($_REQUEST['selectWithin'] != "Add") {
 	  // selectWithin = Yes or Replace
