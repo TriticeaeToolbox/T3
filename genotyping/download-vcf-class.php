@@ -31,16 +31,19 @@ class SelectMarkers
         global $mysqli;
         global $config;
 
-        echo "<h2>Download Genotype Experiment</h2>\n";
+        echo "<h2>Download Genotype Data</h2>\n";
         echo "This tool allows you to quickly download a portion of a genotype experiment.<br>\n";
         echo "Select a genotype experiment, chromosome, and range.<br>\n";
-        echo "The output format is Variant Call Format (VCF)<br><br>\n";
+        echo "The output format is Variant Call Format (VCF) and can be viwed in TASSEL.<br>\n";
+        echo "<a href=genotyping/PassportData_160809.xlsx>Passport MetaData</a><br><br>";
 
         if (isset($_GET['start']) && !empty($_GET['start'])) {
             $start = $_GET['start'];
+            $start = intval($start);
         }
         if (isset($_GET['stop']) && !empty($_GET['stop'])) {
             $stop = $_GET['stop'];
+            $stop = intval($stop);
         }
         if (isset($_GET['chrom']) && !empty($_GET['chrom'])) {
             $selected_chrom = $_GET['chrom'];
@@ -103,8 +106,6 @@ class SelectMarkers
         if (isset($_GET['function']) && !empty($_GET['function'])) {
             $trial = $_GET['trial'];
             $chrom = $_GET['chrom'];
-            $start = $_GET['start'];
-            $stop = $_GET['stop'];
             if (preg_match("/([A-Za-z0-9_]+)/", $trial, $match)) {
                 $trial = $match[1];
             } else {
@@ -147,7 +148,7 @@ class SelectMarkers
             }
             if ($count > 0) {
                 ?>
-                <input type="button" value="Download <?php echo "$count entries from $chrom:$start-$stop" ?>" 
+                <input type="button" value="Download <?php echo "$count markers from $chrom:$start-$stop" ?>" 
                 onclick="javascript:window.open('<?php echo $filename1 ?>');">
                 <br><br>
                 <?php
