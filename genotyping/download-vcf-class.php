@@ -87,11 +87,6 @@ class SelectMarkers
         echo "</select><br>\n";
         fclose($fh);
 
-        $file_hdr = "1kEC_header.txt";
-        $fh = fopen($file_hdr, "r") or die("Error: $file_hdr not found");
-        $header = fgets($fh);
-        fclose($fh);
-
         echo "<tr><td>Start:<td><input type=\"text\" id=\"start\" value=\"$start\"><td>$min\n";
         echo "<tr><td>Stop:<td><input type=\"text\" id=\"stop\" value=\"$stop\"><td>$max\n";
         echo "<tr><td><input type=\"button\" value=\"Query\" onclick=\"select_chrom()\"/>";
@@ -118,11 +113,22 @@ class SelectMarkers
             $filename1 = $dir . "/genotype.vcf";
             $filename2 = $dir . "/proc_error.txt";
 
-            $cmd = "tabix $file $chrom:$start-$stop > $filename1 2> $filename2";
+            $file_hdr = "1kEC_header.txt";
+            if (file_exists("1kEC_header.txt")) {
+                $fh = fopen("1kEC_header.txt", "r");
+                $header = fgets($fh);
+                $header = trim($header);
+                fclose($fh);
+                $fh = fopen($filename1, "w");
+                fwrite($fh, "$header\n");
+                fclose($fh);
+            } else {
+                echo "Error: header file not found<br>\n";
+            }
+
+            $cmd = "tabix $file $chrom:$start-$stop >> $filename1 2> $filename2";
             //echo "$cmd<br>\n";
             exec($cmd);
-            $header .= "\n" . file_get_contents($filename1);
-            file_put_contents($filename1, $header);
         
             if (file_exists("$filename2")) {
                 $fh = fopen($filename2, "r");
