@@ -133,8 +133,9 @@ if ($action == "list") {
         if ($row2 = mysqli_fetch_row($res2)) {
             $data["programName"] = $row2[0];
         }
+        $seasons = array();
+        $season = array();
         if ($row[2] == "phenotype") {
-            $seasons = null;
             $sql = "select planting_date, harvest_date from phenotype_experiment_info where experiment_uid = $uid";
             $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
             if ($row2 = mysqli_fetch_row($res2)) {
@@ -142,48 +143,62 @@ if ($action == "list") {
                 $harvest_date = $row2[1];
                 if (preg_match("/\d+-(\d+)-\d+/", $planting_date, $match)) {
                     if ($match[1] < 4) {
-                        $seasons["winter"] = $row[5];
+                        $season["season"] = "winter";
+                        $season["year"] = $row[5];
                     } elseif ($match[1] < 7) {
-                        $seasons["spring"] = $row[5];
+                        $season["season"] = "spring";
+                        $season["year"] = $row[5];
                     } elseif ($match[1] < 10) {
-                        $seasons["summer"] = $row[5];
+                        $season["season"] = "summer";
+                        $season["year"] = $row[5];
                     } else {
-                        $seasons["winter"] = $row[5];
+                        $season["season"] = "fall";
+                        $season["year"] = $row[5];
                     }
+                    $seasons[] = $season;
                 }
                 if (preg_match("/\d+-(\d+)-\d+/", $harvest_date, $match)) {
                     if ($match[1] < 4) {
-                        $seasons["winter"] = $row[5];
+                        $season["season"] = "winter";
+                        $season["year"] = $row[5];
                     } elseif ($match[1] < 7) {
-                        $seasons["spring"] = $row[5];
+                        $season["season"] = "spring";
+                        $season["year"] = $row[5];
                     } elseif ($match[1] < 10) {
-                        $seasons["summer"] = $row[5];
+                        $season["season"] = "summer";
+                        $season["year"] = $row[5];
                     } else {
-                        $seasons["winter"] = $row[5];
+                        $season["season"] = "fall";
+                        $season["year"] = $row[5];
                     }
+                    $seasons[] = $season;
                 }
             }
         } else {
-            $seasons = null;
             $sql = "select processing_date from genotype_experiment_info where experiment_uid = $uid";
             $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli));
             if ($row2 = mysqli_fetch_row($res2)) {
                 $processing_date = $row2[0];
                 if (preg_match("/(\d+)\/\d+\/\d+/", $processing_date, $match)) {
                     if ($match[1] < 4) {
-                        $seasons["winter"] = $row[5];
+                        $season["season"] = "winter";
+                        $season["year"] = $row[5];
                     } elseif ($match[1] < 7) {
-                        $seasons["spring"] = $row[5];
+                        $season["season"] = "spring";
+                        $season["year"] = $row[5];
                     } elseif ($match[1] < 10) {
-                        $seasons["summer"] = $row[5];
+                        $season["season"] = "summer";
+                        $season["year"] = $row[5];
                     } else {
-                        $seasons["winter"] = $row[5];
+                        $season["season"] = "fall";
+                        $season["year"] = $row[5];
                     }
+                    $seasons[] = $season;
                 }
             }
         }
         
-        $data["seasons"] = $seasons;
+        $data["seasons"] = (object) $seasons;
         if (preg_match("/[0-9]/", $set_uid)) {
             $sql = "select experiment_set_name from experiment_set where experiment_set_uid = $set_uid";
             $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli) . "<br>$sql");
