@@ -75,15 +75,15 @@ if (!$call && !$datatype) {
 
 /* If a call is requested, show only that one. */
 if ($call) {
-    $data[] = ['call'=>$call, 'dataTypes'=>$ourcalls[$call]['dataTypes'], 'methods'=>$ourcalls[$call]['methods']];
+    $data[] = ['call'=>$call, 'dataTypes'=>$ourcalls[$call]['datatypes'], 'methods'=>$ourcalls[$call]['methods']];
     respond($data);
 }
 
 /* If a datatype is requested, show all calls that support that datatype. */
 if ($datatype) {
     foreach (array_keys($ourcalls) as $ourcall) {
-        if (in_array($datatype, $ourcalls[$ourcall]['dataTypes'])) {
-            $data[] = ['call'=>$ourcall, 'dataTypes'=>$ourcalls[$ourcall]['dataTypes'],
+        if (in_array($datatype, $ourcalls[$ourcall]['datatypes'])) {
+            $data[] = ['call'=>$ourcall, 'dataTypes'=>$ourcalls[$ourcall]['datatypes'],
             'methods'=>$ourcalls[$ourcall]['methods']];
         }
     }
