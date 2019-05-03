@@ -198,7 +198,7 @@ if ($action == "list") {
             }
         }
         
-        $data["seasons"] = (object) $seasons;
+        $data["seasons"][] = (object) $seasons;
         if (preg_match("/[0-9]/", $set_uid)) {
             $sql = "select experiment_set_name from experiment_set where experiment_set_uid = $set_uid";
             $res2 = mysqli_query($mysqli, $sql) or dieNice(mysqli_error($mysqli) . "<br>$sql");
