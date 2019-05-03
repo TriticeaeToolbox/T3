@@ -66,7 +66,7 @@ $ourcalls['observationunits'] = ['datatypes' => ["application/json"], 'methods' 
 /* If no request parameters, list all calls supported. */
 if (!$call && !$datatype) {
     foreach (array_keys($ourcalls) as $ourcall) {
-        $data[] = ['call'=>$ourcall, 'dataTypes'=>$ourcalls[$ourcall]['dataTypes'],
+        $data[] = ['call'=>$ourcall, 'datatypes'=>$ourcalls[$ourcall]['datatypes'],
         'methods'=>$ourcalls[$ourcall]['methods'],
         'versions'=>$ourcalls[$ourcall]['versions']];
     }
