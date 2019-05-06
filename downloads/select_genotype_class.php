@@ -103,19 +103,15 @@ class SelectGenotypeExp
                 $_SESSION['selected_lines'] = $lines;
             } elseif (!empty($_GET['exps'])) {
                 $experiments = $_GET['exps'];
-                if ($stmt  = $mysqli->prepare("select line_index from allele_bymarker_expidx where experiment_uid IN (?)")) {
-                    $stmt->bind_param("s", $experiments);
-                    $stmt->execute();
-                    $stmt->bind_result($lines);
-                    if ($stmt->fetch()) {
-                        $lines = json_decode($lines, true);
-                        $stmt->close();
-                        $_SESSION['selected_lines'] = $lines;
-                    } else {
-                        die("<br>Error: genotype experiment not found\n");
+                $lines = array();
+                $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
+                $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                while ($row = mysqli_fetch_array($res)) {
+                    $array1 = json_decode($row[0], true);
+                    foreach ($array1 as $line_record_uid) {
+                        $lines[$line_record_uid] = 1;
                     }
-                } else {
-                    die("<br>Error: genotype experiment not found\n");
+                    $_SESSION['selected_lines'] = $lines;
                 }
             } else {
                 echo "error - no selection found";
@@ -132,7 +128,7 @@ class SelectGenotypeExp
             }
             foreach ($lines_fnd as $line_uid) {
                 if (!in_array($line_uid, $lines)) {
-                    array_push($lines, $row['id']);
+                    array_push($lines, $line_uid);
                 }
             }
             $_SESSION['selected_lines'] = $lines;
@@ -238,17 +234,17 @@ class SelectGenotypeExp
   </select></p>
   <div id="step11" style="float: left; margin-bottom: 1.5em;">
   <script type="text/javascript" src="downloads/select_genotype04.js"></script>
-    <?php
-    $this->step1_platform();
-  //$this->type_GenoType_Display();
-    ?>
+        <?php
+        $this->step1_platform();
+        //$this->type_GenoType_Display();
+        ?>
   </div></div>
   <div id="step2" style="float: left; margin-bottom: 1.5em;"></div>
   <div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
   <div id="step4" style="float: left; margin-bottom: 1.5em;"></div>
   <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
   </div>
-    <?php
+        <?php
     }
 
 /**
@@ -272,35 +268,34 @@ class SelectGenotypeExp
 /**
  * display data program
  */
-private function step1_breedprog()
-{
-  global $mysqli;
-  ?>
+    private function step1_breedprog()
+    {
+        global $mysqli;
+        ?>
   <table>
   <tr>
   <td>
   <select name="breeding_programs" size="10" multiple="multiple" style="height: 12em;" onchange="javascript: update_breeding_programs(this.options)">
-  <?php
-  $sql = "SELECT DISTINCT dp.CAPdata_programs_uid AS id, dp.data_program_name AS name, dp.data_program_code AS code
-                                FROM CAPdata_programs as dp, experiments as e, experiment_types as e_t
-                                WHERE dp.CAPdata_programs_uid = e.CAPdata_programs_uid
-                                AND e.experiment_type_uid = e_t.experiment_type_uid
-                                AND e_t.experiment_type_name = 'genotype'
-                                AND program_type='data' ORDER BY name";
+        <?php
+        $sql = "SELECT DISTINCT dp.CAPdata_programs_uid AS id, dp.data_program_name AS name, dp.data_program_code AS code
+              FROM CAPdata_programs as dp, experiments as e, experiment_types as e_t
+              WHERE dp.CAPdata_programs_uid = e.CAPdata_programs_uid
+              AND e.experiment_type_uid = e_t.experiment_type_uid
+              AND e_t.experiment_type_name = 'genotype'
+              AND program_type='data' ORDER BY name";
  
-  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-  while ($row = mysqli_fetch_assoc($res))
-  {
-  ?>
-  <option value="<?php echo $row['id'] ?>"><?php echo $row['name']."(".$row['code'].")" ?></option>
-  <?php
-  }
-  ?>
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_assoc($res)) {
+            ?>
+      <option value="<?php echo $row['id'] ?>"><?php echo $row['name']."(".$row['code'].")" ?></option>
+            <?php
+        }
+        ?>
   </select>
   </td>
   </table>
-  <?php 
-}
+        <?php
+    }
 
 /**
  * display year
@@ -550,12 +545,10 @@ private function step3_lines()
           }
           print "</select>";
        }
-        if (isset($_SESSION['selected_lines'])) {
-      $count2 = count($_SESSION['selected_lines']);
-      echo "<tr><td>Lines found: $count1<td><td>Current selection: $count2";
+      //  if (isset($_SESSION['selected_lines'])) {
+      //$count2 = count($_SESSION['selected_lines']);
+      //echo "<tr><td>Lines found: $count1<td><td>Current selection: $count2";
       echo "</table>";
-  }
-
 }	
 
 /**
@@ -605,28 +598,27 @@ private function type_GenoType_Display()
 			        <p>
                                 <strong>Year</strong>
 			        <table>
-					<tr><td>
-						<select name="year" style="height: 12em;" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
+		<tr><td>
+		<select name="year" style="height: 12em;" multiple="multiple" style="height: 12em;" onchange="javascript: update_years(this.options)">
 		<?php
 
-		// set up drop down menu with data showing year
-		
+                // set up drop down menu with data showing year
 
 		$sql = "SELECT e.experiment_year AS year FROM experiments AS e, experiment_types AS et
-				WHERE e.experiment_type_uid = et.experiment_type_uid
-					AND et.experiment_type_name = 'genotype'
-				GROUP BY e.experiment_year ASC";
+			WHERE e.experiment_type_uid = et.experiment_type_uid
+			AND et.experiment_type_name = 'genotype'
+			GROUP BY e.experiment_year ASC";
 		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		while ($row = mysqli_fetch_assoc($res)) {
-			?>
-				<option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
-			<?php
+		?>
+		<option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
+		<?php
 		}
 		?>
-						</select>
-					</td>
-				</tr>
-			</table>
+		</select>
+		</td>
+		</tr>
+		</table>
 		</div>
 		<div id="step2" style="float: left; margin-bottom: 1.5em;"></div>
 		<div id="step3" style="float: left; margin-bottom: 1.5em;"></div>
@@ -638,110 +630,107 @@ private function type_GenoType_Display()
 /**
  * display genotype experiments
  */
-private function type1_experiments()
-{
-    global $mysqli;
-    $CAPdata_programs = $_GET['bp']; 
-    $years = $_GET['yrs']; 
-	
-	/* Query for getting experiment id, trial code and year */
+    private function type1_experiments()
+    {
+        global $mysqli;
+        $CAPdata_programs = $_GET['bp'];
+        $years = $_GET['yrs'];
+
+        /* Query for getting experiment id, trial code and year */
         /* AND e.experiment_year IN ($years) */
-	$sql = "SELECT DISTINCT e.experiment_uid AS id, e.trial_code as name, e.experiment_year AS year, e.traits AS traits
-				FROM experiments AS e, experiment_types AS e_t
-                                WHERE e.CAPdata_programs_uid IN ($CAPdata_programs)
-                                AND e.experiment_year IN ($years)
-				AND e.experiment_type_uid = e_t.experiment_type_uid
-				AND e_t.experiment_type_name = 'genotype'";
-	if (!authenticate(array(USER_TYPE_PARTICIPANT,
-				USER_TYPE_CURATOR,
-				USER_TYPE_ADMINISTRATOR)))
-				$sql .= " AND e.data_public_flag > 0";
+        $sql = "SELECT DISTINCT e.experiment_uid AS id, e.trial_code as name, e.experiment_year AS year, e.traits AS traits
+            FROM experiments AS e, experiment_types AS e_t
+            WHERE e.CAPdata_programs_uid IN ($CAPdata_programs)
+            AND e.experiment_year IN ($years)
+	    AND e.experiment_type_uid = e_t.experiment_type_uid
+	    AND e_t.experiment_type_name = 'genotype'";
+        if (!authenticate(array(USER_TYPE_PARTICIPANT,
+            USER_TYPE_CURATOR,
+            USER_TYPE_ADMINISTRATOR))) {
+            $sql .= " AND e.data_public_flag > 0";
+        }
+        $sql .= " ORDER BY e.experiment_year DESC";
 
-	$sql .= " ORDER BY e.experiment_year DESC";
-
-	
-        //echo "$sql<br>";	
-	$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-	$num_mark = mysqli_num_rows($res);
-	//check if any experiments are visible for this user
-	if ($num_mark>0) {
-?>
-
-    <p>
-    <select disabled>
-    <option>Experiments</option>
-    </select>
-<table>
-	
-	<tr><td>
-		<!--select name="experiments" multiple="multiple" size="10" style="height: 12em" onchange="javascript:load_tab_delimiter(this.options)"-->
-                <select name="experiments" multiple="multiple" style="height: 12em;" style="height: 12em" onchange="javascript:update_experiments(this.options)">
-<?php
-		while ($row = mysqli_fetch_array($res)) {
-			?>
-			<!-- Display Map names-->		
-				<option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
-			<?php
-		}
-		?>
-	
-		</select>
-	</td></tr>
-</table>
-
-
-
- 
-
-	
-	<?php 
-	}/* end of if condition */
-	else
-	{
-	?>	<div class="section">
-<p> There are no publicly available genotype datasets for this program and year in T3 at this time
+        //echo "$sql<br>";
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        $num_mark = mysqli_num_rows($res);
+        //check if any experiments are visible for this user
+        if ($num_mark>0) {
+            ?>
+            <p>
+            <select disabled>
+            <option>Experiments</option>
+            </select>
+            <table>
+            <tr><td>
+            <!--select name="experiments" multiple="multiple" size="10" style="height: 12em" onchange="javascript:load_tab_delimiter(this.options)"-->
+            <select name="experiments" multiple="multiple" style="height: 12em;" style="height: 12em" onchange="javascript:update_experiments(this.options)">
+            <?php
+            while ($row = mysqli_fetch_array($res)) {
+                ?>
+                <!-- Display Map names-->
+                <option value="<?php echo $row['id'] ?>"><?php echo $row['name'] ?></option>
+                <?php
+            }
+            ?>
+            </select>
+            </td></tr>
+            </table>
+            <?php
+        } else { /* end of if condition */
+            ?>
+            <div class="section">
+ <p> There are no publicly available genotype datasets for this program and year in T3 at this time
  Registered users may see additional datasets after signing in.</p>
             </div>
-  <?php 
-	}/* end of else */
-	} /* end of type1_experiments function */
+            <?php
+        } /* end of else */
+    } /* end of type1_experiments function */
 
 /**
  * display genotype experiments
  */
-private function type2_experiments()
-{
-    global $mysqli;
-    $platform = $_GET['platform'];
-    ?>
-    <p>
-    <select disabled>
-    <option>Experiments</option>
-    </select>
-    <table><tr><td><select name='expt[]' style="height: 12em;" multiple onchange="javascript: update_experiments(this.options)">
-    <?php
-    $prev_name = "";
-    $result=mysqli_query($mysqli, "select experiments.experiment_uid, trial_code, data_program_name from experiments, genotype_experiment_info, CAPdata_programs
-        where experiments.CAPdata_programs_uid = CAPdata_programs.CAPdata_programs_uid
-        and experiments.experiment_uid = genotype_experiment_info.experiment_uid
-        and genotype_experiment_info.platform_uid IN ($platform) order by data_program_name") or die(mysqli_error($mysqli));
-    while ($row=mysqli_fetch_assoc($result)) {
-        $uid=$row['experiment_uid'];
-        $val=$row['trial_code'];
-        $name=$row['data_program_name'];
-        if ($prev_name == "") {
-          print "<optgroup label=\"$name\">\n";
-          $prev_name = $name;
-        } elseif ($name != $prev_name) {
-          print "</optgroup>\n<optgroup label=\"$name\">\n";
-          $prev_name = $name;
+    private function type2_experiments()
+    {
+        global $mysqli;
+        $platform = $_GET['platform'];
+        ?>
+        <p>
+        <select disabled>
+        <option>Experiments</option>
+        </select>
+        <table><tr><td><select name='expt[]' style="height: 12em;" multiple onchange="javascript: update_experiments(this.options)">
+        <?php
+        $prev_name = "";
+        $sql = "select experiments.experiment_uid, trial_code, data_program_name
+            FROM experiments, genotype_experiment_info, CAPdata_programs
+            where experiments.CAPdata_programs_uid = CAPdata_programs.CAPdata_programs_uid
+            and experiments.experiment_uid = genotype_experiment_info.experiment_uid
+            and genotype_experiment_info.platform_uid IN ($platform)";
+        if (!authenticate(array(USER_TYPE_PARTICIPANT,
+            USER_TYPE_CURATOR,
+            USER_TYPE_ADMINISTRATOR))) {
+            $sql .= " AND experiments.data_public_flag > 0";
         }
-        print "<option value=$uid>$val</option>\n";
+        $sql .= " order by data_program_name, trial_code";
+        $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row=mysqli_fetch_assoc($result)) {
+            $uid=$row['experiment_uid'];
+            $val=$row['trial_code'];
+            $name=$row['data_program_name'];
+            if ($prev_name == "") {
+                print "<optgroup label=\"$name\">\n";
+                $prev_name = $name;
+            } elseif ($name != $prev_name) {
+                print "</optgroup>\n<optgroup label=\"$name\">\n";
+                $prev_name = $name;
+            }
+            print "<option value=$uid>$val</option>\n";
+        }
+        ?>
+        </optgroup></select></table>
+        <?php
     }
-    ?>
-    </optgroup></select></table>
-    <?php
-}	
 
 /**
  * display results of search
@@ -760,23 +749,20 @@ private function type1_markers()
     } else {
       $sql_option = "";
       $lines = array();
-      if (preg_match("/\d/",$experiments)) {
+      if (preg_match("/\d/", $experiments)) {
               $sql_option .= "AND tht_base.experiment_uid IN ($experiments)";
       }
-      if (preg_match("/\d/",$datasets)) {
+      if (preg_match("/\d/", $datasets)) {
               $sql_option .= "AND ((tht_base.datasets_experiments_uid in ($datasets) AND tht_base.check_line='no') OR (tht_base.check_line='yes'))";
       }
       $skipped = 0;
       $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
       $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-      if ($row = mysqli_fetch_array($res)) {
+      while ($row = mysqli_fetch_array($res)) {
           $array1 = json_decode($row[0], true);
-          $unique_within = array();
           foreach ($array1 as $line_record_uid) {
-             $lines[] = $line_record_uid;
+             $lines[$line_record_uid] = 1;
           }
-      } else {
-          die("Error: genotype experiment not found\n");
       }
     }
     if ($skipped != 0) {
