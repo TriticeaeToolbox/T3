@@ -109,10 +109,13 @@ class SelectGenotypeExp
                 while ($row = mysqli_fetch_array($res)) {
                     $array1 = json_decode($row[0], true);
                     foreach ($array1 as $line_record_uid) {
-                        $lines[$line_record_uid] = 1;
+                        $tmp[$line_record_uid] = 1;
                     }
-                    $_SESSION['selected_lines'] = $lines;
                 }
+                foreach ($tmp as $line_record_uid => $val) {
+                    $lines[] = $line_record_uid;
+                }
+                $_SESSION['selected_lines'] = $lines;
             } else {
                 echo "error - no selection found";
             }
@@ -121,14 +124,12 @@ class SelectGenotypeExp
             $experiments = $_GET['exps'];
             $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-            if ($row = mysqli_fetch_array($res)) {
+            while ($row = mysqli_fetch_array($res)) {
                 $lines_fnd = json_decode($row[0], true);
-            } else {
-                echo "error - no selection found";
-            }
-            foreach ($lines_fnd as $line_uid) {
-                if (!in_array($line_uid, $lines)) {
-                    array_push($lines, $line_uid);
+                foreach ($lines_fnd as $line_uid) {
+                    if (!in_array($line_uid, $lines)) {
+                        array_push($lines, $line_uid);
+                    }
                 }
             }
             $_SESSION['selected_lines'] = $lines;
@@ -136,10 +137,16 @@ class SelectGenotypeExp
             $experiments = $_GET['exps'];
             $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-            if ($row = mysqli_fetch_array($res)) {
-                $tmp = json_decode($row[0], true);
+            while ($row = mysqli_fetch_array($res)) {
+                $array1 = json_decode($row[0], true);
+                foreach ($array1 as $line_record_uid) {
+                    $tmp1[$line_record_uid] = 1;
+                }
             }
-            $lines = array_intersect($lines, $tmp);
+            foreach ($tmp1 as $line_record_uid => $val) {
+                $tmp2[] = $line_record_uid;
+            }
+            $lines = array_intersect($lines, $tmp2);
             $_SESSION['selected_lines'] = $lines;
         }
         if (!empty($_GET['exps'])) {
@@ -300,11 +307,11 @@ class SelectGenotypeExp
 /**
  * display year
  */
- private function step1_yearprog()
- {
-    global $mysqli;
-    $CAPdata_programs = $_GET['bp'];
-     ?>
+    private function step1_yearprog()
+    {
+        global $mysqli;
+        $CAPdata_programs = $_GET['bp'];
+        ?>
     <div id="step21">
     <p>
     <select disabled>
@@ -361,7 +368,7 @@ private function type1_lines_trial_trait()
       window.onload = load_markers( mm, mmaf);
   </script>
   </div>
-  <?php 
+  <?php
 }
 
 /**
@@ -761,8 +768,11 @@ private function type1_markers()
       while ($row = mysqli_fetch_array($res)) {
           $array1 = json_decode($row[0], true);
           foreach ($array1 as $line_record_uid) {
-             $lines[$line_record_uid] = 1;
+             $tmp[$line_record_uid] = 1;
           }
+      }
+      foreach ($tmp as $line_record_uid=>$val) {
+          $lines[] = $line_record_uid;
       }
     }
     if ($skipped != 0) {
@@ -771,24 +781,27 @@ private function type1_markers()
     if ($subset == "comb") {
         $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        if ($row = mysqli_fetch_array($res)) {
+        while ($row = mysqli_fetch_array($res)) {
             $lines_fnd = json_decode($row[0], true);
-        } else {
-            echo "error - no selection found";
-        }
-        foreach ($lines_fnd as $line_uid) {
-          if (!in_array($line_uid, $lines)) {
-              array_push($lines, $line_uid);
-          }
+            foreach ($lines_fnd as $line_uid) {
+                if (!in_array($line_uid, $lines)) {
+                    array_push($lines, $line_uid);
+                }
+            }
         }
     } elseif ($subset == "yes") {
-        $experiments = $_GET['exps'];
         $sql = "select line_index from allele_bymarker_expidx where experiment_uid IN ($experiments)";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        if ($row = mysqli_fetch_array($res)) {
-            $tmp = json_decode($row[0], true);
+        while ($row = mysqli_fetch_array($res)) {
+            $array1 = json_decode($row[0], true);
+            foreach ($array1 as $line_record_uid) {
+                $tmp1[$line_record_uid] = 1;
+            }
         }
-        $lines = array_intersect($lines, $tmp);
+        foreach ($tmp1 as $line_record_uid=>$val) {
+            $tmp2[] = $line_record_uid;
+        }
+        $lines = array_intersect($lines, $tmp2);
     }
   } else {
     $lines_str = $_GET['lines'];
