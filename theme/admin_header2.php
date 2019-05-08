@@ -59,7 +59,6 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
 
 ?>
 </head>
-<body onload="javascript:setup();">
 <div id="container">
 <div id="barleyimg"><h1 style="color: white; text-shadow: 2px 2px 5px black; font-size: 400%;"></h1>
   </div>
@@ -160,7 +159,8 @@ $lang = array(
             SNP Alleles and Sequences</a> 
       <li><a href="<?php echo $config['base_url']; ?>genotyping/download-vcf.php">Portion of VCF file</a>
       <li><a href="<?php echo $config['base_url']; ?>downloads/marker_annotation.php">Marker Annotation</a>
-      <li><a href="<?php echo $config['base_url']; ?>downloads/bulk_download.php" title="Bulk Download">Bulk Download</a>
+      <li><a href="<?php echo $config['base_url']; ?>genotyping/download-vcf.php" title="Download portion of VCF files">VCF Download</a>
+      <li><a href="<?php echo $config['base_url']; ?>downloads/bulk_download.php" title="Download all records from database">Bulk Download</a>
       <li><a href="<?php echo $config['base_url']; ?>downloads/tablet_export.php" title="Tablet export">
             Android Field Book</a>
       <li><a href="<?php echo $config['base_url']; ?>maps/weather.php" title="Weather data">
