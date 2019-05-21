@@ -210,7 +210,8 @@ $lang = array(
         $results = mysql_grab("SHOW tables like 'marker_primers'");
         if ($results == "marker_primers") {
             ?>
-            <li><a href="<?php echo $config['base_url']; ?>genotyping/polymarker.php" title="Designed Markers">Designed Primers</a>
+            <li><a href="<?php echo $config['base_url']; ?>genotyping/polymarker.php" title="Designed Markers">PolyMarker Designed Primers</a>
+            <li><a href="http://tcapg.ag.cornell.edu/primer_filter/" title="KASP Filter for Exome Capture" target="_new">KASP marker design</a>
             <?php
         }
         $results = mysql_grab("SHOW tables like 'marker_report_reference'");

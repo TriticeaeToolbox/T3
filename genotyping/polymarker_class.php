@@ -33,6 +33,9 @@ class DownloadPrimers
         $stmt = $mysqli->prepare($sql);
         include $config['root_dir'].'theme/admin_header2.php';
         echo "<h2>PolyMarker designed primers</h2>";
+
+        echo "<font color=red>There have been problems reported with primers designed with PolyMarker</font>. ";
+        echo "Please try the <a href=http://tcapg.ag.cornell.edu/primer_filter/ target=_new >KASP marker design</a><br><br>";
         if ($count == 0) {
             echo "<a href=\"genotyping/marker_selection.php\">Select one or more markers</a> using the \"Wheat CAP 2017\" map to see design results.<br><br>\n";
         }
