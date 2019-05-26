@@ -509,8 +509,9 @@ print "Next available GID is <b>$nextgid</b>.<p>";
                 // Not in POOL and also not already seen in this file?
                 if (!in_array($parent2, array_keys($gids)))
                     die_nice("Row $irow: Parent $parent2 is not in POOL as a Preferred Name.");
-            if ($t3parent1 == $t3parent2)
-                die_nice("Row $irow: Parents 1 and 2 are the same.");
+            // 25may2019: Allow par1 = par2 for Charlene, e.g. for selections
+            /* if ($t3parent1 == $t3parent2) */
+            /*     die_nice("Row $irow: Parents 1 and 2 are the same."); */
 		}
 		// Validate references, $refother and $reference.
 		if (!empty($refother)) {
