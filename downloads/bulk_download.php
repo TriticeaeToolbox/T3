@@ -18,7 +18,7 @@ if (isset($_GET['query'])) {
             where experiments.experiment_uid = phenotype_experiment_info.experiment_uid";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($result)) {
-            echo "$row[0],\"$row[1]\", $row[2], $row[3]\n";
+            echo "$row[0],\"$row[1]\", $row[2], $row[3], $row[4], $row[5]\n";
         }
     } elseif ($query == "phenotype_data") {
         header("Content-Disposition: attachment;Filename=PhenotypeData.csv");
