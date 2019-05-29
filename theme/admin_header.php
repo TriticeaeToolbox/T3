@@ -159,7 +159,6 @@ $lang = array(
             Genotype and Phenotype Data</a>
       <li><a href="<?php echo $config['base_url']; ?>snps.php" title="Context sequences and A/B => nucleotide translation">
             SNP Alleles and Sequences</a> 
-      <li><a href="<?php echo $config['base_url']; ?>genotyping/download-vcf.php">Portion of VCF file</a>
       <li><a href="<?php echo $config['base_url']; ?>downloads/marker_annotation.php">Marker Annotation</a>
       <li><a href="<?php echo $config['base_url']; ?>genotyping/download-vcf.php" title="Download portion of VCF files">VCF Download</a>
       <li><a href="<?php echo $config['base_url']; ?>downloads/bulk_download.php" title="Download all records from database">Bulk Download</a>
