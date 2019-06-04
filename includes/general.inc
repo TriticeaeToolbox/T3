@@ -212,7 +212,8 @@ function show_gene_annotations($id)
         and pathway_gene.gene_id = \"$gene_id\"";
         $res = mysqli_query($mysqli, $sql) or die("Error in show gene annotation<br>");
         while ($row = mysqli_fetch_row($res)) {
-            echo "<tr><td>Pathway<td><a href=".$config['base_url']."view.php?table=pathways&uid=$row[0]\">$row[2]</a><td>$row[1]\n";
+            $link = "<a href=" . $row[1] . " target=_new>Pathway</a>";
+            echo "<tr><td>Pathway<td><a href=".$config['base_url']."view.php?table=pathways&uid=$row[0]\">$row[2]</a><td>$link\n";
         }
     }
     echo "</table><br>";
