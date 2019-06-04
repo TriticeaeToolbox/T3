@@ -35,7 +35,7 @@ class DownloadPrimers
         echo "<h2>PolyMarker designed primers</h2>";
 
         echo "<font color=red>We are re-running the analysis to fix errors with pre designed primers</font>.<br>";
-        echo "Download the complete list of <a href=genotyping/polymarker-wheatCAP.csv>Wheat CAP 2017 markers</a>, copy the lines of interest into a separate file, ";
+        echo "Download the complete list of <a href=genotyping/polymarker-wheatCAP.csv.gz>Wheat CAP 2017 markers</a>, copy the lines of interest into a separate file, ";
         echo "then run the analysis on the <a href=http://www.polymarker.info/>PolyMarker Website</a><br><br>";
         if ($count == 0) {
             //echo "<a href=\"genotyping/marker_selection.php\">Select one or more markers</a> using the \"Wheat CAP 2017\" map to see design results.<br><br>\n";
