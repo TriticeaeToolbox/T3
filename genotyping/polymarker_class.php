@@ -34,12 +34,6 @@ class DownloadPrimers
         include $config['root_dir'].'theme/admin_header2.php';
         echo "<h2>PolyMarker designed primers</h2>";
 
-        echo "<font color=red>We are re-running the analysis to fix errors with pre designed primers</font>.<br>";
-        echo "Download the complete list of <a href=genotyping/polymarker-wheatCAP.csv.gz>Wheat CAP 2017 markers</a>, copy the lines of interest into a separate file, ";
-        echo "then run the analysis on the <a href=http://www.polymarker.info/>PolyMarker Website</a><br><br>";
-        if ($count == 0) {
-            //echo "<a href=\"genotyping/marker_selection.php\">Select one or more markers</a> using the \"Wheat CAP 2017\" map to see design results.<br><br>\n";
-        }
         echo "The PolyMarker program was used to design primers on all the markers in the <a href=genotyping/display_genotype.php?trial_code=2017_WheatCAP>2017_WheatCAP</a> experiment. ";
         echo "<a href=\"genotyping/marker_selection.php\">Select a marker</a> using the \"Wheat CAP 2017\" map to see design results.";
         echo "<br>Description of the design process: <a href=genotyping/20180821_mapping_stats.pdf>PolyMarker for WheatCAP</a>, ";
@@ -74,10 +68,11 @@ class DownloadPrimers
             $stmt->close();
         } elseif ($count > 0) {
             echo "<h3>Designed Primers</h3>";
-            echo "<a href=" . $config['base_url'] . "/genotyping/polymarker.php?function=download>Download designed primers</a><br></div>\n";
+            echo "Download <a href=" . $config['base_url'] . "/genotyping/polymarker.php?function=download>$count primers</a> designed using PolyMarker<br><br>\n";
         } else {
-            echo "Error: Please select on or more markers\n";
+            echo "Error: Please select on or more markers<br><br>\n";
         }
+        echo "Download <a href=\"genotyping/201906_wheatcap_polymarker.csv.gz\">all WheatCAP 2017 primers</a> designed using PolyMarker<br><br>\n";
         echo "</div>";
         include $config['root_dir'].'theme/footer.php';
     }
