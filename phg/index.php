@@ -17,7 +17,8 @@ The technology is described at <a href="https://bitbucket.org/bucklerlab/practic
 <tr><td>Description<td>Download Link<td>Reference
 <tr><td>67 fastq from Kansas State Univ<br>
 genotyping-by-sequencing (GBS) and exome capture on Illumina HiSeq 2000
-<td>(EBI - ENA) Study: <a href="https://www.ebi.ac.uk/ena/data/view/PRJNA227449" target="_blank">PRJNA227449</a>
+<td>(EBI - ENA) Study: <a href="https://www.ebi.ac.uk/ena/data/view/PRJNA227449" target="_blank">PRJNA227449</a>, 
+<a href="phg/PRJNA227449.txt">Meta data</a>
 <td><a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0606-4" target="_blank">Haplotype map of allohexaploid wheat</a>
 
 <tr><td>298 fastq from Kansas State Univ<br>
