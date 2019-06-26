@@ -48,7 +48,7 @@ function quickTermSearch(array $tableTree, $searchQ)
             $pkey = get_pkey($table);  //proper tree format
             for ($j=0; $j<count($tableTree[$table]); $j++) {
                 $field = $tableTree[$table][$j];
-                $sql = "SELECT $pkey FROM $table WHERE $field=?";
+                $sql = "SELECT $pkey FROM $table WHERE CAST($field as CHAR)=?";
                 if ($stmt = mysqli_prepare($mysqli, $sql)) {
                     mysqli_stmt_bind_param($stmt, "s", $searchQ);
                     mysqli_stmt_execute($stmt);
@@ -227,69 +227,70 @@ function displayTermSearchResults(array $found, $keywords)
             if (mysqli_num_rows($msquery) > 0) {
                 $skip = "yes";
             }
-         }
-         // Intercept experiments and route to display_phenotype.php or display_genotype.php.
-         if ($type == "Experiment") {
+        }
+        // Intercept experiments and route to display_phenotype.php or display_genotype.php.
+        if ($type == "Experiment") {
              $type = "Trial";
              $trialcode = mysql_grab("select trial_code from experiments where experiment_uid = $line[2]");
              $expttype = mysql_grab("select experiment_type_uid from experiments where experiment_uid = $line[2]");
-         }
-    // Use a better class name than the table name:
-    if ($type == 'Experiment Set')
-      $type = 'Experiment';
-    if (! $skip) {
-      $uids[$type][] = $line[2];
-      // Compute number of hits in each class.
-      $hits[$type]++;
-      $table[$type] = $line[0];
-      $key[$type] = get_pkey($line[0]);
-      $namecolumn[$type] = $line[1];
+        }
+        // Use a better class name than the table name:
+        if ($type == 'Experiment Set') {
+            $type = 'Experiment';
+        }
+        if (! $skip) {
+            $uids[$type][] = $line[2];
+            // Compute number of hits in each class.
+            $hits[$type]++;
+            $table[$type] = $line[0];
+            $key[$type] = get_pkey($line[0]);
+            $namecolumn[$type] = $line[1];
+        }
     }
-  }
-  ksort($hits);
-  foreach (array_keys($hits) as $u) {
-    // Limit to 900 or the URL constructed will be too big.  1000 bounces off PHPIDS.
-    $uu = array_slice($uids[$u], 0, 900);
-    $uidlist[$u] = implode(",", $uu);
-  }
+    ksort($hits);
+    foreach (array_keys($hits) as $u) {
+        // Limit to 900 or the URL constructed will be too big.  1000 bounces off PHPIDS.
+        $uu = array_slice($uids[$u], 0, 900);
+        $uidlist[$u] = implode(",", $uu);
+    }
   // Show the number of hits in each class.
-?>
-<style type=text/css>
-   table td { text-align: center; }
-</style>
-<?php
-  print "<table><tr><th>Data Class<th>Records";
-  foreach (array_keys($hits) as $type) {
+    ?>
+    <style type=text/css>
+    table td { text-align: center; }
+    </style>
+    <?php
+    print "<table><tr><th>Data Class<th>Records";
+    foreach (array_keys($hits) as $type) {
     /* print "<tr><td><a href='browse.php?table=$table[$type]&namecol=$namecolumn[$type]&hits=$uidlist[$type]'>$type</a>"; */
     /* print "<tr><td><a href='search.php?table=$table[$type]&keywords=$keywords'>$type</a>"; */
-    print "<tr><td><a href='browse.php?table=$table[$type]&col=$namecolumn[$type]&keywords=$keywords'>$type</a>";
-    print "<td>$hits[$type]";
-  }
-  print "</table>";
+        print "<tr><td><a href='browse.php?table=$table[$type]&col=$namecolumn[$type]&keywords=$keywords'>$type</a>";
+        print "<td>$hits[$type]";
+    }
+    print "</table>";
 }
 
 /**
  * The database contains around 30 tables. Some of these tables store information that has some relationship to another table.
- * These groups of tables are considered to be a 'region'. This function has hardcoded all the tables associated with each 
- * region. 
+ * These groups of tables are considered to be a 'region'. This function has hardcoded all the tables associated with each
+ * region.
  *
  * This function was written for the login/index.php.
  *
  */
-function table_by_type ($tabletype) {
-	$tables=array();
-	$tables['all']=explode(" ","CAPdata_programs allele_frequencies alleles barley_pedigree_catalog barley_pedigree_catalog_ref data_providers datasets datasets_experiments experiment_types experiments file_process filter_sets filters genotype_experiment_info genotyping_data input_file_log institutions line_records line_synonyms map mapset marker_annotation_types marker_annotations marker_synonym_types marker_synonyms marker_types markers markers_in_maps pedigree_relations phenotype_category phenotype_data phenotype_descstat phenotype_experiment_info phenotype_mean_data phenotypes session_variables settings tht_base trait_ontology_term units user_types users");
-	$tables['pedigree']=array('barley_pedigree_catalog','barley_pedigree_catalog_ref','line_records','line_synonyms','pedigree_relations','tht_base','trait_ontology_term');
-	$tables['genotype']=array('genotyping_data','allele_frequencies','alleles','map','mapset','marker_annotation_types','marker_annotations','marker_synonym_types','marker_synonyms','marker_types','markers','markers_in_maps');
-	$tables['phenotype']=array('phenotype_category','phenotype_data','phenotype_descstat','phenotype_mean_data','phenotypes','units');
-	$tables['experiment']=array('datasets','datasets_experiments','experiment_types','experiments','genotype_experiment','phenotype_experiment_info','CAPdata_programs','data_providers','institutions');
-	$tables['general']=array('file_process','filter_sets','filters_info','input_file_log','session_variables','settings','user_types','users');
-	if (isset($tabletype) && isset($tables[$tabletype])) {
-		return $tables[$tabletype];
-	}
-	else {
-		return array();
-	}
+function table_by_type($tabletype)
+{
+    $tables=array();
+    $tables['all']=explode(" ", "CAPdata_programs allele_frequencies alleles barley_pedigree_catalog barley_pedigree_catalog_ref data_providers datasets datasets_experiments experiment_types experiments file_process filter_sets filters genotype_experiment_info genotyping_data input_file_log institutions line_records line_synonyms map mapset marker_annotation_types marker_annotations marker_synonym_types marker_synonyms marker_types markers markers_in_maps pedigree_relations phenotype_category phenotype_data phenotype_descstat phenotype_experiment_info phenotype_mean_data phenotypes session_variables settings tht_base trait_ontology_term units user_types users");
+    $tables['pedigree']=array('barley_pedigree_catalog','barley_pedigree_catalog_ref','line_records','line_synonyms','pedigree_relations','tht_base','trait_ontology_term');
+    $tables['genotype']=array('genotyping_data','allele_frequencies','alleles','map','mapset','marker_annotation_types','marker_annotations','marker_synonym_types','marker_synonyms','marker_types','markers','markers_in_maps');
+    $tables['phenotype']=array('phenotype_category','phenotype_data','phenotype_descstat','phenotype_mean_data','phenotypes','units');
+    $tables['experiment']=array('datasets','datasets_experiments','experiment_types','experiments','genotype_experiment','phenotype_experiment_info','CAPdata_programs','data_providers','institutions');
+    $tables['general']=array('file_process','filter_sets','filters_info','input_file_log','session_variables','settings','user_types','users');
+    if (isset($tabletype) && isset($tables[$tabletype])) {
+	return $tables[$tabletype];
+    } else {
+	return array();
+    }
 }
 
 
