@@ -10,8 +10,9 @@ require $config['root_dir'].'theme/admin_header2.php';
 <h1>Practical Haplotype Graph (PHG) Project</h1>
 
 This is a listing of sequence resources used to create a PHG wheat database.<br>
-The fastq files are stored in the Cornell BioHPC Cloud which is accessible using Globus Online.<br>
-The technology is described at <a href="https://bitbucket.org/bucklerlab/practicalhaplotypegraph/wiki/Home" target="_new">PHG Wiki</a>.<br><br>
+The fastq and GVCF files are stored in the Cornell BioHPC Cloud which is accessible using <a href="https://app.globus.org/file-manager?origin_id=940c21fe-377d-11e8-b96a-0ac6873fc732&origin_path=%2Fhome%2Fjj332_pgh%2F">Globus Online</a>.<br>
+The PHG is described at <a href="https://bitbucket.org/bucklerlab/practicalhaplotypegraph/wiki/Home" target="_new">PHG Wiki</a>.<br>
+The Wheat PHG is described at <a href="https://github.com/TriticeaeToolbox/PHG" target="_new">T3 Wheat PHG</a><br><br>
 
 <table>
 <tr><td>Description<td>Download Link<td>Reference
