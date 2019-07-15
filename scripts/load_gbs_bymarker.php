@@ -23,12 +23,12 @@ echo "using trial_code = $trialcode\n";
 $db_user = '';
 $db_pass = '';
 $db_host = 'localhost';
-$linkID = mysql_connect($db_host, $db_user, $db_pass);
-mysql_select_db($db_name, $linkID);
+$mysqli = mysqli_connect($db_host, $db_user, $db_pass);
+mysqli_select_db($mysqli, $db_name);
 
 $sql = "select experiment_uid from experiments where trial_code = \"$trialcode\"";
-$res = mysql_query($sql) or die(mysql_error());
-if ($row = mysql_fetch_array($res)) {
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+if ($row = mysqli_fetch_array($res)) {
     $experiment_uid = $row[0];
 } else {
     echo "Error: $sql\n";
@@ -53,8 +53,8 @@ foreach ($header_ary as $line_name) {
         continue;
     }
     $sql = "select line_record_uid, line_record_name from line_records where line_record_name = \"$line_name\"";
-    $res = mysql_query($sql) or die(mysql_error());
-    if ($row = mysql_fetch_array($res)) {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_array($res)) {
         $uid = $row[0];
         $name = $row[1];
     } else {
@@ -62,8 +62,8 @@ foreach ($header_ary as $line_name) {
           from line_synonyms, line_records
           where line_synonyms.line_record_uid = line_records.line_record_uid
           and line_synonym_name = \"$line_name\"";
-        $res = mysql_query($sql) or die(mysql_error());
-        if ($row = mysql_fetch_array($res)) {
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        if ($row = mysqli_fetch_array($res)) {
             $uid = $row[0];
             $name = $row[1];
         } else {
@@ -84,7 +84,7 @@ foreach ($header_ary as $line_name) {
         $line_name_index = $line_name_index . ", $name";
     }
     $sql = "insert into tht_base (line_record_uid, experiment_uid) values ($uid, $experiment_uid)";
-    $res = mysql_query($sql) or die(mysql_error());
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 }
 $line_name_index = preg_replace("/\n/", "", $line_name_index);
 $line_name_index = str_replace(" ", "", $line_name_index);
@@ -92,16 +92,16 @@ $line_name_index = str_replace(" ", "", $line_name_index);
 $sql = "select marker_uid, marker_name from markers, marker_types where 
     markers.marker_type_uid = marker_types.marker_type_uid
     and marker_type_name = \"GBS\"";
-$res = mysql_query($sql) or die(mysql_error());
-while ($row = mysql_fetch_array($res)) {
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+while ($row = mysqli_fetch_array($res)) {
     $marker_uid = $row[0];
     $marker_name = $row[1];
     $marker_list[$marker_name] = $marker_uid;
 }
 
 $sql = "select marker_uid, value from marker_synonyms";
-$res = mysql_query($sql) or die(mysql_error());
-while ($row = mysql_fetch_array($res)) {
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+while ($row = mysqli_fetch_array($res)) {
     $marker_uid = $row[0];
     $marker_name = $row[1];
     $marker_list_syn[$marker_name] = $marker_uid;
@@ -109,7 +109,7 @@ while ($row = mysql_fetch_array($res)) {
 
 $sql = "insert into allele_bymarker_expidx(experiment_uid, line_index, line_name_index)
      values ($experiment_uid, \"$line_index\", \"$line_name_index\")";
-//$res = mysql_query($sql) or die(mysql_error());
+//$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 $count = 0;
 $count_line_prev = "";
 while (!feof($fh)) {
