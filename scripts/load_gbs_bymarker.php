@@ -44,7 +44,7 @@ $fh2 = fopen($fileOut2, "w");
 $header = fgets($fh);
 $header_ary = explode("\t", $header);
 $count = 0;
-$line_index = "";
+$line_index = array();
 foreach ($header_ary as $line_name) {
     $pattern = "/\s+/";
     $line_name = preg_replace($pattern, "", $line_name);
@@ -81,8 +81,8 @@ foreach ($header_ary as $line_name) {
     $sql = "insert into tht_base (line_record_uid, experiment_uid) values ($uid, $experiment_uid)";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 }
-$line_name_index = preg_replace("/\n/", "", $line_name_index);
-$line_name_index = str_replace(" ", "", $line_name_index);
+$line_index_str = json_encode($line_index);
+$line_name_index_str = json_encode($line_name_index);
 
 $sql = "select marker_uid, marker_name from markers, marker_types where 
     markers.marker_type_uid = marker_types.marker_type_uid
@@ -102,9 +102,15 @@ while ($row = mysqli_fetch_array($res)) {
     $marker_list_syn[$marker_name] = $marker_uid;
 }
 
-$sql = "insert into allele_bymarker_expidx(experiment_uid, line_index, line_name_index)
+$sql = "select * from allele_bymarker_expidx where experiment_uid = $experiment_uid";
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+if ($row = mysqli_fetch_array($res)) {
+    $sql = "update allele_bymarker_expidx set line_index = '$line_index_str', line_name_index = '$line_name_index_str' where experiment_uid = $experiment_uid";
+} else {
+    $sql = "insert into allele_bymarker_expidx(experiment_uid, line_index, line_name_index)
      values ($experiment_uid, \"$line_index\", \"$line_name_index\")";
-//$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+}
+$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 $count = 0;
 $count_line_prev = "";
 while (!feof($fh)) {
@@ -128,11 +134,6 @@ while (!feof($fh)) {
     $count++;
     if (isset($marker_list[$marker_name])) {
         $marker_uid = $marker_list[$marker_name];
-        //$sql = "insert into allele_bymarker_exp_ACTG(experiment_uid, marker_uid, marker_name, chrom, pos, alleles)
-        //    values ($experiment_uid, $marker_uid, \"$marker\", \"$chrom\", \"$pos\", \"$alleles\")";
-        //$sql = "insert into allele_bymarker_exp_101(experiment_uid, marker_uid, marker_name, chrom, pos, alleles)
-        //    values ($experiment_uid, $marker_uid, \"$marker\", \"$chrom\", \"$pos\", \"$alleles\")";
-        //$res = mysql_query($sql) or die(mysql_error() . $sql);
         if (($count % 10000) == 0) {
             echo "finished $count\n";
         }
