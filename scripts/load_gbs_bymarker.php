@@ -76,13 +76,8 @@ foreach ($header_ary as $line_name) {
     } else {
         $unique_line{$uid} = 1;
     }
-    if ($line_index == "") {
-        $line_index = $uid;
-        $line_name_index = $name;
-    } else {
-        $line_index = $line_index . ", $uid";
-        $line_name_index = $line_name_index . ", $name";
-    }
+    $line_index[] = $uid;
+    $line_name_index[] = $name;
     $sql = "insert into tht_base (line_record_uid, experiment_uid) values ($uid, $experiment_uid)";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 }
@@ -120,7 +115,7 @@ while (!feof($fh)) {
         echo "line count error $count_line $count_line_prev\n";
     }
     $count_line_prev = $count_line;
-    $marker = $lineA[0];
+    $marker_name = $lineA[0];
     $chrom = $lineA[1];
     $pos = $lineA[2];
     $pattern = "/^[^\t]+\t[^\t]+\t[^\t]+\t/";
@@ -131,8 +126,8 @@ while (!feof($fh)) {
     $alleles = preg_replace($pattern, '', $alleles);
     $alleles = str_replace(" ", "", $alleles);
     $count++;
-    if (isset($marker_list[$marker])) {
-        $marker_uid = $marker_list[$marker];
+    if (isset($marker_list[$marker_name])) {
+        $marker_uid = $marker_list[$marker_name];
         //$sql = "insert into allele_bymarker_exp_ACTG(experiment_uid, marker_uid, marker_name, chrom, pos, alleles)
         //    values ($experiment_uid, $marker_uid, \"$marker\", \"$chrom\", \"$pos\", \"$alleles\")";
         //$sql = "insert into allele_bymarker_exp_101(experiment_uid, marker_uid, marker_name, chrom, pos, alleles)
@@ -147,7 +142,7 @@ while (!feof($fh)) {
         $marker_uid = $marker_list_syn[$marker];
         echo "error - can not insert duplicate for synonym $marker\n";
     } else {
-        echo "$marker not found\n";
+        echo "$marker_name not found\n";
     }
 }
 echo "$count lines from $file\n";
