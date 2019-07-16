@@ -124,21 +124,14 @@ while (!feof($fh)) {
     $marker_name = $lineA[0];
     $chrom = $lineA[1];
     $pos = $lineA[2];
-    $pattern = "/^[^\t]+\t[^\t]+\t[^\t]+\t/";
-    $alleles = preg_replace($pattern, '', $line, 1);
-    //$pattern = "/\t/";
-    //$alleles = preg_replace($pattern, ',', $alleles);
-    $pattern = "/\n/";
-    $alleles = preg_replace($pattern, '', $alleles);
-    $alleles = str_replace(" ", "", $alleles);
     $count++;
     if (isset($marker_list[$marker_name])) {
         $marker_uid = $marker_list[$marker_name];
         if (($count % 10000) == 0) {
             echo "finished $count\n";
         }
-        fwrite($fh1, "$exp_uid\t$marker_uid\t$marker_name\t$alleles1\n");
-        fwrite($fh2, "$exp_uid\t$marker_uid\t$marker_name\t$alleles2\n");
+        fwrite($fh1, "$experiment_uid\t$marker_uid\t$marker_name\t$chrom\t$pos\t$alleles1\n");
+        fwrite($fh2, "$experiment_uid\t$marker_uid\t$marker_name\t$chrom\t$pos\t$alleles2\n");
     } elseif (isset($marker_list_syn[$marker])) {
         $marker_uid = $marker_list_syn[$marker];
         echo "error - can not insert duplicate for synonym $marker\n";
