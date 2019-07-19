@@ -226,7 +226,7 @@ $lang = array(
             <?php
         }
         ?>
-        <li><a href="/jbrowse">JBrowse - Genome Browser</a>
+        <li><a href="" title="">JBrowse - Genome Browser</a>
         <?php
         $sql = "select value from settings where name like 'assembly%'";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -236,7 +236,7 @@ $lang = array(
             while ($row = mysqli_fetch_array($res)) {
                 $result = explode(",", $row[0]);
                 ?>
-                <li><a href="/jbrowse/?data=<?php echo $result[0] ?>" title="JBrowse"><?php echo $result[1] ?></a>
+                <li><a href="<?php echo $result[0] ?>" target="_blank" title="JBrowse"><?php echo $result[1] ?></a>
                 <?php
             }
             echo "</ul>";
