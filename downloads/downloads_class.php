@@ -177,17 +177,17 @@ class Downloads
             echo "Download selected data for use in external analysis programs (TASSEL, rrBLUP, Flapjack, synbreed)";
         }
         echo "<br><br>";
-                    echo "<b>Phenotype and Consensus Genotype data</b><br>";
-                    echo "1. Select a set of <a href=\"" . $config['base_url'];
-                    echo "downloads/select_all.php\">Lines, Traits, and Trials</a>.<br>";
-                    ?>
-                    2. Select a genetic map which has the best coverage for your selection.<br><br>
-                    <b>Phenotype and Single Experiment Genotype data</b><br>
-                    <?php
-                    echo "1. Select a set of <a href=\"" . $config['base_url'];
-                    echo "downloads/select_genotype.php\">Lines by Genotype Experiment</a>.<br>";
-                    ?>
-                    2. Select a genetic map which has the best coverage for your selection.<br><br>
+        echo "<b>Phenotype and Consensus Genotype data</b><br>";
+        echo "1. Select a set of <a href=\"" . $config['base_url'];
+        echo "downloads/select_all.php\">Lines, Traits, and Trials</a>.<br>";
+        ?>
+        2. Select a genetic map which has the best coverage for your selection.<br><br>
+        <b>Phenotype and Single Experiment Genotype data</b><br>
+        <?php
+        echo "1. Select a set of <a href=\"" . $config['base_url'];
+        echo "downloads/select_genotype.php\">Lines by Genotype Experiment</a>.<br>";
+        ?>
+        2. Select a genetic map which has the best coverage for your selection.<br><br>
         <input type="button" value="Detailed instruction" onclick="javascript: define_terms()"><br><br>
         </div><br>
         <input type="checkbox" id="typeP" value="pheno" onclick="javascript:select_download(this.id);" <?php echo $download_pheno ?>>Phenotype
@@ -257,6 +257,16 @@ class Downloads
             $lines = $_SESSION['selected_lines'];
             $lines_str = implode(",", $lines);
             $experiments_g = $_SESSION['geno_exps'];
+            if (is_array($experiments_g)) {
+                $geno_str = $experiments_g[0];
+            } else {
+                $geno_str = $experiments_g;
+            }
+            $sql = "select trial_code from experiments where experiment_uid = $geno_str";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $row = mysqli_fetch_array($res);
+            $trial_code = $row[0];
+
             $geno_str = $experiments_g[0];
             $sql = "SELECT marker_uid from allele_bymarker_exp_ACTG where experiment_uid = ?";
             if ($stmt = mysqli_prepare($mysqli, $sql)) {
@@ -316,8 +326,15 @@ class Downloads
         } else {
             $dtype = "";
         }
-       
+      
+        $mapset_name = "None";
         if (isset($_SESSION['selected_map'])) {
+            $selected_map = $_SESSION['selected_map'];
+            $sql = "select mapset_name from mapset where mapset_uid = $selected_map";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>" . $sql);
+            if ($row = mysqli_fetch_array($res)) {
+                $mapset_name = "mapset:$row[0]";
+            }
             $filename = "geneticMap.txt";
             $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
             $output = $this->type1_build_geneticMap($markers, $dtype);
@@ -326,8 +343,10 @@ class Downloads
         }
         $filename = "selection_parameters.txt";
         $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+        fwrite($h, "Trial Code = $trial_code\n");
         fwrite($h, "Minimum MAF = $min_maf\n");
         fwrite($h, "Maximum Missing = $max_missing\n");
+        fwrite($h, "MapSet = $mapset_name\n");
         fclose($h);
         if ($version == "V3") {
             $filename = "snpfile.txt";
@@ -539,16 +558,16 @@ class Downloads
         GROUP BY e.experiment_year ASC";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_assoc($res)) {
-        ?>
+            ?>
     <option value="<?php echo $row['year'] ?>"><?php echo $row['year'] ?></option>
-    <?php
+            <?php
         }
-    ?>
+        ?>
     </select>
     </td>
     </table>
     </div>
-    <?php
+        <?php
     }
     
     /**
@@ -563,7 +582,7 @@ class Downloads
         ?>
     </div></div>    
     <div id="step2" style="float: left; margin-bottom: 1.5em;">
-    <?php
+        <?php
         $this->step2_lines();
         ?></div>
         <div id="step3" style="float: left; margin-bottom: 1.5em;">

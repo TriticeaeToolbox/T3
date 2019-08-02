@@ -138,8 +138,9 @@ if ($action == "list") {
             $temp["publishedDate"] = $row[6];
         }
         $temp["markerCount"] = (integer) $row[0];
-        $temp["linkageGroupCount"] = $linkageCount[$uid];
+        $temp["linkageGroupCount"] = (integer) $linkageCount[$uid];
         $temp["comments"] = $row[7];
+        $temp["commonCropName"] = "Wheat";
         $linearray['result']['data'][] = $temp;
     }
     $return = json_encode($linearray);

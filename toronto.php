@@ -22,7 +22,7 @@ studies.
 <p>Accordingly, many of the datasets in T3 are being made available prior to
 publication of a global analysis by the data producers.  Guidelines for
 appropriate sharing of these data are given in the excerpt from
-the <a href="http://www.nature.com/nature/journal/v461/n7261/box/461168a_BX1.html">Toronto
+the <a href="http://www.nature.com/nature/journal/v461/n7261/full/461168a.html">Toronto
 Statement</a> below.
 
 <p><h3>Producers' information about specific datasets</h3>
@@ -63,5 +63,5 @@ Statement</a> below.
 
 <?php
 $footer_div=1;
-include $config['root_dir'].'theme/footer.php'; 
+include $config['root_dir'].'theme/footer.php';
 ?>

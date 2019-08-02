@@ -54,7 +54,7 @@ class Downloads
         ?>
         </div>
         <div id="step1" style="float: left; margin-bottom: 1.5em;">
-        <script type="text/javascript" src="qtl/menu14.js"></script><br>
+        <script type="text/javascript" src="qtl/menu15.js"></script><br>
         <?php
         if (isset($_SESSION['selected_traits']) || isset($_SESSION['selected_trials'])) {
             ?>
@@ -374,6 +374,12 @@ class Downloads
         } else {
             die("Error: no phenotypes selected\n");
         }
+        if (isset($_GET['assembly'])) {
+            $assembly = $_GET['assembly'];
+        } else {
+            die("Error: select genome assembly\n");
+        }
+        $assembly_name = mysql_grab("select assembly_name from assemblies where assembly_uid = $assembly");
         if (preg_match("/([A-Za-z]+)\/[^\/]+\/[^\/]+$/", $_SERVER['PHP_SELF'], $match)) {
             $species = $match[1];
         } else {
@@ -483,7 +489,6 @@ class Downloads
                         $chrom = "";
                         $pos = "";
                     }
-                    $location = "$chrom $pos";
                     $link1 = "/jbrowse/?data=wheat&loc=$chrom:$pos";
                     $link2 = "<a target=\"_new\" href=\"$target_url" . "THTdownload_gwa1_" . $gexp . "_" . $pexp . "_" . $puid . ".png\">Manhattan</a>";
                     $link3 = "<a target=\"_new\" href=\"$target_url" . "THTdownload_gwa3_" . $gexp . "_" . $pexp . "_" . $puid . ".png\">Q-Q</a>";
@@ -492,7 +497,7 @@ class Downloads
                     } else {
                         $trial = "$trial_list[$pexp] ($linesInExp[$pexp])";
                     }
-                    echo "<tr><td>$marker<td>$chrom<td>$location<td>$zvalue<td>$qvalue<td>$pvalue<td>$trial<td>$trial_list[$gexp]<td>$link2 $link3\n";
+                    echo "<tr><td>$marker<td>$chrom<td>$pos<td>$zvalue<td>$qvalue<td>$pvalue<td>$trial<td>$trial_list[$gexp]<td>$link2 $link3\n";
                 }
             }
         }
@@ -1034,6 +1039,7 @@ class Downloads
                             $knetminer2 = "<a target=\"_new\" href=\"http://knetminer.rothamsted.ac.uk/wheatknet/genepage?keyword=$TO&list=$gene\">ontology</a>";
                         }
                     } else {
+                        $gene = "";
                         $knetminer1 = "";
                         $knetminer2 = "";
                         $exp1 = "";

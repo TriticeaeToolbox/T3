@@ -34,10 +34,10 @@ class ShowData
     {
         switch ($function) {
             case 'typeTabDelimiter':
-                $this->type_Tab_Delimiter();  /* Displaying in tab delimited fashion */
+                $this->typeTabDelimiter();  /* Displaying in tab delimited fashion */
                 break;
             case 'typeTabDelimiterGBS':
-                $this->type_Tab_Delimiter_GBS();
+                $this->typeTabDelimiterGBS();
                 break;
             case 'select_lines':
                 $this->typeSelectLines();
@@ -58,6 +58,7 @@ class ShowData
      */
     private function typeSelectLines()
     {
+        global $config;
         $_SESSION[selected_lines] = explode(",", $_POST[linelist]);
         echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."pedigree/line_properties.php\">";
     }
@@ -66,6 +67,7 @@ class ShowData
     private function typeSelectMarkers()
     {
         global $mysqli;
+        global $config;
         $_SESSION[selected_lines] = explode(",", $_POST[linelist]);
         $exps_str = $_POST[genoexp];
         $experiments = explode(',', $exps_str);
@@ -96,16 +98,16 @@ class ShowData
 
         $trial_code = strip_tags($_GET['trial_code']);
         echo " <h2>Genotyping experiment ".$trial_code. "</h2>";
-        $this->type_DataInformation($trial_code);
+        $this->typeDataInformation($trial_code);
 
         $footer_div = 1;
         include $config['root_dir'].'theme/footer.php';
         ?>
-        <script type="text/javascript" src="display_genotype01.js"></script>
+        <script type="text/javascript" src="genotyping/display_genotype02.js"></script>
         <?php
     }
 
-    private function type_DataInformation($trial_code)
+    private function typeDataInformation($trial_code)
     {
         global $mysqli;
         $line_ids = array();
@@ -143,6 +145,11 @@ class ShowData
         }
         $line_total = count($line_ids);
         $line_list = implode(",", $line_ids);
+        if ($line_total > 0) {
+            $found_line_data = 1;
+        } else {
+            $found_line_data = 0;
+        }
 
         $sql_lines = "select line_index from allele_bymarker_expidx where experiment_uid = $experiment_uid";
         $res_lines = mysqli_query($mysqli, $sql_lines) or die("Error: unable to retrieve lines for this experiment.<br>" . mysqli_error($mysqli));
@@ -152,6 +159,9 @@ class ShowData
             $line_ids = json_decode($tmp, true);
             $line_total = count($line_ids);
             $line_list = implode(",", $line_ids);
+            $found_marker_data = 1;
+        } else {
+            $found_marker_data = 0;
         }
 
         $sql_Gen_Info = "SELECT * FROM genotype_experiment_info where experiment_uid = '".$experiment_uid."' ";
@@ -230,114 +240,122 @@ class ShowData
         echo "<tr> <td>Software version</td><td>".$row_Gen_Info['BGST_version_number']."</td></tr>";
         echo "<tr> <td>Comments</td><td>".$row_Gen_Info['comments']."</td></tr>";
         echo "</table><p>";
-        ?>
 
-<h3>Download</h3>
+        ?>
 <b><?php echo ($num_mark) ?></b> markers were assayed for <b><?php echo ($line_total) ?></b> lines.
-<form method=POST action="<?php echo $SERVER[PHP_SELF] ?>">
+<form method=POST action="<?php echo $_SERVER['PHP_SELF'] ?>">
 <input type=hidden name=function value=select_lines>
 <input type=hidden name=linelist value=<?php echo "\"$line_list\""; ?>>
 <input type="submit" value="Select lines" style="color:blue">
 </form>
-<form method=POST action="<?php echo $SERVER[PHP_SELF] ?>">
+<form method=POST action="<?php echo $_SERVER['PHP_SELF'] ?>">
 <input type=hidden name=function value=select_markers>
 <input type=hidden name=linelist value=<?php echo "\"$line_list\""; ?>>
 <input type=hidden name=genoexp value=<?php echo "\"$experiment_uid\""; ?>>
 <input type="submit" value="Select experiment" style="color:blue"> (lines and markers)
 </form>
 <br>
-    <?php
-    if ($gbs_exp == "yes") {
-        calculate_afe($experiment_uid, $min_maf, $max_missing, $max_miss_line);
-    } else {
-        calculate_af($line_ids, $min_maf, $max_missing, $max_miss_line);
-    }
-    ?>
-
-<p>
-  Maximum Missing Data: <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />%&nbsp;&nbsp;&nbsp;&nbsp;
-  Minimum MAF: <input type="text" name="mmaf" id="mmaf" size="1" value="<?php echo ($min_maf) ?>" />%&nbsp;&nbsp;&nbsp;&nbsp;
-  <input type="button" value="Refresh" onclick="javascript:mrefresh('<?php echo $trial_code ?>');return false;" /><br>
-  <div id="status"></div>
-  <div id="results">
-  <img alt="creating download file" id="spinner" src="images/ajax-loader.gif" style="display:none;">
-    <?php
-    if ($gbs_exp == "yes") {
-        ?>
-        <input type="button" value="Download allele data" onclick="javascript:load_tab_delimiter_GBS('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
         <?php
-    } else {
-        ?>
-        <input type="button" value="Download allele data" onclick="javascript:load_tab_delimiter('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
-        <?php
-    }
-    $url = "genotyping/display_markers.php?geno_exp=" . $experiment_uid;
-    ?>
+        if ($found_marker_data) {
+            echo "<h3>Download</h3>";
+            if ($gbs_exp == "yes") {
+                calculate_afe($experiment_uid, $min_maf, $max_missing, $max_miss_line);
+            } else {
+                calculate_af($line_ids, $min_maf, $max_missing, $max_miss_line);
+            }
+            ?>
+    <p>
+    Maximum Missing Data: <input type="text" name="mm" id="mm" size="2" value="<?php echo ($max_missing) ?>" />%&nbsp;&nbsp;&nbsp;&nbsp;
+    Minimum MAF: <input type="text" name="mmaf" id="mmaf" size="1" value="<?php echo ($min_maf) ?>" />%&nbsp;&nbsp;&nbsp;&nbsp;
+    <input type="button" value="Refresh" onclick="javascript:mrefresh('<?php echo $trial_code ?>');return false;" /><br>
+    <div id="status"></div>
+    <div id="results">
+    <img alt="creating download file" id="spinner" src="images/ajax-loader.gif" style="display:none;">
+            <?php
+            if ($gbs_exp == "yes") {
+                ?>
+                <input type="button" value="Download allele data" onclick="javascript:load_tab_delimiter_GBS('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
+                <?php
+            } else {
+                ?>
+                <input type="button" value="Download allele data" onclick="javascript:load_tab_delimiter('<?php echo $experiment_uid ?>','<?php echo $max_missing ?>','<?php echo $min_maf ?>');"/>
+                <?php
+            }
+            $url = "genotyping/display_markers.php?geno_exp=" . $experiment_uid;
+            ?>
     <button onclick="location.href='<?php echo $url ?>'">Download marker data</button><br>
-    <?php
-    echo "</div><p><br>";
-    echo "<h3>Additional files available</h3><p>";
-    echo "<table>";
+            <?php
+            echo "</div><p><br>";
+            echo "<h3>Additional files available</h3><p>";
+            echo "<table>";
 
-    echo "<tr> <td>Samples (germplasm lines)</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['sample_sheet_filename']."'>".$row_Gen_Info['sample_sheet_filename']."</a></td></tr>";
-    echo "<tr> <td>Manifest (markers used)</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['manifest_file_name']."'>". $row_Gen_Info['manifest_file_name']." </a></td></tr>";
+            echo "<tr> <td>Samples (germplasm lines)</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['sample_sheet_filename']."'>".$row_Gen_Info['sample_sheet_filename']."</a></td></tr>";
+            echo "<tr> <td>Manifest (markers used)</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['manifest_file_name']."'>". $row_Gen_Info['manifest_file_name']." </a></td></tr>";
 
-    echo "<tr> <td>Cluster File</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['cluster_file_name']."'>".$row_Gen_Info['cluster_file_name']."</a></td></tr>";
+            echo "<tr> <td>Cluster File</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['cluster_file_name']."'>".$row_Gen_Info['cluster_file_name']."</a></td></tr>";
 
-    echo "<tr> <td>Raw data</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['raw_datafile_archive']."'>".$row_Gen_Info['raw_datafile_archive']."</a></td></tr>";
-    echo "</table>";
+            echo "<tr> <td>Raw data</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['raw_datafile_archive']."'>".$row_Gen_Info['raw_datafile_archive']."</a></td></tr>";
+            echo "</table>";
+        } else {
+            echo "<a href=genotyping/download-vcf.php>Download from VCF</a>";
+        }
     } /* End of function type_DataInformation*/
 
-    private function type_Tab_Delimiter_GBS()
+    private function typeTabDelimiterGBS()
     {
-      $dtype = "";
-      $experiment_uid = $_GET['expuid'];
-      $max_missing = 99.9;//IN PERCENT
-      if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm'])) {
-          $max_missing = $_GET['mm'];
-      }
-      if ($max_missing > 100)
-          $max_missing = 100;
-      elseif ($max_missing < 0)
-          $max_missing = 0;
-      $min_maf = 0.01;//IN PERCENT
-      if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
-          $min_maf = $_GET['mmaf'];
-      if ($min_maf > 100)
-          $min_maf = 100;
-      elseif ($min_maf < 0)
-          $min_maf = 0;
-
-      $unique_str = chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90));
-      $filename = "download_" . $unique_str;
-      mkdir("/tmp/tht/$filename");
-      $filename = "selection_parameters.txt";
-      $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
-      fwrite($h, "Minimum MAF = $min_maf\n");
-      fwrite($h, "Maximum Missing = $max_missing\n");
-      fclose($h);
-      $filename = "genotype.hmp.txt";
-      $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
-      $output = type4BuildMarkersDownload($experiment_uid, $min_maf, $max_missing, $dtype, $h);
-      fclose($h);
-      $filename = "/tmp/tht/download_" . $unique_str . ".zip";
-      exec("cd /tmp/tht; /usr/bin/zip -r $filename download_$unique_str");
-      ?>
-      <input type="button" value="Download Zip file of results" onclick="javascript:window.open('<?php echo "$filename"; ?>');" />
-      <?php
-  }
+        $dtype = "";
+        $experiment_uid = $_GET['expuid'];
+        $max_missing = 99.9;//IN PERCENT
+        if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm'])) {
+            $max_missing = $_GET['mm'];
+        }
+        if ($max_missing > 100) {
+            $max_missing = 100;
+        } elseif ($max_missing < 0) {
+            $max_missing = 0;
+        }
+        $min_maf = 0.01;//IN PERCENT
+        if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf'])) {
+            $min_maf = $_GET['mmaf'];
+        }
+        if ($min_maf > 100) {
+            $min_maf = 100;
+        } elseif ($min_maf < 0) {
+            $min_maf = 0;
+        }
+        $unique_str = chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90)) .chr(rand(65, 90));
+        $filename = "download_" . $unique_str;
+        mkdir("/tmp/tht/$filename");
+        $filename = "selection_parameters.txt";
+        $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+        fwrite($h, "Minimum MAF = $min_maf\n");
+        fwrite($h, "Maximum Missing = $max_missing\n");
+        fclose($h);
+        $filename = "genotype.hmp.txt";
+        $h = fopen("/tmp/tht/download_$unique_str/$filename", "w");
+        $output = type4BuildMarkersDownload($experiment_uid, $min_maf, $max_missing, $dtype, $h);
+        fclose($h);
+        $filename = "/tmp/tht/download_" . $unique_str . ".zip";
+        exec("cd /tmp/tht; /usr/bin/zip -r $filename download_$unique_str");
+        ?>
+        <input type="button" value="Download Zip file of results" onclick="javascript:window.open('<?php echo "$filename"; ?>');" />
+        <?php
+    }
   
-  private function type_Tab_Delimiter() {
-    global $mysqli;
-    $experiment_uid = $_GET['expuid'];
-    $max_missing = 99.9;//IN PERCENT
-    if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm']))
-      $max_missing = $_GET['mm'];
-    if ($max_missing > 100)
-      $max_missing = 100;
-    elseif ($max_missing < 0)
-      $max_missing = 0;
-    $min_maf = 0.01;//IN PERCENT
+    private function typeTabDelimiter()
+    {
+        global $mysqli;
+        $experiment_uid = $_GET['expuid'];
+        $max_missing = 99.9;//IN PERCENT
+        if (isset($_GET['mm']) && !empty($_GET['mm']) && is_numeric($_GET['mm'])) {
+            $max_missing = $_GET['mm'];
+        }
+        if ($max_missing > 100) {
+            $max_missing = 100;
+        } elseif ($max_missing < 0) {
+            $max_missing = 0;
+        }
+        $min_maf = 0.01;//IN PERCENT
     if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
       $min_maf = $_GET['mmaf'];
     if ($min_maf > 100)

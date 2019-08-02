@@ -11,7 +11,16 @@ $mysqli = connecti();
 if (isset($_GET['query'])) {
     header("Content-type: application/vnd.ms-excel");
     $query = $_GET['query'];
-    if ($query == "phenotype_data") {
+    if ($query == "experiment_data") {
+        header("Content-Disposition: attachment;Filename=PhenotypeExperiments.csv");
+        echo "Trial,location,planting date,harvest date,latitude,longitude\n";
+        $sql = "select trial_code, location, planting_date, harvest_date, latitude, longitude from experiments, phenotype_experiment_info
+            where experiments.experiment_uid = phenotype_experiment_info.experiment_uid";
+        $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+        while ($row = mysqli_fetch_row($result)) {
+            echo "$row[0],\"$row[1]\", $row[2], $row[3], $row[4], $row[5]\n";
+        }
+    } elseif ($query == "phenotype_data") {
         header("Content-Disposition: attachment;Filename=PhenotypeData.csv");
         $sql = "select line_record_uid, line_record_name from line_records";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -124,7 +133,7 @@ if (isset($_GET['query'])) {
             }
             $pedigree_string = $row[3];
             $desc = $row[4];
-            $desc = preg_replace('/[^a-zA-Z0-9-_\.]/', '', $desc);
+            $desc = preg_replace('/[^a-zA-Z0-9-_\.]/', ' ', $desc);
             $pedigree_string = str_replace("\"", "_", $pedigree_string);
             echo "\"$row[1]\",\"$species\",\"$gr\",\"$synonym\",\"$row[2]\",\"$parent1\",\"$parent2\",\"$pedigree_string\",\"$desc\"\n";
         }
@@ -171,6 +180,8 @@ if (isset($_GET['query'])) {
     echo "<br><a href=\"$url\">Genetic characters</a>";
     $url = $config['base_url'] . "downloads/bulk_download.php?query=phenotype_data";
     echo "<br><a href=\"$url\">Phenotype data</a>";
+    $url = $config['base_url'] . "downloads/bulk_download.php?query=experiment_data";
+    echo "<br><a href=\"$url\">Phenotype trials</a>";
     echo "</div>";
     include $config['root_dir'].'theme/footer.php';
 }

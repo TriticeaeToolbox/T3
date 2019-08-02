@@ -20,10 +20,8 @@ $exp_list = array();
 $line_uid_list = array();
 $line_name_list = array();
 
-$sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED";
-$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-$sql = "SET SESSION sql_log_bin = 0";
-$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+//$sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED";
+//$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 
 $max_exp = 0;
 $sql = "select experiment_uid from experiments order by experiment_uid";
@@ -178,3 +176,22 @@ $sql = "RENAME TABLE temp_allele to allele_byline";
 echo "$sql\n";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 echo "done with table allele_byline\n";
+
+$filename = "allele_byline";
+if (isset($_SESSION['username'])) {
+    $username = $_SESSION['username'];
+} else {
+    $username = "curator";
+}
+$sql = "SELECT input_file_log_uid from input_file_log WHERE file_name = '$filename'";
+$res = mysqli_query($mysqli, $sql) or die("Database Error: input_file lookup  - ". mysqli_error($mysqli) ."<br>".$sql);
+$rdata = mysqli_fetch_assoc($res);
+$input_uid = $rdata['input_file_log_uid'];
+if (empty($input_uid)) {
+        $sql = "INSERT INTO input_file_log (file_name,users_name, created_on)
+                VALUES('$filename', '$username', NOW())";
+} else {
+        $sql = "UPDATE input_file_log SET users_name = '$username', created_on = NOW()
+                WHERE input_file_log_uid = '$input_uid'";
+}
+mysqli_query($mysqli, $sql) or die("Database Error: Input file log entry creation failed - " . mysqli_error($mysqli) . "\n\n$sql");

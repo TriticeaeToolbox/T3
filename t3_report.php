@@ -85,7 +85,7 @@ if ($query == 'geno') {
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($res)) {
             $total_count += $row[2];
-            print "<tr><td><a href='".$config['base_url']."display_genotype.php?trial_code=$row[0]'>$row[0]</a><td>$row[1]<td>$row[2]\n";
+            print "<tr><td><a href='".$config['base_url']."genotyping/display_genotype.php?trial_code=$row[0]'>$row[0]</a><td>$row[1]<td>$row[2]\n";
         }
     } else {
         $sql = "select experiment_uid, platform_name from genotype_experiment_info, platform where genotype_experiment_info.platform_uid = platform.platform_uid";
@@ -109,7 +109,7 @@ if ($query == 'geno') {
             $geno_count = $line_count * $num_mark;
             $total_count += $geno_count;
             $geno_count = number_format($geno_count);
-            print "<tr><td><a href='".$config['base_url']."display_genotype.php?trial_code=$trial_code'>$trial_code</a><td>$experiment_short_name<td>$platform_list[$experiment_uid]<td>$line_count<td>$num_mark<td>$geno_count\n";
+            print "<tr><td><a href='".$config['base_url']."genotyping/display_genotype.php?trial_code=$trial_code'>$trial_code</a><td>$experiment_short_name<td>$platform_list[$experiment_uid]<td>$line_count<td>$num_mark<td>$geno_count\n";
         }
     }
     $total_count = number_format($total_count);
@@ -298,7 +298,7 @@ if ($query == 'geno') {
         $short_name = $row[1];
         $date = $row[2];
         $type = $row[3];
-        print "<tr><td><a href='".$config['base_url']."display_genotype.php?trial_code=$trial_code'>$trial_code</a><td>$short_name<td>$type<td>$date\n";
+        print "<tr><td><a href='".$config['base_url']."genotyping/display_genotype.php?trial_code=$trial_code'>$trial_code</a><td>$short_name<td>$type<td>$date\n";
     }
     print "</table>";
 } elseif ($query == 'metabolite') {
@@ -606,20 +606,20 @@ if ($query == 'geno') {
         print "$count\t";
     }
 
-  $index = 12;
-  $sql = "select date_format(max(created_on),'%m-%d-%Y') from line_records";
-  $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-  if ($row = mysqli_fetch_row($res)) {
-    $count = $row[0];
-  }
-  if ($output == "excel") {
-    $worksheet->write($index, 0, "latest addition");
-    $worksheet->write($index, 1, $count);
-    $index++;
-  } elseif ($output == "") {
-    print "<tr><td>last addition<td>$count\n";
-    print "</table><br>\n";
-  }
+    $index = 12;
+    $sql = "select date_format(max(created_on),'%m-%d-%Y') from line_records";
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    if ($row = mysqli_fetch_row($res)) {
+        $count = $row[0];
+    }
+    if ($output == "excel") {
+        $worksheet->write($index, 0, "latest addition");
+        $worksheet->write($index, 1, $count);
+        $index++;
+    } elseif ($output == "") {
+        print "<tr><td>last addition<td>$count\n";
+        print "</table><br>\n";
+    }
 
   //* Phenotype data */
   $sql = "select count(phenotype_uid) from phenotypes";

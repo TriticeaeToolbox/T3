@@ -555,8 +555,8 @@ class MarkersCheck
         $username=$row['name'];
         $username = preg_replace("/\s/", "", $username);
         $tmp_dir="./uploads/tmpdir_".$username."_".rand();
-        //	$raw_path= "rawdata/".$_FILES['file']['name'][1];
-        //	copy($_FILES['file']['tmp_name'][1], $raw_path);
+        // $raw_path= "rawdata/".$_FILES['file']['name'][1];
+        // copy($_FILES['file']['tmp_name'][1], $raw_path);
         umask(0);
   
         if (!file_exists($tmp_dir) || !is_dir($tmp_dir)) {
@@ -571,27 +571,26 @@ class MarkersCheck
         if (strpos($uploadfile, ".txt") === false) {
             error(1, "Expecting an tab-delimited text file. <br> The type of the uploaded file is ".$uftype);
             print "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">";
-        }
-        else {
-		    if(move_uploaded_file($_FILES['file']['tmp_name'][0], $target_path.$uploadfile)) {
+        } else {
+            if (move_uploaded_file($_FILES['file']['tmp_name'][0], $target_path.$uploadfile)) {
             /* start reading the input */
-            	$annotfile = $target_path.$uploadfile;
+                $annotfile = $target_path.$uploadfile;
                 //echo "Annotate file - " . $annotfile . "<br>";
                 /* Read the annotation file */
                 if (($reader = fopen($annotfile, "r")) == false) {
                     error(1, "Unable to access file.");
-                    exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+                    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
                 }
                 // Check first line for header information
-                if (($line = fgets($reader)) == FALSE) {
+                if (($line = fgets($reader)) == false) {
                     error(1, "Unable to locate header names on first line of file.");
-                    exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
-                }     
-                $header = str_getcsv($line,"\t");
+                    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+                }
+                $header = str_getcsv($line, "\t");
                  
                 // Set up header column; all columns are required
                 for ($x = 0; $x < count($header); $x++) {
-                    switch ($header[$x] ) {
+                    switch ($header[$x]) {
                         case 'Name':
                             $nameIdx = $x;
                             break;
@@ -620,12 +619,12 @@ class MarkersCheck
                             "<br>"." Marker_type - ".$markerTypeIdx."<br>"." Synonym - ". $synonymIdx.
                             "<br>"." Synonym_type - ".$synonymTypeIdx."<br>"."Annotation - ".$annotationIdx.
                             "<br>"." Annotation_type - ". $annotationTypeIdx ."<br>";
-                    exit( "<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
+                    exit("<input type=\"Button\" value=\"Return\" onClick=\"history.go(-1); return;\">");
                 }
                   
                 // Store header
                 $i = 0;
-                foreach ($header as $value)  {                     
+                foreach ($header as $value) {                     
                     $storageArr[0][$i++] = $value;   
                 }
                 // Store individual records
@@ -1656,7 +1655,7 @@ class MarkersCheck
                         $sql = "insert into marker_synonym_types (name, comments) values (\"GBS sequence tag\", \"N/A\")";
                         $res = mysqli_query($mysqli, $sql) or die("Database Error: marker synonym insert - ". mysqli_error($mysqli). "<br>".$sql);
                         echo "$sql<br>\n";
-                        $synonymTypeID = mysqli_insert_id();
+                        $synonymTypeID = mysqli_insert_id($mysqli);
                     }
                     $sql = "select marker_uid from markers where marker_name = \"$synonym\"";
                     $res = mysqli_query($mysqli, $sql) or die("Database Error: marker synonym insert - ". mysqli_error($mysqli). "<br>".$sql);
@@ -1693,7 +1692,7 @@ class MarkersCheck
                         $sql = "insert into markers (marker_type_uid, marker_name, A_allele, B_allele, sequence, updated_on, created_on) 
                         values ($markerTypeID, \"$marker\", \"$alleleA\", \"$alleleB\", \"$sequence\", NOW(), NOW())";
                         $res = mysqli_query($mysqli, $sql) or die("Database Error: " . mysqli_error($myslqi) . "<br>$sql");
-                        $marker_uid = mysqli_insert_id();
+                        $marker_uid = mysqli_insert_id($mysqli);
                         //echo "$sql<br>\n";
                         $count_added++;
                     } else {

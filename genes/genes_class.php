@@ -28,13 +28,14 @@ class Genes
         include $config['root_dir'].'theme/admin_header2.php';
 
         echo "<h2>Search Gene Annotation</h2>";
-        echo "The <b>Gene Id</b> link provides information on markers in T3 and external links to protein, expression, and pathway information.<br>\n";
-        echo "The gene annotation information provided by <a href=\"http://plants.ensembl.org/index.html\" target=\"_new\">EnsemblPlants</a> includes protein-coding and non-coding genes, splice variants, cDNA and protein sequences, non-coding RNAs.<br><br>\n";
+        echo "The <b>Gene Id</b> link provides information on markers in T3 and links to JBrowse. The Gene Id link also provides external links to protein, KnetMiner, and pathway information.<br>\n";
+        echo "The gene annotation information provided by <a href=\"http://plants.ensembl.org/biomart/martview\" target=\"_new\">EnsemblPlants</a> BioMart. The annotation is done with\n";
+        echo "mostly automated tools.<br> To search for gene common names it is best to search <a href=protein>Protein Annotation</a> first then follow Gene Id link to the gene description.<br><br>\n";
 
         //get list of assemblies
         $sql = "select distinct(assemblies.assembly_uid), assemblies.assembly_name, data_public_flag, assemblies.description, assemblies.created_on
             from gene_annotations, assemblies
-            where gene_annotations.assembly_name = assemblies.assembly_uid order by assemblies.created_on";
+            where gene_annotations.assembly_name = assemblies.assembly_uid order by assemblies.assembly_uid";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         while ($row = mysqli_fetch_row($result)) {
             //pick latest assembly as default
@@ -135,17 +136,17 @@ class Genes
         if (isset($_GET['search'])) {
             $query = $_GET['search'];
             $param = "%" . $query . "%";
-            $sql = "select gene_annotation_uid, gene_id, transcript, type, gene_name, description, bin, uniprot from gene_annotations
+            $sql = "select gene_annotation_uid, gene_id, transcript, type, gene_name, description, bin, uniprot, goa, function from gene_annotations
                 where assembly_name = ? 
-                and (description like ? OR gene_name like ? OR gene_id like ? OR uniprot like ?)";
+                and (description like ? OR gene_name like ? OR gene_id like ? OR function like ? OR goa like ?)";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
-            $stmt->bind_param("sssss", $assembly, $param, $param, $param, $param) or die(mysqli_error($mysqli));
+            $stmt->bind_param("ssssss", $assembly, $param, $param, $param, $param, $param) or die(mysqli_error($mysqli));
             $stmt->execute();
             $stmt->store_result();
             $count_rows = $stmt->num_rows;
             $sql .= " limit 10 offset $offset";
             $stmt = $mysqli->prepare($sql) or die(mysqli_error($mysqli));
-            $stmt->bind_param("sssss", $assembly, $param, $param, $param, $param) or die(mysqli_error($mysqli));
+            $stmt->bind_param("ssssss", $assembly, $param, $param, $param, $param, $param) or die(mysqli_error($mysqli));
             if ($count_rows > 10) {
                 $next = $pageNum + 1;
                 $prev = $pageNum -1;
@@ -156,13 +157,13 @@ class Genes
    
             $count = 0;
             $stmt->execute();
-            $stmt->bind_result($uid, $gene_id, $transcript, $type, $gene_name, $desc, $bin, $uniprot);
+            $stmt->bind_result($uid, $gene_id, $transcript, $type, $gene_name, $desc, $bin, $uniprot, $goa, $function);
             while ($stmt->fetch()) {
                 if ($count == 0) {
-                    echo "<table><tr><td>Gene Id<td>Transcript<td>Type<td>Name<td>Bin<td>Description<td>Functional annotation\n";
+                    echo "<table><tr><td>Gene Id<td>Transcript<td>Name<td>Bin<td>Description<td>UniProt<td nowrap>gene ontology<td>Interpro Description\n";
                 }
                 $count++;
-                echo "<tr><td><a href=\"view.php?table=gene_annotations&uid=$uid\">$gene_id</a><td>$transcript<td>$type<td>$gene_name<td>$bin<td>$desc<td>$uniprot\n";
+                echo "<tr><td><a href=\"view.php?table=gene_annotations&uid=$uid\">$gene_id</a><td>$transcript<td>$gene_name<td>$bin<td>$desc<td>$uniprot<td>$goa<td>$function\n";
             }
             $stmt->close();
             if ($count > 0) {

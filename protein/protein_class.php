@@ -28,6 +28,7 @@ class Protein
         include $config['root_dir'].'theme/admin_header2.php';
 
         echo "<h2>Search Protein Annotation</h2>";
+        echo "The protein annotation is provided by UniProt and includes manualy curated (Swiss-Prot) and automatically annotated (TrEMBL) databases.<br>\n";
         echo "The <b>Protein Id</b> link provides a reference link to UniProt for additional function and biological knowledge.<br>\n";
         echo "The <b>Gene Id</b> link provides information on gene location.<br>";
 

@@ -19,7 +19,7 @@ function displayPathways()
     echo "Plant Reactome</a>: a resource for plant metabolic and regulatory pathways and comparative analysis. ";
     echo "Using curated rice pathways as a reference,<br> the Plant Reactome predicts ";
     echo "pathways in other plant species on the basis of Compara and Inparanoid super-cluster orthology.<br>";
-    echo "The database uses the Feb 2019 (Gramene r60) release of Plant Reactome.<br><br>\n";
+    echo "The database uses the Arpil 2019 (Gramene r61) release of Plant Reactome.<br><br>\n";
 
     echo "<div id=\"results\">\n";
     $sql = "select pathway_uid, pathway_reference, pathway_name, species from pathways order by pathway_name";
@@ -30,7 +30,8 @@ function displayPathways()
         $path_ref = $row[1];
         $path_name = $row[2];
         $species = $row[3];
+        $link1 = "<a href=" . $path_ref . " target=_new>Pathway</a>";
         $link2 = "<a href=\"view.php?table=pathways&uid=$uid\">Gene List</a>";
-        echo "<tr><td>$path_name<td>$path_ref<td>$link2\n";
+        echo "<tr><td>$path_name<td>$link1<td>$link2\n";
     }
 }

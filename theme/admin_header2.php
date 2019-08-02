@@ -23,7 +23,7 @@
 <script type="text/javascript" src="includes/core.js"></script>
 <script type="text/javascript" src="theme/new.js"></script>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-<script src="//code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="//code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script src="theme/jquery.smartmenus.min.js" type="text/javascript"></script>
 <script src='https://www.google.com/recaptcha/api.js'></script>
@@ -31,7 +31,6 @@
 
 <link href="theme/sm-core-css.css" rel="stylesheet" type="text/css">
 <link href="theme/sm-cleant3.css" rel="stylesheet" type="text/css">
-<link rel="manifest" href="theme/manifest.json">
 <script>
 jQuery( document ).ready(function( $ ) {
     $('#main-menu').smartmenus();
@@ -58,9 +57,8 @@ if (empty($title)) {
 echo "<title>$title</title>";
 require_once $config['root_dir'].'includes/analyticstracking.php';
 
-    ?>
+?>
 </head>
-<body onload="javascript:setup();">
 <div id="container">
 <div id="barleyimg"><h1 style="color: white; text-shadow: 2px 2px 5px black; font-size: 400%;"></h1>
   </div>
@@ -72,16 +70,16 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
   <h1 style="color: white; text-shadow: 2px 2px 5px black; font-size: 400%;">&nbsp;&nbsp;<?php echo $title; ?></h1>
 
 <?php
-  //The navigation tab menus
-  //Tooltips:
-  $lang = array(
+//The navigation tab menus
+//Tooltips:
+$lang = array(
     "desc_sc1" => "Search by germplasm and phenotype information",
     "desc_sc2" => "Credits, data status ... ",
     "desc_sc3" => "Search by genotyping information",
     "desc_sc4" => "Search by Expression Related information.",
     "desc_sc5" => "Database administration",
     "desc_sc6" => "Visualization tools",
-  );
+);
 ?>
 <div id="nav">
   <ul id="main-menu" class="sm sm-clean">
@@ -160,14 +158,13 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
       <li><a href="<?php echo $config['base_url']; ?>snps.php" title="Context sequences and A/B => nucleotide translation">
             SNP Alleles and Sequences</a> 
       <li><a href="<?php echo $config['base_url']; ?>downloads/marker_annotation.php">Marker Annotation</a>
-      <li><a href="<?php echo $config['base_url']; ?>downloads/bulk_download.php" title="Bulk Download">Bulk Download</a>
+      <li><a href="<?php echo $config['base_url']; ?>genotyping/download-vcf.php" title="Download portion of VCF files">VCF Download</a>
+      <li><a href="<?php echo $config['base_url']; ?>downloads/bulk_download.php" title="Download all records from database">Bulk Download</a>
       <li><a href="<?php echo $config['base_url']; ?>downloads/tablet_export.php" title="Tablet export">
             Android Field Book</a>
-      <li><a href="<?php echo $config['base_url']; ?>maps/weather.php" title="Weather data">
-            Weather Data</a>
       <li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
       </ul>
-    <li><a href="" title="">Browse</a><ul>
+    <li><a href="" title="">Search</a><ul>
     <?php
     $results = mysql_grab("SHOW tables like 'gene_annotations'");
     if ($results == "gene_annotations") {
@@ -210,7 +207,8 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
         $results = mysql_grab("SHOW tables like 'marker_primers'");
         if ($results == "marker_primers") {
             ?>
-            <li><a href="<?php echo $config['base_url']; ?>genotyping/polymarker.php" title="Designed Markers">Designed Primers</a>
+            <li><a href="<?php echo $config['base_url']; ?>genotyping/polymarker.php" title="Designed Markers">PolyMarker Designed Primers</a>
+            <li><a href="http://tcapg.ag.cornell.edu/primer_filter/" title="KASP Filter for Exome Capture" target="_new">KASP primer design</a>
             <?php
         }
         $results = mysql_grab("SHOW tables like 'marker_report_reference'");
@@ -226,7 +224,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
             <?php
         }
         ?>
-        <li><a href="/jbrowse">JBrowse - Genome Browser</a>
+        <li><a href="" title="">JBrowse - Genome Browser</a>
         <?php
         $sql = "select value from settings where name like 'assembly%'";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -236,7 +234,7 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
             while ($row = mysqli_fetch_array($res)) {
                 $result = explode(",", $row[0]);
                 ?>
-                <li><a href="/jbrowse/?data=<?php echo $result[0] ?>" title="JBrowse"><?php echo $result[1] ?></a>
+                <li><a href="<?php echo $result[0] ?>" target="_blank" title="JBrowse"><?php echo $result[1] ?></a>
                 <?php
             }
             echo "</ul>";
@@ -246,8 +244,8 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
    
     <?php
     if (authenticate(array(USER_TYPE_CURATOR, USER_TYPE_ADMINISTRATOR))) {
-    ?> 
-    <li> <a href="" title="Add, edit or delete data">Curate</a>
+        ?> 
+      <li> <a href="" title="Add, edit or delete data">Curate</a>
       <ul>
       <li><a href="<?php echo $config['base_url']; ?>curator_data/input_line_names.php" title="Must precede loading data about the lines">
       Lines</a></li>
@@ -303,10 +301,10 @@ require_once $config['root_dir'].'includes/analyticstracking.php';
       <li><a href="http://google.com/analytics/web/?hl=en#home/a37631546w66043588p67910931/" title="Google Analytics, if you're permitted" target="_blank">Usage Analytics</a>
     </ul>
     </li>
-    <?php
+        <?php
     }
 
-?>
+    ?>
 
   <li>
   <a href="" title="<?php echo $lang["desc_sc2"]; ?>">Resources</a>

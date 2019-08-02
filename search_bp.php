@@ -79,7 +79,7 @@ if ($num_rows == 0) {
         echo "Project participants must be logged in to see any private datasets.</div>";
     } else {
     // Show the trials available.
-    ?>
+        ?>
     <h3>Available Datasets</h3>
       <p>
       <table cellpadding="0" cellspacing="0">
@@ -99,7 +99,7 @@ if ($num_rows == 0) {
             if ($experiment_type=='phenotype') {
                 echo( "<tr> <td>$year</td> <td><a href='display_phenotype.php?trial_code=$trial_code'>$trial_code</a> </td> <td>$traits</td> </tr>");
             } elseif ($experiment_type=='genotype') {
-                echo( "<tr> <td>$year</td> <td><a href='display_genotype.php?trial_code=$trial_code'>$trial_code</a> </td> <td>$traits</td> </tr>");
+                echo( "<tr> <td>$year</td> <td><a href='genotyping/display_genotype.php?trial_code=$trial_code'>$trial_code</a> </td> <td>$traits</td> </tr>");
             }
         }
         echo "</tbody></table>";

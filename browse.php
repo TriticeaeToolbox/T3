@@ -6,7 +6,7 @@
 
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
-require $config['root_dir'].'theme/admin_header.php';
+require $config['root_dir'].'theme/admin_header2.php';
 $mysqli = connecti();
 
 $table = mysqli_real_escape_string($mysqli, $_GET['table']);
@@ -58,7 +58,8 @@ if (is_array($found)) {
         $skip = "";
         if (($line[0] == "marker_synonyms") && ($line[1] == "value")) {
             $msquery = mysqli_query(
-                $mysqli, "select marker_name 
+                $mysqli,
+                "select marker_name 
                 from markers, marker_synonyms 
                 where marker_synonym_uid = '$line[2]'
                 and markers.marker_uid = marker_synonyms.marker_uid
@@ -138,7 +139,7 @@ for ($rw = 0; $rw < $numrows; $rw++) {
                 if ($expttype == "phenotype") {
                     print "<td><a href='display_phenotype.php?trial_code=$name'>$name</a>";
                 } elseif ($expttype == "genotype") {
-                    print "<td><a href='display_genotype.php?trial_code=$name'>$name</a>";
+                    print "<td><a href='genotyping/display_genotype.php?trial_code=$name'>$name</a>";
                 } elseif ($expttype == "metabolite") {
                     print "<td><a href='compounds/display_metabolite.php?trial_code=$name'>$name</a>";
                 } else {

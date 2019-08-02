@@ -175,7 +175,7 @@ if (count($found) < 1) {
         if ($expttype == 1) {
             echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."display_phenotype.php?trial_code=$trialcode\">";
         } elseif ($expttype == 2) {
-            echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."display_genotype.php?trial_code=$trialcode\">";
+            echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."genotyping/display_genotype.php?trial_code=$trialcode\">";
         } elseif ($expttype == 3) {
             echo "<meta http-equiv=\"refresh\" content=\"0;url=".$config['base_url']."compounds/display_metabolite.php?trial_code=$trialcode\">";
         } else {
@@ -270,41 +270,41 @@ if (isset($_POST['haplotype'])) {
 
 /*****************************************************************************************/
 /* DEM jun 2013: This section currently unused?  Replaced by phenotype/compare.php? */
-  //phenotype search has been made.
-  if(isset($_POST['phenotypecategory'])) {
+//phenotype search has been made.
+if (isset($_POST['phenotypecategory'])) {
     // Find all lines associated with the given phenotype data.
     $phenotype = $_POST['phenotype'];
-    if(isset($_POST['na_value']) && $_POST['na_value'] != "") {	// no range specified, single value
-      $value = $_POST['na_value'] == "" ? " " : $_POST['na_value'];
-      $search = mysqli_query($mysqli, "
-		  SELECT line_records.line_record_uid, line_record_name
-		  FROM line_records, tht_base, phenotype_data
-		  WHERE value REGEXP '$value'
-			  AND line_records.line_record_uid = tht_base.line_record_uid
-			  AND tht_base.tht_base_uid = phenotype_data.tht_base_uid
-			  AND phenotype_data.phenotype_uid = '$phenotype'
-		  ") or die(mysqli_error($mysqli));
+    if (isset($_POST['na_value']) && $_POST['na_value'] != "") {  // no range specified, single value
+        $value = $_POST['na_value'] == "" ? " " : $_POST['na_value'];
+        $search = mysqli_query($mysqli, "
+	  SELECT line_records.line_record_uid, line_record_name
+	  FROM line_records, tht_base, phenotype_data
+	  WHERE value REGEXP '$value'
+		  AND line_records.line_record_uid = tht_base.line_record_uid
+		  AND tht_base.tht_base_uid = phenotype_data.tht_base_uid
+		  AND phenotype_data.phenotype_uid = '$phenotype'
+	  ") or die(mysqli_error($mysqli));
+    } else {
+        $first = $_POST['first_value'] == "" ? getMaxMinPhenotype("min", $phenotype) : $_POST['first_value'];
+        $last = $_POST['last_value'] == "" ? getMaxMinPhenotype("max", $phenotype) : $_POST['last_value'];
+        $search = mysqli_query($mysqli, "
+	  SELECT line_records.line_record_uid, line_record_name
+	  FROM line_records, tht_base, phenotype_data
+	  WHERE value BETWEEN $first AND $last
+		  AND line_records.line_record_uid = tht_base.line_record_uid
+		  AND tht_base.tht_base_uid = phenotype_data.tht_base_uid
+		  AND phenotype_data.phenotype_uid = '$phenotype'
+	  ") or die(mysqli_error($mysqli));
     }
-    else {
-      $first = $_POST['first_value'] == "" ? getMaxMinPhenotype("min", $phenotype) : $_POST['first_value'];
-      $last = $_POST['last_value'] == "" ? getMaxMinPhenotype("max", $phenotype) : $_POST['last_value'];
-      $search = mysqli_query($mysqli, "
-		  SELECT line_records.line_record_uid, line_record_name
-		  FROM line_records, tht_base, phenotype_data
-		  WHERE value BETWEEN $first AND $last
-			  AND line_records.line_record_uid = tht_base.line_record_uid
-			  AND tht_base.tht_base_uid = phenotype_data.tht_base_uid
-			  AND phenotype_data.phenotype_uid = '$phenotype'
-		  ") or die(mysqli_error($mysqli));
+    if (mysqli_num_rows($search) < 1) {
+        echo "<p>Sorry, no records found<p>";
+    } else {
+        $found = array();
+        while ($line = mysqli_fetch_assoc($search)) {
+            array_push($found, "line_records@@line_record_name@@$line[line_record_uid]");
+        }
     }
-    if(mysqli_num_rows($search) < 1) 
-      echo "<p>Sorry, no records found<p>";
-    else {
-      $found = array();
-      while($line = mysqli_fetch_assoc($search)) 
-	array_push($found, "line_records@@line_record_name@@$line[line_record_uid]");
-    }
-  }
+}
 
 /*****************************************************************************************/
 ?>

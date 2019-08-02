@@ -17,7 +17,7 @@ ini_set('memory_limit', '4096M');
 require 'config.php';
 require $config['root_dir'] . 'includes/bootstrap.inc';
 require 'display_genotype_class.php';
-require 'downloads/marker_filter.php';
+require '../downloads/marker_filter.php';
 $mysqli = connecti();
 
 new ShowData($_REQUEST['function']);
