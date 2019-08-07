@@ -800,8 +800,8 @@ class Downloads
         global $mysqli;
         $browserLink['IWGSC1+popseq'] = "http://imar2016-plants.ensembl.org/Triticum_aestivum/Location/View?r=";
         $browserLink['Wheat_TGACv1'] = "http://plants.ensembl.org/Triticum_aestivum/Location/View?r=";
-        $browserLink['RefSeq_v1'] = "https://triticeaetoolbox.org/jbrowse/?data=wheat2016&loc=";
-        $browserLink['RefSeq1.1'] = "https://triticeaetoolbox.org/jbrowse/?data=wheat2016&loc=";
+        $browserLink['RefSeq_v1'] = "https://wheat.pw.usda.gov/jb?data=/ggds/whe-iwgsc2018&loc=";
+        $browserLink['RefSeq1.1'] = "https://wheat.pw.usda.gov/jb?data=/ggds/whe-iwgsc2018&loc=";
         $browserLink['Wheat_Pangenome'] = "https://triticeaetoolbox.org/jbrowse/?data=wheat2017&loc=";
         $browserLink['OatSeedRef90'] = "https://triticeaetoolbox.org/jbrowse/?data=oat&loc=";
         // get species
