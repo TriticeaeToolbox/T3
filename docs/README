@@ -395,10 +395,6 @@ search.inc -
         This library contains the functions associated with general searches. Advanced searches
         are not handled in this library, just general keyword searches.
 
-SpryEffects.js -
-        This is a 3rd party library provided by Adobe. This library is responsible for the nifty sliding
-        registration form found on the left when a user pushes "register" up by the login.
-
 traits.inc -
         This library contains phenotype related functions, including the biggest query we have. It's
         all actually fairly simple though.
