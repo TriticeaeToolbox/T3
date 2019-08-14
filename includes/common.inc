@@ -156,7 +156,7 @@ function get_pkey($tablename)
     if (!$result = mysqli_query($mysqli, "DESC $tablename")) {
         error_log("error in get_pkey $tablename");
         echo "pkey for table not found<br>\n";
-        return;
+        return null;
     }
     $pkey="";
     while ($row = mysqli_fetch_assoc($result)) {
@@ -193,7 +193,7 @@ function get_unique_name($table)
         if (!$q = mysqli_query($mysqli, "SHOW CREATE TABLE $table")) {
             error_log("error in get_unique_name $table");
             echo "unique name for table not found<br>\n";
-            return;
+            return null;
         }
         $row = mysqli_fetch_row($q);
         $parts = explode("\n", $row[1]);
@@ -206,6 +206,7 @@ function get_unique_name($table)
             }
         }
     }
+    return null;
 }
 
 /**
@@ -283,37 +284,37 @@ function add_attribute($key, $value, $tablename, $keyid)
     $value = addslashes($value);
 
     if (! isset($value) || $value=='') {
-	$value="N/A";
+        $value="N/A";
     }
 
     $result=mysqli_query($mysqli, "SELECT * FROM $tablename WHERE $key=\"$value\"");
-	$num_rows=mysqli_num_rows($result);
+    $num_rows=mysqli_num_rows($result);
 
-	if ($num_rows <= 0) {
-		mysqli_query($mysqli, "insert into $tablename ($key, created_on) values (\"$value\", NOW())") || die (mysqli_error($mysqli));
-		$id = mysqli_insert_id($mysqli);
-		$flag = 1;
-	}
-	else {
-		while( $row = mysqli_fetch_assoc($result)) {
+    if ($num_rows <= 0) {
+        mysqli_query($mysqli, "insert into $tablename ($key, created_on) values (\"$value\", NOW())") ||
+            die(mysqli_error($mysqli));
+        $id = mysqli_insert_id($mysqli);
+        $flag = 1;
+    } else {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $id = $row[$keyid];
+            $flag = 0;
+        }
+    }
+    if ($value == "N/A") {
+        $flag = -1;
+    }
+    return array($flag, $id);
+}
 
-			$id = $row[$keyid];
-			$flag = 0;
-		}
-	}	
-	if ($value == "N/A") {
-		$flag = -1;
-	}	
-	return array($flag, $id);
-}	
+function add_array_attributes($vals, $isnum, $tablename, $testKey, $testVal, $idkey)
+{
+    global $mysqli;
+    $keystr="";
+    $valstr="";
 
-function add_array_attributes($vals, $isnum, $tablename, $testKey, $testVal, $idkey) {
-global $mysqli;
-	$keystr="";
-	$valstr="";
-
-	$vsize=count($vals);
-	$ks=array_keys($vals);
+    $vsize=count($vals);
+    $ks=array_keys($vals);
 
 	$id=-1;
 
@@ -1358,6 +1359,7 @@ function isRecord($table, $id) {
     // else, nothing found
     return FALSE;
   }
+  return FALSE;
 }
  
 
