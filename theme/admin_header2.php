@@ -162,7 +162,7 @@ $lang = array(
       <li><a href="<?php echo $config['base_url']; ?>downloads/bulk_download.php" title="Download all records from database">Bulk Download</a>
       <li><a href="<?php echo $config['base_url']; ?>downloads/tablet_export.php" title="Tablet export">
             Android Field Book</a>
-      <li><a href="<?php echo $config['base_url']; ?>maps.php" title="Genetic Maps">Genetic Maps</a>
+      <li><a href="<?php echo $config['base_url']; ?>maps/maps.php" title="Genetic Maps">Genetic Maps</a>
       </ul>
     <li><a href="" title="">Search</a><ul>
     <?php

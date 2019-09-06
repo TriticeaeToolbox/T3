@@ -7,6 +7,8 @@
  * @license http://triticeaetoolbox.org/wheat/docs/LICENSE Berkeley-based
  * @link    http://triticeaetoolbox.org/wheat/maps.php
  *
+ * todo - should switch to CSV because it will be faster and support greater than 64,000 rows
+ *
  * 04/04/2013   C.Birkett make column height dynamic so scroll bars are not used
  * 06/22/2012   C.Birkett sort each column so rows are aligned, move style sheet to top
  * 1apr12 dem: Small cleanups.  Needs work.
@@ -105,7 +107,7 @@ h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
         td.marker
         { border: 1 !important; }
         </style>
-<a href="map_flapjack.php">Download a complete Map Set</a>, all chromosomes.<p>
+<a href="maps/map_flapjack.php">Download a complete Map Set</a>, all chromosomes.<p>
         <?php
         $sql = "select value from settings where name = \"database\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
@@ -209,14 +211,14 @@ h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
 
 /*
 Function for loading Markers dropdown table
-*/			
+*/
 
-		function load_markers()
-		{
-		$('markers_loader').hide();
-                
-		new Ajax.Updater(
-                    $('markers_loader'),
+    function load_markers()
+    {
+	$('markers_loader').hide();
+
+	new Ajax.Updater(
+           $('markers_loader'),
                     '<?php echo $_SERVER['PHP_SELF'] ?>?function=typeMarkers' + '&mp=' + maps_str, {
                         method: 'get',
                         onComplete: function() {
