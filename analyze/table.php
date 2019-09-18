@@ -27,7 +27,8 @@ only expected to differ by more than the Least Significant Difference (<em>LSD</
 in 5% of experiments. 
 If a number of lines have the same true mean value, the maximum difference
 between any pair of lines is only expected to exceed the Honestly
-Significant Difference (<em>HSD</em>) in 5% of experiments.<br>
+Significant Difference (<em>HSD</em>) in 5% of experiments.<br><br>
+This analysis requires that the selected traits have some measurements in each of the selected trials. When selecting, use the "trials with all traits" option.<br>
 
 </div>
 
@@ -317,28 +318,28 @@ if (!$traits or !$trials) {
         foreach ($traits as $trait) {
             $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
             $unit_name = mysql_grab("select unit_name from phenotypes, units where phenotypes.unit_uid = units.unit_uid and phenotype_uid = $trait");
-    if (!$lsds[$traitnumber]) {
-      $lsdround = "--";
-    } else {
-      $lsdround = round($lsds[$traitnumber], 2);
-    }
-    if (!$hsds[$traitnumber]) {
-      $hsdround = "--";
-    } else {
-      $hsdround = round($hsds[$traitnumber], 2);
-    }
-    print "<p id=\"$traitnumber\"></p>";
-    print "<table><tr><th>Trait: $trtname<br>$unit_name<br>LSD = $lsdround<br>HSD = $hsdround";
-    //skip trials where trait not measured
-    if (!isset($trialnames[$traitnumber])) {
-        continue;
-    }
-    foreach ($trialnames[$traitnumber] as $trial) {
-      $trialname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
-      print "<th><a href='display_phenotype.php?trial_code=$trialname'>$trialname</a>";
-    }
-    print "<th>LSmeans";
-    $linenumber = 0;
+            if (!$lsds[$traitnumber]) {
+                $lsdround = "--";
+            } else {
+                $lsdround = round($lsds[$traitnumber], 2);
+            }
+        if (!$hsds[$traitnumber]) {
+            $hsdround = "--";
+        } else {
+            $hsdround = round($hsds[$traitnumber], 2);
+        }
+        print "<p id=\"$traitnumber\"></p>";
+        print "<table><tr><th>Trait: $trtname<br>$unit_name<br>LSD = $lsdround<br>HSD = $hsdround";
+        //skip trials where trait not measured
+        if (!isset($trialnames[$traitnumber])) {
+            continue;
+        }
+        foreach ($trialnames[$traitnumber] as $trial) {
+            $trialname = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
+            print "<th><a href='display_phenotype.php?trial_code=$trialname'>$trialname</a>";
+        }
+        print "<th>LSmeans";
+        $linenumber = 0;
     foreach ($lines as $line) {
       if ($_GET['filter'] == 'no') {
       } elseif (isset($_SESSION['selected_lines']) && !in_array($line, $selected_lines)) {
