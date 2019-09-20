@@ -1023,7 +1023,7 @@ class Downloads
                  <td><b>VCF</b> format<br>used by <b>TASSEL</b>
                  <tr><td><input type="button" value="Create file" onclick="javascript:use_session('vcfb');">
                  <td><b>VCF</b> format<br>Impute missing genotypes using <a target="_new" href="https://faculty.washington.edu/browning/beagle/beagle.html">Beagle</a>
-                 <td>using beagle.10Jun18.811.jar (version 5.0)
+                 <td>using beagle.12Jul19.0df.jar (version 5.0)
                  <?php
              }
              echo "</table>";

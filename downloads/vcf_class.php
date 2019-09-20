@@ -80,6 +80,7 @@ function filterVCF()
 
 /** used to create VCF file from genotype experiment selection for TASSEL **/
 /** does not sort by position and does not work for large exeriments **/
+/** 03/21/2019 added check to replace line synonym with primary line name **/
 function createVcfDownload($unique_str, $min_maf = 5, $max_missing = 50, $impute = false)
 {
     global $config;
@@ -162,9 +163,27 @@ function createVcfDownload($unique_str, $min_maf = 5, $max_missing = 50, $impute
         if ($row = mysqli_fetch_array($res)) {
             $name[] = $row[0];
         } elseif (isset($name_list[$key])) {
-            $name[] = $name_list[$key];
+            $tmp = $name_list[$key];
+            $sql = "select line_record_name from line_records, line_synonyms
+                where line_records.line_record_uid = line_synonyms.line_record_uid
+                and line_synonym_name = \"$tmp\"";
+            $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            if ($row2 = mysqli_fetch_array($res2)) {
+                $name[] = $row2[0];
+                echo "Warning: replacing synonym $tmp with $row2[0]\n";
+            } else {
+                $sql = "select line_record_name from line_records where line_record_name like \"$tmp%\"";
+                $res3 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+                if ($row3 = mysqli_fetch_array($res3)) {
+                    $name[] = $row3[0];
+                    //echo "Warning: replacing $tmp with closest match $row3[0]<br>\n";
+                } else {
+                    $name[] = $tmp;
+                    echo "Error: Can not find valid line_record_name for uid = $uid name = $tmp\n";
+                }
+            }
         } else {
-            die("Error: no name for $uid $key\n");
+            die("Error: no name for $uid $tmp\n");
         }
     }
     $outputheader = implode("\t", $name);
@@ -183,7 +202,9 @@ function createVcfDownload($unique_str, $min_maf = 5, $max_missing = 50, $impute
         'NA' => './.',   //--
         '' => './.'
     );
+    $cnt = 0;
     $unk_cnt = 0;
+    $count_nomap = 0;
     $unk_loc = "";
     $dup_loc = array();
     $sql = "select markers.marker_uid, markers.marker_name, A_allele, B_allele, chrom, pos, alleles
@@ -192,6 +213,7 @@ function createVcfDownload($unique_str, $min_maf = 5, $max_missing = 50, $impute
         AND experiment_uid = $geno_exp";
     $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql<br>");
     while ($row = mysqli_fetch_array($res)) {
+        $cnt++;
         $marker_uid = $row[0];
         $marker_name = $row[1];
         $ref = $row[2];
@@ -200,11 +222,15 @@ function createVcfDownload($unique_str, $min_maf = 5, $max_missing = 50, $impute
         $pos = $row[5];
         $alleles = $row[6];
         if (($ref == "") || ($alt == "")) {
+            echo "skip no ref alt $marker_name\n";
             continue;
         }
         if (isset($marker_list_mapped[$marker_uid])) {
             $chrom = $marker_list_chr[$marker_uid];
             $pos = $marker_list_mapped[$marker_uid];
+        } else {
+            $count_nomap++;
+            continue;
         }
         if (isset($marker_lookup[$marker_uid])) {
             if (empty($chrom)) {
@@ -233,7 +259,16 @@ function createVcfDownload($unique_str, $min_maf = 5, $max_missing = 50, $impute
                 $out_list[$marker_name] = "$chrom\t$pos\t$marker_name\t$ref\t$alt\t.\tPASS\t.\tGT\t$allele_str\n";
             }
             $unique[$index] = 1;
+        } else {
+            //echo "$marker_uid not found\n";
         }
+    }
+    if ($count_nomap > 0) {
+        echo "markers with no map = $count_nomap<br>\n";
+    }
+    $count_mapped = count($chrom_list);
+    if ($count_mapped > 0) {
+        echo "markers with mapped position = $count_mapped<br>\n";
     }
     //asort($index_list, SORT_NATURAL);
     array_multisort($chrom_list, $pos_list, $mark_list);
@@ -242,18 +277,14 @@ function createVcfDownload($unique_str, $min_maf = 5, $max_missing = 50, $impute
         fwrite($fh1, $out_list[$key]);
     }
     fclose($fh1);
-    $density =  (count($index_list) / count($chr_list));
-    if (($density < 500) && $impute) {
-        $options = "window=500 overlap=50";
-        echo "Warning: low marker density using $options<br>\n";
-    } else {
-        $options = "";
-    }
     if (!empty($unk_loc)) {
         if ($unk_cnt < 10) {
             echo "location not defined in map: $unk_loc<br><br>\n";
         } else {
-            echo "<font color=red>Warning:</font> $unk_cnt markers have no location and will not be in download file.<br><br>\n";
+            echo "Warning: $unk_cnt out of $cnt markers have no location and will not be in download file.\n";
+            if (isset($config)) {
+                echo "<br><br>";
+            }
         }
     }
     if (!empty($dup_loc)) {
@@ -267,12 +298,25 @@ function createVcfDownload($unique_str, $min_maf = 5, $max_missing = 50, $impute
         }
     }
     if ($impute) {
+        if (count($chr_list) > 0) {
+            $density =  (count($index_list) / count($chr_list));
+            if (($density < 500) && $impute) {
+                $options = "window=500 overlap=50";
+                echo "Warning: low marker density using $options<br>\n";
+            } else {
+                $options = "";
+            }
+        } else {
+            die("Error: no chromosomes in map\n");
+        }
+
+
         $count = count($out_list);
         if ($count > 10000) {
-            $cmd = "java -jar /usr/local/bin/beagle.10Jun18.811.jar $options gt=$filename1 out=$filename2 > /dev/null 2> $logfile1 &";
+            $cmd = "java -jar /usr/local/bin/beagle.12Jul19.0df.jar $options gt=$filename1 out=$filename2 > /dev/null 2> $logfile1 &";
             echo "For over 10,000 markers the process will run in background. Check link until genotype_imputed.log indicates the job has finished<br>\n";
         } else {
-            $cmd = "java -jar /usr/local/bin/beagle.10Jun18.811.jar $options gt=$filename1 out=$filename2 > /dev/null 2> $logfile1";
+            $cmd = "java -jar /usr/local/bin/beagle.12Jul19.0df.jar $options gt=$filename1 out=$filename2 > /dev/null 2> $logfile1";
         }
         exec($cmd);
     }
@@ -341,12 +385,12 @@ function createVcfBeagle()
             $trial_code = $row[0];
             fwrite($h, "Target Trial Code = $trial_code\n");
         }
-        $chr = $_GET['chr'];
-        $f1 = "raw/genotype/WEC_filtered_SNPs.vcf";
-        typeVcfExpMarkersDownload($geno_exp, $ref_line, $chr, $min_maf, $max_missing, $h1, $h2);
+        //$chr = $_GET['chr'];
+        //$f1 = "raw/genotype/WEC_filtered_SNPs.vcf";
+        //typeVcfExpMarkersDownload($geno_exp, $ref_line, $chr, $min_maf, $max_missing, $h1, $h2);
         fclose($h);
-        fclose($h1);
-        fclose($h2);
+        //fclose($h1);
+        //fclose($h2);
    
         $infile2 = "$tmpdir/download_$unique_str/reference_cont_phased";   //refernece phased
         $infile3 = "$tmpdir/download_$unique_str/genotype.vcf";            //target file
@@ -355,7 +399,7 @@ function createVcfBeagle()
         $logfile2 = "$tmpdir/download_$unique_str/process_error2.txt";
         $logfile3 = "$tmpdir/download_$unique_str/process_error3.txt";
         $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile3 out=$infile4 > /dev/null 2> $logfile2";
-        $cmd = "java -jar /usr/local/bin/beagle.27Jul16.86a.jar gt=$infile3 out=$infile4 window=5000 overlap=500 > /dev/null 2> $logfile2";
+        $cmd = "java -jar /usr/local/bin/beagle.28Sep18.793.jar gt=$infile3 out=$infile4 > /dev/null 2> $logfile2";
         //echo "Creating a phased genotype\n";
         //exec($cmd);
 
@@ -421,7 +465,7 @@ function runBeagle()
     $infile2 = "/var/www/html/t3/wheat/raw/genotype/" . $chr . "_WEC_var_phased.vcf.gz";
 
     $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile3 out=$infile4 > /dev/null 2> $logfile2";
-    $cmd = "java -jar /usr/local/bin/beagle.27Jul16.86a.jar gt=$infile3 out=$infile4 window=5000 overlap=500 > /dev/null 2> $logfile2";
+    $cmd = "java -jar /usr/local/bin/beagle.28Sep18.793.jar gt=$infile3 out=$infile4 > /dev/null 2> $logfile2";
     echo "<br>Creating a phased genotype.<br>$cmd\n";
     exec($cmd);
 
@@ -432,7 +476,7 @@ function runBeagle()
 
     $infile6 .= ".vcf.gz";
     $cmd = "java -jar /usr/local/bin/beagle.r1399.jar gt=$infile6 ref=$infile2 out=$outfile1 nthreads=20 window=5000 overlap = 500 > /dev/null 2> $logfile4";
-    $cmd = "java -jar /usr/local/bin/beagle.27Jul16.86a.jar gt=$infile6 ref=$infile2 out=$outfile1 nthreads=20 window=5000 overlap=500 > /dev/null 2> $logfile4";
+    $cmd = "java -jar /usr/local/bin/beagle.28Sep18.793.jar gt=$infile6 ref=$infile2 out=$outfile1 nthreads=20 > /dev/null 2> $logfile4";
     echo "<br>Running beagle.r1399 to impute target<br>\n$cmd\n";
     exec($cmd);
     $outfile1 .= ".vcf.gz";

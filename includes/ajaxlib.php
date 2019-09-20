@@ -127,20 +127,20 @@ function InsertByAjax($arr)
         }
     }
     // take care of created_on and updated_on
-	$result=mysqli_query($mysqli, "show columns from $tablename");
-	$tbl_fields=array();
-	if (mysqli_num_rows($result)>0) {
-		while ($row = mysqli_fetch_assoc($result)) {
-			array_push($tbl_fields, $row['Field']);
-		}
-	}
-	if (in_array('created_on', $tbl_fields)) {
-		$vals['created_on']='now()';
-		array_push($isnum, 1);
-		$vals['updated_on']='now()';
-		array_push($isnum, 1);
-	}
-	if (in_array('published_on', $tbl_fields)) {
+    $result=mysqli_query($mysqli, "show columns from $tablename");
+    $tbl_fields=array();
+    if (mysqli_num_rows($result)>0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            array_push($tbl_fields, $row['Field']);
+        }
+    }
+    if (in_array('created_on', $tbl_fields)) {
+        $vals['created_on']='now()';
+        array_push($isnum, 1);
+        $vals['updated_on']='now()';
+        array_push($isnum, 1);
+    }
+    if (in_array('published_on', $tbl_fields)) {
 		$vals['published_on']='now()';
 		array_push($isnum, 1);
 	}
@@ -977,7 +977,8 @@ function DispMapSel($arr)
     }
 }
 
-function DispExperiment ($arr) {
+function DispExperiment($arr)
+{
     global $mysqli;
     if (! isset($arr['platform'])) {
         print "Invalid input of platform";
@@ -988,9 +989,15 @@ function DispExperiment ($arr) {
     ?>
     <table><tr><td><select name='expt[]' size=10 multiple onchange="javascript: update_exper(this.options)">
     <?php
-    $result=mysqli_query($mysqli, "select experiments.experiment_uid, trial_code from experiments, genotype_experiment_info 
+    $sql = "select experiments.experiment_uid, trial_code from experiments, genotype_experiment_info 
         where experiments.experiment_uid = genotype_experiment_info.experiment_uid
-        and genotype_experiment_info.platform_uid IN ($platform)") or die(mysqli_error($mysqli));
+        and genotype_experiment_info.platform_uid IN ($platform)";
+    if (!authenticate(array(USER_TYPE_PARTICIPANT,
+        USER_TYPE_CURATOR,
+        USER_TYPE_ADMINISTRATOR))) {
+        $sql .= " and data_public_flag > 0";
+    }
+    $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
     while ($row=mysqli_fetch_assoc($result)) {
         $uid=$row['experiment_uid'];
         $val=$row['trial_code'];
@@ -1004,7 +1011,8 @@ function DispExperiment ($arr) {
     <?php
 }
 
-function SelcMarkerSet ($arr) {
+function SelcMarkerSet($arr)
+{
     global $mysqli;
     if (! isset($arr['set'])) {
         print "Invalid input of marker panel";
