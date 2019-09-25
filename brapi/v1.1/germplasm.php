@@ -13,28 +13,59 @@ $rest = str_replace($script, "", $self);
 $rest = explode("/", $rest);
 header("Content-Type: application/json");
 
+$germplasmName = "";
+$currentPage = 0;
 if (!empty($rest[0])) {
     $lineuid = $rest[0];
-} elseif (isset($_GET['germplasmDbId'])) {
-    $lineuid = $_GET['germplasmDbId'];
+} elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
+    if (isset($_POST['germplasmDbId'])) {
+        $lineuid = $_POST['germplasmDbId'];
+    }
+    if (isset($_POST['matchMethod'])) {
+        $matchMethod = $_POST['matchMethod'];
+    } else {
+        $matchMethod = null;
+    }
+    if (isset($_POST['pageSize'])) {
+        $pageSize = $_POST['pageSize'];
+    } else {
+        $pageSize = 1000;
+    }
+    if (isset($_POST['page'])) {
+        $currentPage = $_POST['page'];
+    }
+    if (isset($_POST['germplasmName'])) {
+        $germplasmName = $_POST['germplasmName'];
+    }
+} elseif ($_SERVER['REQUEST_METHOD'] == 'GET') {
+    if (isset($_GET['germplasmDbId'])) {
+        $lineuid = $_GET['germplasmDbId'];
+    }
+    // Extract the URI's querystring, ie "name={name}".
+    if (isset($_GET['matchMethod'])) {
+        $matchMethod = $_GET['matchMethod'];
+    } else {
+        $matchMethod = null;
+    }
+    if (isset($_GET['pageSize'])) {
+        $pageSize = $_GET['pageSize'];
+    } else {
+        $pageSize = 1000;
+    }
+    if (isset($_GET['page'])) {
+        $currentPage = $_GET['page'];
+    }
+    if (isset($_GET['germplasmName'])) {
+        $germplasmName = $_GET['germplasmName'];
+    }
+} elseif ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+    header("Content-Type: application/json");
+    die();
+} else {
+    dieNice("Error", "invalid request method");
 }
 
-// Extract the URI's querystring, ie "name={name}".
-if (isset($_GET['matchMethod'])) {
-    $matchMethod = $_GET['matchMethod'];
-} else {
-    $matchMethod = null;
-}
-if (isset($_GET['pageSize'])) {
-    $pageSize = $_GET['pageSize'];
-} else {
-    $pageSize = 1000;
-}
-if (isset($_GET['page'])) {
-    $currentPage = $_GET['page'];
-} else {
-    $currentPage = 0;
-}
 
 $r['metadata']['status'] = array();
 $r['metadata']['datafiles'] = array();
@@ -65,7 +96,7 @@ if ($rest[1] == "pedigree") {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $line_record_name, $pedigree);
         if (mysqli_stmt_fetch($stmt)) {
-            $response["germplasmDbId"] = $lineuid;
+            $response["germplasmDbId"] = "$lineuidi";
             $response['defaultDisplayName'] = $line_record_name;
             if (preg_match("/[A-Za-z0-9]/", $pedigree)) {
                 $response['pedigree'] = $pedigree;
@@ -86,17 +117,17 @@ if ($rest[1] == "pedigree") {
         mysqli_stmt_bind_result($stmt, $line_record_name, $parent_id);
         while (mysqli_stmt_fetch($stmt)) {
             if (isset($response['parent1DbId'])) {
-                $response['parent2DbId'] = $parent_id;
+                $response['parent2DbId'] = "$parent_id";
                 $response['parent2Name'] = $line_record_name;
             } else {
-                $response['parent1DbId'] = $parent_id;
+                $response['parent1DbId'] = "$parent_id";
                 $response['parent1Name'] = $line_record_name;
             }
         }
         mysqli_stmt_close($stmt);
     }
     /* if not found in pedigree_relations then look in line_records */
-    if (!isset($response['parent1Id'])) {
+    if (!isset($response['parent1DbId'])) {
         if (preg_match("/^([^\/]+)\/([^\/]+)/", $pedigree, $match)) {
             $response['parent1Name'] = trim($match[1]);
             $response['parent2Name'] = trim($match[2]);
@@ -189,12 +220,12 @@ if ($rest[1] == "pedigree") {
     $r['metadata']['pagination']['totalPages'] = 1;
     $r['result'] = $response;
     echo json_encode($r);
-} elseif (!empty($_GET['germplasmName'])) {
+} elseif (preg_match("/[A-Za-z]/", $germplasmName)) {
     // "Germplasm ID by Name".  URI is germplasm?name={name}
-    $linename = $_GET['germplasmName'];
+    $linename = $germplasmName;
     if ($matchMethod == "wildcard") {
         $sql = "select line_record_uid, line_record_name, pedigree_string from line_records where line_record_name like ?";
-        $linename = "%" . $linename . "%";
+        $linename = "%" . $germplasmName . "%";
     } else {
         $sql = "select line_record_uid, line_record_name, pedigree_string from line_records where line_record_name = ?";
     }
