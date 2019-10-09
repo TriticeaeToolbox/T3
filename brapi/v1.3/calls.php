@@ -55,7 +55,7 @@ $ourcalls['traits'] = ['datatypes' => ['application/json'], 'methods' => ['GET']
 $ourcalls['maps'] = ['datatypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
 $ourcalls['maps/{mapDbId}'] = ['datatypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
 $ourcalls['maps/{mapDbId}/positions'] = ['datatypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
-$ourcalls['crops'] = ['datatypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
+$ourcalls['commonCropNames'] = ['datatypes' => ['application/json'], 'methods' => ['GET'], 'versions' => ["1.3"]];
 $ourcalls['locations'] = ['datatypes' => ['application/json'], 'methods' => ["GET"], 'versions' => ["1.3"]];
 $ourcalls['markers'] = ['datatypes' => ['application/json'], 'methods' => ["GET"], 'versions' => ["1.3"]];
 $ourcalls['markers/{markerDbId}'] = ['datatypes' => ["application/json"], 'methods' => ["GET"], 'versions' => ["1.3"]];
