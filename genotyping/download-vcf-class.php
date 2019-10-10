@@ -54,20 +54,24 @@ class SelectMarkers
 
         $option1 = "1kEC_genotype01222019";
         $option2 = "1kEC_genotype01222019f";
+        $option3 = "all_filtered_snps_allaccessions_allploidy_snpeff";
         if ($trial == $option1) {
             $option1 .= " selected";
         } elseif ($trial == $option2) {
             $option2 .= " selected";
+        } elseif ($trial == $option3) {
+            $option3 .= " selected";
         }
         ?>
         <table>
         <tr><td>Genotype trial:<td><select id="trial">
             <option value=<?php echo $option1 ?>>2019_Diversity_GBS</option>
             <option value=<?php echo $option2 ?>>2019_Diversity_GBS filtered</option>
+            <option value=<?php echo $option3 ?>>2017_WheatCAP_UCD</option>
             </select>
         <tr><td>Chromosome:<td><select id="chrom">
-        <option>select</option>
         <?php
+        echo "<option>select</option>\n";
         $count = 0;
 
         $file_chr = "1kEC_chromosomes.txt";
@@ -100,33 +104,27 @@ class SelectMarkers
         $found_list = array();
         if (isset($_GET['function']) && !empty($_GET['function'])) {
             $trial = $_GET['trial'];
-            $chrom = $_GET['chrom'];
             if (preg_match("/([A-Za-z0-9_]+)/", $trial, $match)) {
                 $trial = $match[1];
             } else {
                 die("Select a genotype trial");
             }
+            $chrom = $_GET['chrom'];
+            if (preg_match("/(\w*[A-Z0-9]+)/", $chrom, $match)) {
+                $chrom = $match[1];
+            } else {
+                die("Select a chromosome");
+            }
+
             $file = "/data/wheat/" . $trial . ".vcf.gz";
+            $file = "/var/www/html/t3/wheat/raw/genotype/" . $trial . ".vcf.gz";
             $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
             $dir = "/tmp/tht/download_" . $unique_str;
             mkdir($dir);
             $filename1 = $dir . "/genotype.vcf";
             $filename2 = $dir . "/proc_error.txt";
 
-            $file_hdr = "1kEC_header.txt";
-            if (file_exists("1kEC_header.txt")) {
-                $fh = fopen("1kEC_header.txt", "r");
-                $header = fgets($fh);
-                $header = trim($header);
-                fclose($fh);
-                $fh = fopen($filename1, "w");
-                fwrite($fh, "$header\n");
-                fclose($fh);
-            } else {
-                echo "Error: header file not found<br>\n";
-            }
-
-            $cmd = "tabix $file $chrom:$start-$stop >> $filename1 2> $filename2";
+            $cmd = "tabix -h $file $chrom:$start-$stop > $filename1 2> $filename2";
             //echo "$cmd<br>\n";
             exec($cmd);
         
@@ -141,10 +139,10 @@ class SelectMarkers
             $count = 0;
             if (file_exists("$filename1")) {
                 $fh = fopen($filename1, "r");
-                $header = fgets($fh);
                 while (!feof($fh)) {
                     $line = fgets($fh);
-                    if (preg_match("/\w/", $line)) {
+                    if (preg_match("/^#/", $line)) {
+                    } elseif (preg_match("/\w/", $line)) {
                         $count++;
                     }
                 }
