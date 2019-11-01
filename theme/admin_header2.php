@@ -22,7 +22,6 @@
 <base href="<?php echo $config['base_url']; ?>">
 <script type="text/javascript" src="includes/core.js"></script>
 <script type="text/javascript" src="theme/new.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.3.0/prototype.js"></script>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <script src="//code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
@@ -33,7 +32,6 @@
 <link href="theme/sm-core-css.css" rel="stylesheet" type="text/css">
 <link href="theme/sm-cleant3.css" rel="stylesheet" type="text/css">
 <script>
-jQuery.noConflict();  //by default jQuery uses $ as shortcut for jQuery. To avoid conflict with prototype.js
 jQuery( document ).ready(function( $ ) {
     $('#main-menu').smartmenus();
 });
@@ -310,8 +308,15 @@ $lang = array(
   <li>
   <a href="" title="<?php echo $lang["desc_sc2"]; ?>">Resources</a>
   <ul>
-    <li><a href="https://galaxy.triticeaetoolbox.org" target="_blank">SNP Primer Design, Galaxy Platform</a>
-    <li><a href="http://tcapg.ag.cornell.edu/primer_filter" target="_blank">KASP Primer Design, R Shiny</a>
+    <?php
+    $results = mysql_grab("SHOW tables like 'marker_primers'");
+    if ($results == "marker_primers") {
+        ?>
+        <li><a href="https://galaxy.triticeaetoolbox.org" target="_blank">SNP Primer Design, Galaxy Platform</a>
+        <li><a href="http://tcapg.ag.cornell.edu/primer_filter" target="_blank">KASP Primer Design, R Shiny</a>
+        <?php
+    }
+    ?>
     <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">Overview</a>
     <li><a href="<?php echo $config['base_url']; ?>tutorials" title="Tutorials">Tutorials</a>
     <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Content Status</a>
