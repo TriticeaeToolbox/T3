@@ -21,7 +21,7 @@ if (preg_match("/wheat/", $database)) {
     <li><a href=tutorials/TutorialEcoTILLING.pdf>Eco TILLING BLAST</a>
     <li><a href=tutorials/Tutorial_Designed_Primers.pdf>Designed Primers</a>
     <li><a href=tutorials/Tutorial_KnetMiner.pdf>KnetMiner</a>
-    <li><a href=tutorials/SNP_PrimerDesignPipelineTutorial>SNP Primer Design Pipeline</a>
+    <li><a href=tutorials/SNP_PrimerDesignPipelineTutorial.pdf>SNP Primer Design Pipeline</a>
     <?php
 }
 ?>
