@@ -159,7 +159,7 @@ if ($action == "list") {
     } else {
         $results['metadata']['status'][] = array("code" => "sql error", "message" => "error connecting to database");
     }
-    $results["linkageGroups"] = array();
+    //$results["linkageGroups"] = array();
     $sql = "select count(markers.marker_uid), max(end_position) ,chromosome
         from markers_in_maps, markers, map
         where markers_in_maps.marker_uid = markers.marker_uid

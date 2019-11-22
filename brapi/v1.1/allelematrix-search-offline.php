@@ -50,7 +50,7 @@ if (preg_match("/,/", $markerProfile)) {
             $previd = $expid;
             $found = 0;
             if ($format == "tsv") {
-                $sql1 = "select line_name_index from allele_bymarker_expidx where experiment_uid = $expid";
+                $sql1 = "select marker_index from allele_byline_expidx where experiment_uid = $expid";
                 $res = mysqli_query($mysqli, $sql1) or die("Error mysqli_error($mysqli)\n");
                 if ($row = mysqli_fetch_row($res)) {
                     $line_index = json_decode($row[0], true);

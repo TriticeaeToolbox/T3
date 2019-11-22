@@ -288,7 +288,7 @@ class SelectPhenotypeExp
                         $stmt = $mysqli->prepare($sql);
                         $stmt->bind_param('i', $experiments);
                     } else {
-                        $sql = "SELECT DISTINCT lr.line_record_uid as id, lr.line_record_name  
+                        $sql = "SELECT DISTINCT lr.line_record_uid as id  
                         FROM tht_base as tb, phenotype_data as pd, phenotypes as p, line_records as lr
                         WHERE
                         pd.tht_base_uid = tb.tht_base_uid
@@ -407,23 +407,23 @@ class SelectPhenotypeExp
         <?php
     }
 
-	
-	/**
-	 * starting with phenotype display phenotype categories
-	 */
-	private function step1_phenotype()
-	{
-            global $mysqli;
-		?>
-		<div id="step11">
+
+    /**
+     * starting with phenotype display phenotype categories
+     */
+    private function step1_phenotype()
+    {
+        global $mysqli;
+        ?>
+	<div id="step11">
         <table id="phenotypeSelTab" class="tableclass1">
-		<tr>
-			<th>Category</th>
-		</tr>
-		<tr><td>
-			<select name="phenotype_categories" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_categories(this.options)">
-                <?php
-                $sql = "SELECT distinct(phenotype_category.phenotype_category_uid) AS id, phenotype_category_name AS name from phenotype_category, phenotypes
+	<tr>
+		<th>Category</th>
+	</tr>
+	<tr><td>
+	<select name="phenotype_categories" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_categories(this.options)">
+        <?php
+        $sql = "SELECT distinct(phenotype_category.phenotype_category_uid) AS id, phenotype_category_name AS name from phenotype_category, phenotypes
                     where phenotype_category.phenotype_category_uid = phenotypes.phenotype_category_uid";
 		$res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
 		while ($row = mysqli_fetch_assoc($res))

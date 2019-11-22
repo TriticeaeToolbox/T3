@@ -210,7 +210,6 @@ $lang = array(
         if ($results == "marker_primers") {
             ?>
             <li><a href="<?php echo $config['base_url']; ?>genotyping/polymarker.php" title="Designed Markers">PolyMarker Designed Primers</a>
-            <li><a href="http://tcapg.ag.cornell.edu/primer_filter/" title="KASP Filter for Exome Capture" target="_new">KASP primer design</a>
             <?php
         }
         $results = mysql_grab("SHOW tables like 'marker_report_reference'");
@@ -311,6 +310,15 @@ $lang = array(
   <li>
   <a href="" title="<?php echo $lang["desc_sc2"]; ?>">Resources</a>
   <ul>
+    <?php
+    $results = mysql_grab("SHOW tables like 'marker_primers'");
+    if ($results == "marker_primers") {
+        ?>
+        <li><a href="https://galaxy.triticeaetoolbox.org" target="_blank">SNP Primer Design, Galaxy Platform</a>
+        <li><a href="http://tcapg.ag.cornell.edu/primer_filter" target="_blank">KASP Primer Design, R Shiny</a>
+        <?php
+    }
+    ?>
     <li><a href="<?php echo $config['base_url']; ?>about.php" title="Description, contributors">Overview</a>
     <li><a href="<?php echo $config['base_url']; ?>tutorials" title="Tutorials">Tutorials</a>
     <li><a href="<?php echo $config['base_url']; ?>t3_report.php" title="Current summary of data loaded">Content Status</a>

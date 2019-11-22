@@ -80,7 +80,7 @@ if (($lineuid != "") && ($expuid != "")) {
     $response['metadata']['pagination']['pageSize'] = $pageSize;
     $response['metadata']['pagination']['currentPage'] = $currentPage;
 
-    $linearray['markerprofileDbId'] = $lineuid;
+    $linearray['markerprofileDbId'] = $profileid;
     $linearray['germplasmDbId'] = $lineuid;
     // Get the number of non-missing allele data points for this line, by experiment.
     $sql = "select line_record_name, count, alleles from allele_byline_exp_ACTG
@@ -134,6 +134,7 @@ if (($lineuid != "") && ($expuid != "")) {
         $linearray['markerprofileDbId'] = $lineuid . "_" . $row[0];
         $linearray['germplasmDbId'] = $lineuid;
         $linearray['uniqueDisplayName'] = $row[1];
+        $linearray['sampleDbId'] = "";
         $linearray['extractDbId'] = "";
         $analysisMethod = mysql_grab(
             "select platform_name from platform p, genotype_experiment_info g
@@ -141,6 +142,7 @@ if (($lineuid != "") && ($expuid != "")) {
             and g.experiment_uid = $expuid"
         );
         $linearray['analysisMethod'] = $analysisMethod;
+        $linearray['resultCount'] = 1;
         $data[] = $linearray;
     }
     $response['result']['data'] = $data;
