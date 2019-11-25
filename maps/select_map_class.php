@@ -79,8 +79,10 @@ class Maps
         <div id=step3></div>
         <div id=step4><br>
         <button onclick="javascript: load_markersInMap(<?php echo $mapset_list ?>)">
-        Calculate markers in map for selected lines</button>
+        Calculate markers in map</button><br><br>
         </div>
+        If markers are selected, this count will report the number of selected markers in each of the maps.<br>
+        If lines are selected, this count will report the number of genotyped markers for those lines that are in each of the maps.<br>
         <?php
         if (isset($_SESSION['selected_map'])) { ?>
             <script type="text/javascript">
