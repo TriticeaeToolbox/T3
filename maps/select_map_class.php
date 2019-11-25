@@ -132,7 +132,7 @@ class Maps
         echo "If a marker is not in the the selected map set then it will be assigned to chromosome 0.<br><br>\n";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         echo "<table>\n";
-        echo "<tr><td>select<td>markers<br>(total)<td>markers<br>(in selected lines)<td>map set name<td>comment (select item for complete text)\n";
+        echo "<tr><td>select<td>markers<br>(total)<td>markers<br>(in selection)<td>map set name<td>comment (select item for complete text)\n";
         while ($row = mysqli_fetch_assoc($res)) {
             $count = $row["countm"];
             $val = $row["mapset_name"];
