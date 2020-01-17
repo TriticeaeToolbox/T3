@@ -40,10 +40,14 @@ if (isset($_GET['uid'])) {
         mysqli_stmt_close($stmt);
     }
 
-    echo "<table>";
-    echo "<tr><td>";
-    foreach ($trial_list as $trial1 => $val1) {
-        echo "<td style=\"font-size:10px; word-break:break-all\">$val1";
+    if (isset($trial_list)) {
+        echo "<table>";
+        echo "<tr><td>";
+        foreach ($trial_list as $trial1 => $val1) {
+            echo "<td style=\"font-size:10px; word-break:break-all\">$val1";
+        }
+    } else {
+        die("Error: no trials found for marker<br>");
     }
     foreach ($trial_list as $trial1 => $val1) {
         echo "<tr><td>$val1";
