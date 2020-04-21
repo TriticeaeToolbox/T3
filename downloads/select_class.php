@@ -1218,9 +1218,9 @@ class SelectPhenotypeExp
 		    $line = $row['lr'];
 		    $year_list[$exp_uid] = $row['year'];
 		    $name_list[$exp_uid] = $row['name'];
-		    $line_list[$exp_uid][$line] = 1;    //array of lines for each trial 
+		    $line_list[$exp_uid][$line] = 1;    //array of lines for each trial
 		}
-		foreach ($name_list as $id=>$name) {
+		foreach ($name_list as $id => $name) {
             $year = $year_list[$id];
             $found = 0;
             foreach ($lines_array as $item) {
@@ -1242,11 +1242,11 @@ class SelectPhenotypeExp
                     $last_year = $year;
                 }
                 ?>
-	        <option value="<?php echo $id ?>">
-	        <?php echo "$name_list[$id] $found" ?>
-	        </option>
-	        <?php
-	    } else {
+                <option value="<?php echo $id ?>">
+                <?php echo "$name_list[$id]" ?>
+                </option>
+                <?php
+            } else {
            }
         }
 	    ?>
@@ -1255,7 +1255,7 @@ class SelectPhenotypeExp
 	    <input type="radio" id="trait_cmb" value="all" <?php echo "$all_ckd"; ?> onclick="javascript: update_phenotype_trialb(this.value)">trials with all lines<br>
             <input type="radio" id="trait_cmb" value="80p" <?php echo "$per_ckd"; ?> onclick="javascript: update_phenotype_trialb(this.value)">trials with 50% of lines<br>
 	    <input type="radio" id="trait_cmb" value="any" <?php echo "$any_ckd"; ?> onclick="javascript: update_phenotype_trialb(this.value)">trials with any lines<br>
-	    <?php
+            <?php
 	}
 	
 	/**
