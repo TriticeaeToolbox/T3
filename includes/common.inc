@@ -42,8 +42,10 @@ function mysql_grab($querystring)
             $err = "row";
         }
         $vals = mysqli_fetch_row($result);
-        if (count($vals) > 1) {
-            $err = "column";
+        if (is_array($vals)) {
+            if (count($vals) > 1) {
+                $err = "column";
+            }
         }
     } else {
     //    $mmessage = mysqli_error($mysqli);

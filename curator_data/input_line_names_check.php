@@ -91,7 +91,7 @@ class LineNames_Check
 
 <script type="text/javascript">
   function update_database(filepath, filename, username) {
-  var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabase&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username;
+  var url='<?php echo $_SERVER['PHP_SELF'];?>?function=typeDatabase&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username;
   // Opens the url in the same window
   window.open(url, "_self");
   }
@@ -286,7 +286,7 @@ class LineNames_Check
 	// Initialize searching for lines that new vs. to be updated.
 	$line_inserts_str = "";
 	$line_uid = "";
-	$line_uids = "";
+	$line_uids = array();
 	$line_uids_multiple = "";
 	$lines_seen = array();
 	$syns_seen = array();
@@ -878,7 +878,7 @@ class LineNames_Check
 	    }
 	  } // end of if (!$line_uid) 
 
-	  elseif (count($line_uid) == 1) { 
+	  elseif ($line_uid) { 
 	    // A record already exists for this Line.  Update it.
 	    /* $line_uids = implode(",",$line_uid); */
 	    /* // $line_uids is a string containing a single uid.				 */
