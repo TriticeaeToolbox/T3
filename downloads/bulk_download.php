@@ -102,9 +102,9 @@ if (isset($_GET['query'])) {
             $species_list[$uid] = $name;
         }
 
-        $sql = "select line_record_uid, line_record_name, breeding_program_code, pedigree_string, description from line_records";
+        $sql = "select line_record_uid, line_record_name, breeding_program_code, pedigree_string, generation, description from line_records";
         $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        echo "\"Name\",\"Species\",\"GRIN\",\"Synonym\",\"Breeding Program\",\"Parent1\",\"Parent2\",\"Pedigree\",\"Description\"\n";
+        echo "\"Name\",\"Species\",\"GRIN\",\"Synonym\",\"Breeding Program\",\"Parent1\",\"Parent2\",\"Pedigree\",\"Generation\",\"Description\"\n";
         while ($row = mysqli_fetch_row($result)) {
             $lineuid = $row[0];
             if (is_array($grin_names[$lineuid])) {
@@ -132,10 +132,11 @@ if (isset($_GET['query'])) {
                 $species = "";
             }
             $pedigree_string = $row[3];
-            $desc = $row[4];
+            $generation = $row[4];
+            $desc = $row[5];
             $desc = preg_replace('/[^a-zA-Z0-9-_\.]/', ' ', $desc);
             $pedigree_string = str_replace("\"", "_", $pedigree_string);
-            echo "\"$row[1]\",\"$species\",\"$gr\",\"$synonym\",\"$row[2]\",\"$parent1\",\"$parent2\",\"$pedigree_string\",\"$desc\"\n";
+            echo "\"$row[1]\",\"$species\",\"$gr\",\"$synonym\",\"$row[2]\",\"$parent1\",\"$parent2\",\"$pedigree_string\",\"$generation\",\"$desc\"\n";
         }
     } elseif ($query == "properties") {
         header("Content-Disposition: attachment;Filename=LineProperties.csv");

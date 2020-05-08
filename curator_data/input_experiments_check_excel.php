@@ -26,8 +26,8 @@ ob_end_flush();
 $stats = array('*Trial Mean', '*Std. Error', '*Replications');
 // Translate to the corresponding column name in table phenotype_mean_data.
 $col_lookup = array('trialmean' => 'mean_value', 'std.error' => 'standard_error',
-	    'std.errordiff.' => 'std_err_diff', 'prob>f' => 'prob_gt_F', 
-	    'coef.var.' => 'cv', 'replications' => 'number_replicates');
+		    'std.errordiff.' => 'std_err_diff', 'prob>f' => 'prob_gt_F',
+		    'coef.var.' => 'cv', 'replications' => 'number_replicates');
 
 /* Returns $arg1 if it is set, else fatal with error message $msg. */
 function ForceValue(& $arg1, $msg) {
@@ -915,12 +915,12 @@ File:  <i><?php echo $uploadfile ?></i><br>
    if (count($trait_stats) == 0) die ("Calculating stats on non-numeric data.");
    for ($i = 0;$i<count($phenoids);$i++){
      //check if record there
-     $max_val= $trait_stats[$i][max_val];
-     $min_val= $trait_stats[$i][min_val];
-     $mean_val= $trait_stats[$i][mean_val];
-     $std_val= $trait_stats[$i][std_val];
-     $sample_size= $trait_stats[$i][sample_size];
-     $pheno_uid = $trait_stats[$i][phenotype_uid];
+     $max_val= $trait_stats[$i]['max_val'];
+     $min_val= $trait_stats[$i]['min_val'];
+     $mean_val= $trait_stats[$i]['mean_val'];
+     $std_val= $trait_stats[$i]['std_val'];
+     $sample_size= $trait_stats[$i]['sample_size'];
+     $pheno_uid = $trait_stats[$i]['phenotype_uid'];
      // Store back to the database.
      $sql = "SELECT * FROM phenotype_descstat WHERE phenotype_uid = $pheno_uid";
      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
