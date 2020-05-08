@@ -138,7 +138,7 @@ h3 {border-left: 4px solid #5B53A6; padding-left: .5em;}
       function load_excel() {
   excel_str1 = markers_annotation_str;
   excel_str2 = maps_str;
-  var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeMarkerExcel'+ '&mxls1=' + excel_str1 + '&mxls2=' + excel_str2;
+  var url='<?php echo $_SERVER['PHP_SELF'];?>?function=typeMarkerExcel'+ '&mxls1=' + excel_str1 + '&mxls2=' + excel_str2;
   // Opens the url in the same window
   window.open(url, "_self");
 }
