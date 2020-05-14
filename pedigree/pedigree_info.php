@@ -143,7 +143,7 @@ foreach ($ourprops as $pr) {
         }
         $grin_result=mysqli_query($mysqli, "select barley_ref_number from barley_pedigree_catalog_ref 
            where line_record_uid=$lineuid") or die(mysqli_error($mysqli));
-        $grin_names="";
+        $grin_names= array();
         $gr = "";
         while ($grin_row = mysqli_fetch_assoc($grin_result)) {
             $grin_names[] = $grin_row['barley_ref_number'];
@@ -172,23 +172,23 @@ foreach ($ourprops as $pr) {
         <?php echo $row['generation'] ?>
         <td style="width: 80px; text-align: center" class="marker">
         <?php echo $row['description'] ?>
-	  <?php
-	  foreach ($ourprops as $pr) {
-	  $propval = mysql_grab("select value
-	     from line_properties lp, property_values pv
-	     where lp.property_value_uid = pv.property_values_uid
-	     and pv.property_uid = $pr
-	     and lp.line_record_uid = $lineuid");
-	  echo "<td style='width: 50px;text-align: center' class='marker'>".$propval."</td>";
-	}
-	?>
+  <?php
+  foreach ($ourprops as $pr) {
+  $propval = mysql_grab("select value
+     from line_properties lp, property_values pv
+     where lp.property_value_uid = pv.property_values_uid
+     and pv.property_uid = $pr
+     and lp.line_record_uid = $lineuid");
+  echo "<td style='width: 50px;text-align: center' class='marker'>".$propval."</td>";
+}
+?>
         <td style="width: 80px; text-align: center" class="marker">
         <?php $phenotype = lineHasPhenotypeData($lineuid);
-	$genotype = lineHasGenotypeData($lineuid);
-	if($phenotype AND $genotype) echo "Phenotype<br>Genotype";
-	if($phenotype AND !$genotype) echo "Phenotype";
-	if($genotype AND !$phenotype) echo "Genotype";
-	if(!$phenotype AND !$genotype) echo "None";
+        $genotype = lineHasGenotypeData($lineuid);
+        if ($phenotype AND $genotype) echo "Phenotype<br>Genotype";
+        if ($phenotype AND !$genotype) echo "Phenotype";
+        if ($genotype AND !$phenotype) echo "Genotype";
+        if (!$phenotype AND !$genotype) echo "None";
 	 ?>
   </tr>
 <?php
