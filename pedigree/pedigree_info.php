@@ -88,7 +88,7 @@ class Pedigree
 
 <script type="text/javascript">
 function load_excel() {
-      var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel<?php echo $lf;?>';
+      var url='<?php echo $_SERVER['PHP_SELF'];?>?function=typeLineExcel<?php echo $lf;?>';
       // Opens the url in the same window
       window.open(url, "_self");
 }
@@ -133,7 +133,7 @@ foreach ($ourprops as $pr) {
         $lineuid = intval($lineuid);
         $result=mysqli_query($mysqli, "select line_record_name, breeding_program_code, pedigree_string, generation, description from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
         $syn_result=mysqli_query($mysqli, "select line_synonym_name from line_synonyms where line_record_uid=$lineuid") or die("No Synonym\n");
-        $syn_names="";
+        $syn_names=array();
         $sn = "";
         while ($syn_row = mysqli_fetch_assoc($syn_result)) {
             $syn_names[] = $syn_row['line_synonym_name'];
@@ -185,10 +185,10 @@ foreach ($ourprops as $pr) {
         <td style="width: 80px; text-align: center" class="marker">
         <?php $phenotype = lineHasPhenotypeData($lineuid);
         $genotype = lineHasGenotypeData($lineuid);
-        if ($phenotype AND $genotype) echo "Phenotype<br>Genotype";
-        if ($phenotype AND !$genotype) echo "Phenotype";
-        if ($genotype AND !$phenotype) echo "Genotype";
-        if (!$phenotype AND !$genotype) echo "None";
+        if ($phenotype and $genotype) echo "Phenotype<br>Genotype";
+        if ($phenotype and !$genotype) echo "Phenotype";
+        if ($genotype and !$phenotype) echo "Genotype";
+        if (!$phenotype and !$genotype) echo "None";
 	 ?>
   </tr>
 <?php
@@ -198,7 +198,7 @@ foreach ($ourprops as $pr) {
 </table>
 </div>
 <br/><br/><input type="button" value="Download Line Data (.xls)" onclick="javascript:load_excel();"/><br>
-<!--br><a href="<?php echo $_SERVER[PHP_SELF];?>?function=typeLineExcel<?php echo $lf;?>">Download Line Data</a-->
+<!--br><a href="<?php echo $_SERVER['PHP_SELF'];?>?function=typeLineExcel<?php echo $lf;?>">Download Line Data</a-->
 
 <?php
 } /* End of function type_LineInformation*/
