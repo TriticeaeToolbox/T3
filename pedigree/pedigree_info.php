@@ -283,7 +283,7 @@ private function type_Line_Excel() {
       // GRIN Accession
       $grin_result=mysqli_query($mysqli, "select barley_ref_number from barley_pedigree_catalog_ref 
            where line_record_uid=$lineuid") or die(mysqli_error($mysqli));
-      $grin_names=""; $gr = "";
+      $grin_names=array(); $gr = "";
       while ($grin_row = mysqli_fetch_assoc($grin_result)) 
 	$grin_names[] = $grin_row['barley_ref_number'];
       if (is_array($grin_names))
@@ -293,7 +293,7 @@ private function type_Line_Excel() {
       // Synonyms
       $syn_result=mysqli_query($mysqli, "select line_synonym_name from line_synonyms 
             where line_record_uid=$lineuid") or die(mysqli_error($mysqli));
-      $syn_names=""; $sn="";
+      $syn_names=array(); $sn="";
       while ($syn_row = mysqli_fetch_assoc($syn_result)) 
 	$syn_names[] = $syn_row['line_synonym_name'];
       if (is_array($syn_names))
