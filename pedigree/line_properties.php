@@ -380,11 +380,11 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
 
     /* Do The Search */
     if ((strlen($linenames) == 0)
-       and (count($breedingProgram) == 0)
-       and (count($year) == 0)
-       and (count($species) == 0)
-       and (count($propvalids) == 0)
-       and (count($panel) == 0)) {
+       and (empty($breedingProgram))
+       and (empty($year))
+       and (empty($species))
+       and (empty($propvalids))
+       and (empty($panel))) {
         $linesfound = 0;
     } else {
         $TheQuery = "select line_record_uid, line_record_name from line_records where $where";
