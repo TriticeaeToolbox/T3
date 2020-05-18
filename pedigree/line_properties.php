@@ -40,6 +40,8 @@ if (empty($_POST) or $_POST['WhichBtn']) {
     if (is_array($_SESSION['propvals'])) {
         // array of array(uid, name, value)
         $propvals = $_SESSION['propvals'];
+    } else {
+        $propvals = array();
     }
     if (is_array($_POST['panel'])) {
         foreach ($_POST['panel'] as $key => $value) {
@@ -215,7 +217,9 @@ if (!empty($_POST)) {
     $year = $_POST['year'];
     $species = $_POST['species'];
     // just the ids, property_values.property_values_uid
-    if (!empty($propvals)) {
+    if (empty($propvals)) {
+        $propvalids = array();
+    } else {
         foreach ($propvals as $pv) {
             $propvalids[] = $pv[0];
         }
@@ -281,7 +285,7 @@ if (!empty($_POST)) {
             $speciesStr = "";
         }
     }
-    if (count($year) != 0) {
+    if (!empty($year)) {
         $tmp = implode("','", $year);
         if (preg_match("/([0-9,']+)/", $tmp, $match)) {
             $yearStr = $match[1];
@@ -300,7 +304,7 @@ if (!empty($_POST)) {
         }
         $count++;
     }
-    if (count($breedingProgram) != 0) {
+    if (!empty($breedingProgram)) {
         if ($count == 0) {
             $where .= "breeding_program_code IN ('".$breedingCode."')";
         } else {
