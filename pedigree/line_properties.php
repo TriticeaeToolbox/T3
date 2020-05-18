@@ -277,7 +277,7 @@ if (!empty($_POST)) {
             $breedingCode = "";
         }
     }
-    if (count($species) != 0) {
+    if (!empty($species)) {
         $tmp = implode("','", $species);
         if (preg_match("/([a-z,']+)/", $tmp, $match)) {
             $speciesStr = $match[1];
@@ -312,7 +312,7 @@ if (!empty($_POST)) {
         }
         $count++;
     }
-    if (count($year) != 0) {
+    if (!empty($year)) {
         if ($count == 0) {
             $where .= "line_record_uid IN (select line_record_uid from tht_base, experiments
 where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experiments.experiment_uid)";
