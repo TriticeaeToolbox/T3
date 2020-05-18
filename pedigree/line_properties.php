@@ -14,6 +14,9 @@ $mysqli = connecti();
 $pageTitle = "Select Lines by Properties";
 require $config['root_dir'] . 'theme/admin_header2.php';
 
+$species = array();
+$propvals = array();
+$year = array();
 // Clear propvals cookie on initial entry, or if the last action was to save $_SESSION['selected_lines'].
 if (empty($_POST) or $_POST['WhichBtn']) {
     unset($_SESSION['propvals']);
@@ -31,7 +34,6 @@ if (empty($_POST) or $_POST['WhichBtn']) {
             $yr[$value] = 'selected="selected"';
         }
     }
-    $species = array();
     if (is_array($_POST['species'])) {
         foreach ($_POST['species'] as $key => $value) {
             $species[$value] = 'selected="selected"';
@@ -40,8 +42,6 @@ if (empty($_POST) or $_POST['WhichBtn']) {
     if (is_array($_SESSION['propvals'])) {
         // array of array(uid, name, value)
         $propvals = $_SESSION['propvals'];
-    } else {
-        $propvals = array();
     }
     if (is_array($_POST['panel'])) {
         foreach ($_POST['panel'] as $key => $value) {
