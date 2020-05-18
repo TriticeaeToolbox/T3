@@ -440,7 +440,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
 // Combine found lines with cookie, REPLACE/AND/OR.
 $verify_selected_lines = $_POST['selLines'];
 $verify_session = $_SESSION['selected_lines'];
-if (count($verify_selected_lines)!=0 or count($verify_session)!=0) {
+if (!empty($verify_selected_lines) or !empty($verify_session)) {
     //  echo "</div><div class='boxContent'>";
     if (isset($_POST['selLines'])) {
         if ($_POST['selectWithin'] == "Replace") {
