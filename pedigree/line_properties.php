@@ -269,7 +269,7 @@ if (!empty($_POST)) {
             $linenames = implode("','", $linesFound);
         }
     } // end if (strlen($linenames) != 0)
-    if (count($breedingProgram) != 0) {
+    if (!empty($breedingProgram)) {
         $tmp = implode("','", $breedingProgram);
         if (preg_match("/([A-Z0-9,']+)/", $tmp, $match)) {
             $breedingCode = $match[1];
@@ -322,7 +322,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
         }
         $count++;
     }
-    if (count($species) != 0) {
+    if (!empty($species)) {
       // Include as a Property.
         foreach ($species as $spcs) {
             if ($stmt = mysqli_prepare($mysqli, "select property_values_uid from property_values where value = ?")) {
@@ -335,14 +335,14 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
             }
         }
     }
-    if (count($propvalids) != 0) {
+    if (!empty($propvalids)) {
         $geneticStr = implode("','", $propvalids);
     }
-    if (count($propvalids2) != 0) {
+    if (!empty($propvalids2)) {
         $speciesStr = implode("','", $propvalids2);
     }
 
-    if (count($propvalids2) != 0) {
+    if (!empty($propvalids2)) {
         if ($count != 0) {
             $where .= " AND ";
         }
@@ -350,14 +350,14 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
         if (count($propvalids) != 0) {
             $where .= "AND line_record_uid IN (select line_record_uid from line_properties where property_value_uid IN ('".$geneticStr."'))";
         }
-    } elseif (count($propvalids) != 0) {
+    } elseif (!empty($propvalids)) {
         if ($count != 0) {
             $where .= "AND ";
         }
         $where .= "line_record_uid IN (select line_record_uid from line_properties where property_value_uid IN ('".$geneticStr."'))";
     }
     
-    if (count($panel) != 0) {
+    if (!empty($panel)) {
         $sql = "select line_ids from linepanels where linepanels_uid = ?";
         if ($stmt = mysqli_prepare($mysqli, $sql)) {
             mysqli_stmt_bind_param($stmt, "i", $p);
