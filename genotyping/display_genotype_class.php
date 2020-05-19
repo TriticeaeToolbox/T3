@@ -297,7 +297,7 @@ class ShowData
             echo "<tr> <td>Raw data</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['raw_datafile_archive']."'>".$row_Gen_Info['raw_datafile_archive']."</a></td></tr>";
             echo "</table>";
         } else {
-            echo "Download <a href=genotyping/" . $row_Gen_Info['sample_sheet_filename']."'>Samples (germplasm lines)</a><br><br>";
+            echo "Download <a href='".$config['base_url']."raw/genotype/" .$row_Gen_Info['sample_sheet_filename']."'>Samples (germplasm lines)</a><br><br>";
             echo "Download <a href=genotyping/download-vcf.php>from VCF</a><br><br>";
         }
     } /* End of function type_DataInformation*/
