@@ -41,7 +41,11 @@ echo "<li><a href='".$config['base_url']."phenotype/phenotype_selection.php'>Tra
 if (isset($_SESSION['selected_traits'])) {
     echo count($_SESSION['selected_traits']);
 } elseif (isset($_SESSION['phenotype'])) {
-    echo count($_SESSION['phenotype']);
+    if (is_array($_SESSION['phenotype'])) {
+        echo count($_SESSION['phenotype']);
+    } else {
+        echo "1";
+    }
 } else {
     echo "0";
 }
