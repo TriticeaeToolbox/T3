@@ -932,16 +932,15 @@ class Downloads
         //get z-stat
         //get count of significant qtls when grouping by marker_name
         $zsum = array();
+        if (isset($trial_str)) {
+            $sql = "select phenotype_exp, gwas from $database where phenotype_uid IN ($puid) and phenotype_exp IN ($trial_str)";
+            #echo "$sql\n";
+        } else {
+            $sql = "select phenotype_exp, gwas from $database  where phenotype_uid IN ($puid)";
+        }
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         if ($gb == "marker") {
-            if (isset($trial_str)) {
-                $sql = "select phenotype_exp, gwas from $database where phenotype_uid IN ($puid) and phenotype_exp IN ($trial_str)";
-                echo "$sql\n";
-            } else {
-                $sql = "select phenotype_exp, gwas from $database  where phenotype_uid IN ($puid)";
-            }
-            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
             while ($row = mysqli_fetch_array($res)) {
-                $pheno_exp = $row[0];
                 $gwas = json_decode($row[1]);
                 if ($_GET['method'] == 'set') {
                     foreach ($gwas as $val) {
@@ -976,10 +975,8 @@ class Downloads
             }
         } else {
             //get count of significant qtls when groupinng by gene
-            $sql = "select gwas from $database where phenotype_uid IN ($puid)";
-            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
             while ($row = mysqli_fetch_array($res)) {
-                $gwas = json_decode($row[0]);
+                $gwas = json_decode($row[1]);
                 foreach ($gwas as $val) {
                     $marker_name = $val[0];
                     $zvalue = $val[3];
@@ -996,10 +993,9 @@ class Downloads
         }
 
         $count = 0;
-        $sql = "select gwas from $database where phenotype_uid IN ($puid)";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
-            $gwas = json_decode($row[0]);
+            $gwas = json_decode($row[1]);
             foreach ($gwas as $val) {
                 $marker = $val[0];
                 $zvalue = $val[3];
@@ -1058,7 +1054,7 @@ class Downloads
                             $chrom_num = $match[1];
                             $chrom_arm = $match[2];
                         } else {
-                            $chrom_num = "";
+                            $chrom_num = 0;
                             $chrom_arm = "";
                         }
                     }
@@ -1138,9 +1134,9 @@ class Downloads
                 }
             }
         }
+        echo "<a href=\"qtl/qtl_report.php?function=downloadQTL&pi=" . $puid . "&method=" . $_GET['method'] . "&assembly=" . $assembly ."\">Download meta data</a>, ";
+        echo "<a href=\"qtl/qtl_report.php?function=downloadDetailQTL&pi=" . $puid . "&method=" . $_GET['method'] . "&assembly=" . $assembly . "\">Download detail data</a><br>";
         if ($count > 0) {
-            echo "<a href=\"qtl/qtl_report.php?function=downloadQTL&pi=" . $puid . "&method=" . $_GET['method'] . "&assembly=" . $assembly ."\">Download meta data</a>, ";
-            echo "<a href=\"qtl/qtl_report.php?function=downloadDetailQTL&pi=" . $puid . "&method=" . $_GET['method'] . "&assembly=" . $assembly . "\">Download detail data</a><br>";
             $count_display = 0;
             if ($gb == "marker") {
                 echo "<table><tr><td>marker<td>chromosome<td>location";
@@ -1157,8 +1153,10 @@ class Downloads
             if ($sort_type == "score") {
                 arsort($output_index);
                 foreach ($output_index as $key => $val) {
-                    if ($val > 0) {
-                        echo "$output_list[$key]";
+                    $counto++;
+                    echo "$output_list[$key]";
+                    if ($counto > 100) {
+                        break;
                     }
                 }
             } else {
@@ -1169,7 +1167,7 @@ class Downloads
             }
             echo "</table>";
         } else {
-            echo "no significant QTLs found<br>$sql\n";
+            echo "no significant QTLs found (q-value < 0.05)<br>$sql\n";
         }
     }
 }
