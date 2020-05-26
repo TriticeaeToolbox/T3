@@ -111,12 +111,16 @@ class Downloads
         $saved_session = "";
         $message1 = $message2 = "";
 
-        if (isset($_SESSION['phenotype'])) {
-            $tmp = count($_SESSION['phenotype']);
-            if ($tmp==1) {
-                $saved_session = "$tmp phenotype ";
+        if (!empty($_SESSION['phenotype'])) {
+            if (is_array($_SESSION['phenotype'])) {
+                $tmp = count($_SESSION['phenotype']);
+                if ($tmp==1) {
+                    $saved_session = "$tmp phenotype ";
+                } else {
+                    $saved_session = "$tmp phenotypes ";
+                }
             } else {
-                $saved_session = "$tmp phenotypes ";
+                $saved_session = "1 phenotype ";
             }
             $message2 = "download phenotype and genotype data";
             $phenotype = $_SESSION['phenotype'];
