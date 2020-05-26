@@ -1152,6 +1152,7 @@ class Downloads
 
             if ($sort_type == "score") {
                 arsort($output_index);
+                $counto = 0;
                 foreach ($output_index as $key => $val) {
                     $counto++;
                     echo "$output_list[$key]";
