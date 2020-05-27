@@ -324,7 +324,7 @@ class Downloads
         echo "marker name = $marker_safe<br>\n";
         echo "<table><tr><td>marker<td>phenotype<td>chrom<td>pos<td>z-score<td>q-value<td>p-value<td>phenotype trial<td>genotype trial<td>plot";
         $sql = "select phenotype_uid, genotype_exp, phenotype_exp, gwas from $database";
-        $res = mysqli_query($mysqli, $sql, MYSQLI_USE_RESULT) or die(mysqli_error($mysqli) . "<br>$sql");
+        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
             $puid = $row[0];
             $gexp = $row[1];
@@ -526,15 +526,8 @@ class Downloads
         } else {
             die("Error: select genome assembly\n");
         }
+        $assembly_name = mysql_grab("select assembly_name from assemblies where assembly_uid = $assembly");
 
-        $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = 4";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
-        while ($row = mysqli_fetch_array($res)) {
-            $marker = $row[0];
-            $gene = $row[2];
-            $desc = $row[3];
-            $annot_list[$marker] = $gene;
-        }
         $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"$assembly\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
         while ($row = mysqli_fetch_array($res)) {
@@ -593,13 +586,11 @@ class Downloads
                 mysqli_stmt_fetch($stmt);
                 mysqli_stmt_close($stmt);
             }
-            $sql = "select gwas from $database where phenotype_uid = ?";
-            if ($stmt = mysqli_prepare($mysqli, $sql)) {
-                mysqli_stmt_bind_param($stmt, "i", $puid);
-                mysqli_stmt_execute($stmt);
-                mysqli_stmt_bind_result($stmt, $tmp);
-                while (mysqli_stmt_fetch($stmt)) {
-                    $gwas = json_decode($tmp);
+            $sql = "select phenotype_exp, gwas from $database  where phenotype_uid IN ($puid)";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+            while ($row = mysqli_fetch_array($res)) {
+                    $pexp = $row[0];
+                    $gwas = json_decode($row[1]);
                     foreach ($gwas as $val) {
                         $marker = $val[0];
                         $chrom = $val[1];
@@ -613,6 +604,12 @@ class Downloads
                             $chrom = "UNK";
                         }
                         if ($qvalue < 0.05) {
+                            $sql = "select chrom, pos, bin from marker_report_reference where marker_name = \"$marker\" and assembly_name = \"$assembly_name\"";
+                            $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                            if ($row2 = mysqli_fetch_array($res2)) {
+                                $chrom = $row2[0];
+                                $pos = $row2[1];
+                            }
                             if (isset($annot_list2[$marker])) {
                                 $gene = $annot_list2[$marker];
                                 $feature = $annot_list3[$marker];
@@ -630,9 +627,7 @@ class Downloads
                                 $output_list[] = "\"$desc\",\"$marker\",\"$chrom\",$pos,\"$gene\",\"$feature\",$zmeta[$marker]";
                             }
                         }
-                    }
                 }
-                mysqli_stmt_close($stmt);
             }
         }
         arsort($output_index);
@@ -673,6 +668,7 @@ class Downloads
         } else {
             die("Error: select genome assembly\n");
         }
+        $assembly_name = mysql_grab("select assembly_name from assemblies where assembly_uid = $assembly");
 
         $sql = "select marker_name, assembly_name, gene, description from qtl_annotations where assembly_name = \"$assembly\"";
         $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
@@ -713,6 +709,7 @@ class Downloads
                     if ($qvalue < 0.05) {
                         $goodList[$marker_name] = 1;
                     }
+
                 }
             } else {
                 foreach ($gwas as $val) {
@@ -748,13 +745,12 @@ class Downloads
                 mysqli_stmt_fetch($stmt);
                 mysqli_stmt_close($stmt);
             }
-            $sql = "select genotype_exp, phenotype_exp, gwas from $database where phenotype_uid = ?";
-            if ($stmt = mysqli_prepare($mysqli, $sql)) {
-                mysqli_stmt_bind_param($stmt, "i", $puid);
-                mysqli_stmt_execute($stmt);
-                mysqli_stmt_bind_result($stmt, $gexp, $pexp, $tmp);
-                while (mysqli_stmt_fetch($stmt)) {
-                    $gwas = json_decode($tmp);
+            $sql = "select genotype_exp, phenotype_exp, gwas from $database  where phenotype_uid IN ($puid)";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+            while ($row = mysqli_fetch_array($res)) {
+                    $gexp = $row[0];
+                    $pexp = $row[1];
+                    $gwas = json_decode($row[2]);
                     foreach ($gwas as $val) {
                         $marker = $val[0];
                         $chrom = $val[1];
@@ -762,28 +758,32 @@ class Downloads
                         $zvalue = $val[3];
                         $qvalue = $val[4];
                         $pvalue = $val[5];
-                        if (preg_match("/scaff/", $chrom)) {
-                            $chrom = "UNK";
-                        } elseif (preg_match("/v44/", $chrom)) {
-                            $chrom = "UNK";
-                        }
-                        if (isset($annot_list2[$marker])) {
-                            $gene = $annot_list2[$marker];
-                            $feature = $annot_list3[$marker];
-                        } else {
-                            $gene = "";
-                            $feature = "";
-                        }
-                        if (empty($pos)) {
-                            $pos = 0;
-                        }
-                        if (isset($goodList[$marker])) {
+                        if ($qvalue < 0.05) {
+                            $sql = "select chrom, pos, bin from marker_report_reference where marker_name = \"$marker\" and assembly_name = \"$assembly_name\"";
+                            $res2 = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
+                            if ($row2 = mysqli_fetch_array($res2)) {
+                                $chrom = $row2[0];
+                                $pos = $row2[1];
+                            }
+                            if (preg_match("/scaff/", $chrom)) {
+                                $chrom = "UNK";
+                            } elseif (preg_match("/v44/", $chrom)) {
+                                $chrom = "UNK";
+                            }
+                            if (isset($annot_list2[$marker])) {
+                                $gene = $annot_list2[$marker];
+                                $feature = $annot_list3[$marker];
+                            } else {
+                                $gene = "";
+                                $feature = "";
+                            }
+                            if (empty($pos)) {
+                                $pos = 0;
+                            }
                             $output_index[] = $zmeta[$marker];
                             $output_list[] =  "\"$name\",\"$marker\",\"$chrom\",$pos,$gene,$zvalue,$qvalue,$pvalue,\"$trial_list[$gexp] $trial_list[$pexp]\"";
                         }
                     }
-                }
-                mysqli_stmt_close($stmt);
             }
         }
         arsort($output_index);
