@@ -9,7 +9,7 @@
 
 session_start();
 session_regenerate_id();
-$root = "//" . $_SERVER['HTTP_HOST'];
+$root = "https://" . $_SERVER['HTTP_HOST'];
 $root .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
 $config['base_url'] = "$root";
 $root = preg_replace("/\/\/$/", "/", $root);
@@ -603,8 +603,7 @@ if (isset($_POST['submit_login'])) {
    }
 
    if ($error) {
-       echo HTMLRegistrationForm($error_msg, $name, $email, $cemail,
-			       $answer, $institution);
+       echo HTMLRegistrationForm($error_msg, $name, $email, $cemail, $answer, $institution);
    } else {
        $safe_email = mysqli_real_escape_string($mysqli, $email);
        $safe_password = mysqli_real_escape_string($mysqli, $password);

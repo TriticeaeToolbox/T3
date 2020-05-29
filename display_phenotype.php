@@ -9,29 +9,29 @@
  *
  */
 
-//A php script to dynamically read data related to a particular experiment from the database and to 
-//display it in a nice table format. Utilizes the the tableclass Class by Manuel Lemos to display the 
+//A php script to dynamically read data related to a particular experiment from the database and to
+//display it in a nice table format. Utilizes the the tableclass Class by Manuel Lemos to display the
 //table.
 
 // author Kartic Ramesh; drastically rewritten by Julie Dickerson, 2009 to make usable and use sessions
 
-// 08/22/2012 DEM  Display multiple raw files, table rawfiles. 
+// 08/22/2012 DEM  Display multiple raw files, table rawfiles.
 // 08/17/2012 DEM  Display GRIN Accession instead of Line Synonym, for Jorge Dubcovsky.
 // 03/25/2011 DEM  Oops, the Collaborator should be the one in table phenotype_experiment_info.
 // 02/07/2011 DEM  Add CAPdata_program and Collaborator to the first table.
 // 01/12/2011 JLee Add so experiment download data displays on separate page
-// 01/12/2011 JLee Mod so mean and std.err values in experiment datafile do have signif digit applied to them   
+// 01/12/2011 JLee Mod so mean and std.err values in experiment datafile do have signif digit applied to them
 // 10/07/2010 DEM Stop rounding-off values when exported via "Download Experiment Data".
 // 9/30/2010 DEM Fixed comma-separated header line in tab-delimited "Download Experiment Data" output.
-// 9/30/2010 DEM Add "Experiment" to display list. 
+// 9/30/2010 DEM Add "Experiment" to display list.
 // 9/28/2010 J.Lee Add "Number of Entries" to display list
 // 9/22/2010 DEM Output Source files loaded at the bottom of the page.
 // 9/22/2010 DEM Output CAP Code for each germplasm line as column 2 of the data table.
 // 8/19/2010 DEM Fixed scrolling table to work in IE too.
 // 6/29/2010 J.Lee Fixed table display issue with MSIE7 and realign dataset download button
-// 6/24/2010 J.Lee Merged with Julie's changes 
-// 3/01/2010 J.Lee Handle missing Raw Data files 
-// 2/18/2010 J.Lee Fix "Download Raw Data" button not showing with IE browser 
+// 6/24/2010 J.Lee Merged with Julie's changes
+// 3/01/2010 J.Lee Handle missing Raw Data files
+// 2/18/2010 J.Lee Fix "Download Raw Data" button not showing with IE browser
 
 session_start();
 require 'config.php';
@@ -129,6 +129,7 @@ if (($data_public_flag == 0) and
     echo "</table><p>";
 
     // get all line data for this experiment
+    $linerecord_uid = array();
     $sql="SELECT tht_base_uid, line_record_uid, check_line FROM tht_base WHERE experiment_uid='$experiment_uid'";
     $result_thtbase=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
         
@@ -184,7 +185,7 @@ if (($data_public_flag == 0) and
         $single_row=array(); //1D array which will hold each row values in the table format to be displayed
         $single_row_long=array();
         
-        /* $dir ='./downloads/temp/';				 */
+        /* $dir ='./downloads/temp/'; */
         $dir ='/tmp/tht/';
         if (! file_exists('/tmp/tht')) {
              mkdir('/tmp/tht');
@@ -214,10 +215,10 @@ if (($data_public_flag == 0) and
 /* $sql_cc="SELECT line_synonym_name */
 /* FROM line_synonyms */
 /* WHERE line_synonyms.line_record_uid = '$linerecorduid'"; */
-/* 	    $result_cc=mysql_query($sql_cc) or die(mysql_error()); */
-/* 	    $row_cc=mysql_fetch_assoc($result_cc); */
-/* 	    $single_row[1]=$row_cc['line_synonym_name']; */
-/* 	    $single_row_long[1]=$row_cc['line_synonym_name']; */
+/*     $result_cc=mysql_query($sql_cc) or die(mysql_error()); */
+/*     $row_cc=mysql_fetch_assoc($result_cc); */
+/*     $single_row[1]=$row_cc['line_synonym_name']; */
+/*     $single_row_long[1]=$row_cc['line_synonym_name']; */
             $sql_gr="select barley_ref_number
              from barley_pedigree_catalog bc, barley_pedigree_catalog_ref bcr
              where barley_pedigree_catalog_name = 'GRIN'

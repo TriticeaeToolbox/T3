@@ -194,8 +194,8 @@ function show_line_records($id)
   while ($row = mysqli_fetch_row($res)) {
     $lineset = explode(",", $row[1]);
     if (in_array($id, $lineset)) {
-      $panelset[$i][name] = $row[0];
-      $panelset[$i][desc] = $row[2];
+      $panelset[$i]['name'] = $row[0];
+      $panelset[$i]['desc'] = $row[2];
       $i++;
     }
   }
@@ -305,7 +305,7 @@ function getPedigrees_r($qname, $nvisited)
 	    }
             return $tree;
 	}
-    }	
+    }
 }
 
 

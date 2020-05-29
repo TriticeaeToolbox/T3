@@ -14,6 +14,9 @@ $mysqli = connecti();
 $pageTitle = "Select Lines by Properties";
 require $config['root_dir'] . 'theme/admin_header2.php';
 
+$species = array();
+$propvals = array();
+$year = array();
 // Clear propvals cookie on initial entry, or if the last action was to save $_SESSION['selected_lines'].
 if (empty($_POST) or $_POST['WhichBtn']) {
     unset($_SESSION['propvals']);
@@ -31,7 +34,6 @@ if (empty($_POST) or $_POST['WhichBtn']) {
             $yr[$value] = 'selected="selected"';
         }
     }
-    $species = array();
     if (is_array($_POST['species'])) {
         foreach ($_POST['species'] as $key => $value) {
             $species[$value] = 'selected="selected"';
@@ -215,7 +217,9 @@ if (!empty($_POST)) {
     $year = $_POST['year'];
     $species = $_POST['species'];
     // just the ids, property_values.property_values_uid
-    if (!empty($propvals)) {
+    if (empty($propvals)) {
+        $propvalids = array();
+    } else {
         foreach ($propvals as $pv) {
             $propvalids[] = $pv[0];
         }
@@ -265,7 +269,7 @@ if (!empty($_POST)) {
             $linenames = implode("','", $linesFound);
         }
     } // end if (strlen($linenames) != 0)
-    if (count($breedingProgram) != 0) {
+    if (!empty($breedingProgram)) {
         $tmp = implode("','", $breedingProgram);
         if (preg_match("/([A-Z0-9,']+)/", $tmp, $match)) {
             $breedingCode = $match[1];
@@ -273,7 +277,7 @@ if (!empty($_POST)) {
             $breedingCode = "";
         }
     }
-    if (count($species) != 0) {
+    if (!empty($species)) {
         $tmp = implode("','", $species);
         if (preg_match("/([a-z,']+)/", $tmp, $match)) {
             $speciesStr = $match[1];
@@ -281,7 +285,7 @@ if (!empty($_POST)) {
             $speciesStr = "";
         }
     }
-    if (count($year) != 0) {
+    if (!empty($year)) {
         $tmp = implode("','", $year);
         if (preg_match("/([0-9,']+)/", $tmp, $match)) {
             $yearStr = $match[1];
@@ -300,7 +304,7 @@ if (!empty($_POST)) {
         }
         $count++;
     }
-    if (count($breedingProgram) != 0) {
+    if (!empty($breedingProgram)) {
         if ($count == 0) {
             $where .= "breeding_program_code IN ('".$breedingCode."')";
         } else {
@@ -308,7 +312,7 @@ if (!empty($_POST)) {
         }
         $count++;
     }
-    if (count($year) != 0) {
+    if (!empty($year)) {
         if ($count == 0) {
             $where .= "line_record_uid IN (select line_record_uid from tht_base, experiments
 where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experiments.experiment_uid)";
@@ -318,7 +322,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
         }
         $count++;
     }
-    if (count($species) != 0) {
+    if (!empty($species)) {
       // Include as a Property.
         foreach ($species as $spcs) {
             if ($stmt = mysqli_prepare($mysqli, "select property_values_uid from property_values where value = ?")) {
@@ -331,14 +335,14 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
             }
         }
     }
-    if (count($propvalids) != 0) {
+    if (!empty($propvalids)) {
         $geneticStr = implode("','", $propvalids);
     }
-    if (count($propvalids2) != 0) {
+    if (!empty($propvalids2)) {
         $speciesStr = implode("','", $propvalids2);
     }
 
-    if (count($propvalids2) != 0) {
+    if (!empty($propvalids2)) {
         if ($count != 0) {
             $where .= " AND ";
         }
@@ -346,14 +350,14 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
         if (count($propvalids) != 0) {
             $where .= "AND line_record_uid IN (select line_record_uid from line_properties where property_value_uid IN ('".$geneticStr."'))";
         }
-    } elseif (count($propvalids) != 0) {
+    } elseif (!empty($propvalids)) {
         if ($count != 0) {
             $where .= "AND ";
         }
         $where .= "line_record_uid IN (select line_record_uid from line_properties where property_value_uid IN ('".$geneticStr."'))";
     }
     
-    if (count($panel) != 0) {
+    if (!empty($panel)) {
         $sql = "select line_ids from linepanels where linepanels_uid = ?";
         if ($stmt = mysqli_prepare($mysqli, $sql)) {
             mysqli_stmt_bind_param($stmt, "i", $p);
@@ -376,11 +380,11 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
 
     /* Do The Search */
     if ((strlen($linenames) == 0)
-       and (count($breedingProgram) == 0)
-       and (count($year) == 0)
-       and (count($species) == 0)
-       and (count($propvalids) == 0)
-       and (count($panel) == 0)) {
+       and (empty($breedingProgram))
+       and (empty($year))
+       and (empty($species))
+       and (empty($propvalids))
+       and (empty($panel))) {
         $linesfound = 0;
     } else {
         $TheQuery = "select line_record_uid, line_record_name from line_records where $where";
@@ -436,7 +440,7 @@ where experiment_year IN ('".$yearStr."') and tht_base.experiment_uid = experime
 // Combine found lines with cookie, REPLACE/AND/OR.
 $verify_selected_lines = $_POST['selLines'];
 $verify_session = $_SESSION['selected_lines'];
-if (count($verify_selected_lines)!=0 or count($verify_session)!=0) {
+if (!empty($verify_selected_lines) or !empty($verify_session)) {
     //  echo "</div><div class='boxContent'>";
     if (isset($_POST['selLines'])) {
         if ($_POST['selectWithin'] == "Replace") {

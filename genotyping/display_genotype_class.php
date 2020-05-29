@@ -297,7 +297,8 @@ class ShowData
             echo "<tr> <td>Raw data</td><td><a href='".$config['base_url']."raw/genotype/".$row_Gen_Info['raw_datafile_archive']."'>".$row_Gen_Info['raw_datafile_archive']."</a></td></tr>";
             echo "</table>";
         } else {
-            echo "<a href=genotyping/download-vcf.php>Download from VCF</a>";
+            echo "Download <a href='".$config['base_url']."raw/genotype/" .$row_Gen_Info['sample_sheet_filename']."'>Samples (germplasm lines)</a><br><br>";
+            echo "Download <a href=genotyping/download-vcf.php>from VCF</a><br><br>";
         }
     } /* End of function type_DataInformation*/
 
@@ -356,25 +357,27 @@ class ShowData
             $max_missing = 0;
         }
         $min_maf = 0.01;//IN PERCENT
-    if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf']))
-      $min_maf = $_GET['mmaf'];
-    if ($min_maf > 100)
-      $min_maf = 100;
-    elseif ($min_maf < 0)
-      $min_maf = 0;
-    $outputheader = '';
-    $output = '';
-    $doneheader = false;
-    $delimiter ="\t";
-    //get lines and filter to get a list of markers which meet the criteria selected by the user
+        if (isset($_GET['mmaf']) && !is_null($_GET['mmaf']) && is_numeric($_GET['mmaf'])) {
+            $min_maf = $_GET['mmaf'];
+        }
+        if ($min_maf > 100) {
+            $min_maf = 100;
+        } elseif ($min_maf < 0) {
+            $min_maf = 0;
+        }
+        $outputheader = '';
+        $output = '';
+        $doneheader = false;
+        $delimiter ="\t";
+        //get lines and filter to get a list of markers which meet the criteria selected by the user
          
-    $sql = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
-		    SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
-		    FROM allele_frequencies AS af, markers as m
-		    WHERE m.marker_uid = af.marker_uid
-			    AND af.experiment_uid = ?
-		    group by af.marker_uid"; 
-    if ($stmt = mysqli_prepare($mysqli, $sql)) {
+        $sql = "SELECT af.marker_uid as marker, m.marker_name as name, SUM(af.aa_cnt) as sumaa, SUM(af.missing)as summis, SUM(af.bb_cnt) as sumbb,
+	    SUM(af.total) as total, SUM(af.ab_cnt) AS sumab
+	    FROM allele_frequencies AS af, markers as m
+	    WHERE m.marker_uid = af.marker_uid
+	    AND af.experiment_uid = ?
+	    group by af.marker_uid";
+        if ($stmt = mysqli_prepare($mysqli, $sql)) {
           mysqli_stmt_bind_param($stmt, "i", $experiment_uid);
           mysqli_stmt_execute($stmt);
           mysqli_stmt_bind_result($stmt, $marker, $name, $sumaa, $summis, $sumbb, $total, $sumab);

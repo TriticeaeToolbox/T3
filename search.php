@@ -134,7 +134,7 @@ if (isset($_REQUEST['deep'])) {
 
 /* Handle the results */
 // If no hits.
-if (count($found) < 1) {
+if (empty($found)) {
     if (isset($_REQUEST['deep'])) {
         print "<h3>In-Depth Search executed.</h3>";
         print "<p>Keyword \"$keywords\" not found.<p>";

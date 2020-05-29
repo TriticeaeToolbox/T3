@@ -44,13 +44,13 @@ class Downloads
                 $this->run_rscript2();
                 break;
             case 'download_session_v2':
-                $this->type1_session(V2);
+                $this->type1_session('V2');
                 break;
             case 'download_session_v3':
-                $this->type1_session(V3);
+                $this->type1_session('V3');
                 break;
             case 'download_session_v4':
-                $this->type1_session(V4);
+                $this->type1_session('V4');
                 break;
             case 'refreshtitle':
                 $this->refreshTitle();
@@ -111,12 +111,16 @@ class Downloads
         $saved_session = "";
         $message1 = $message2 = "";
 
-        if (isset($_SESSION['phenotype'])) {
-            $tmp = count($_SESSION['phenotype']);
-            if ($tmp==1) {
-                $saved_session = "$tmp phenotype ";
+        if (!empty($_SESSION['phenotype'])) {
+            if (is_array($_SESSION['phenotype'])) {
+                $tmp = count($_SESSION['phenotype']);
+                if ($tmp==1) {
+                    $saved_session = "$tmp phenotype ";
+                } else {
+                    $saved_session = "$tmp phenotypes ";
+                }
             } else {
-                $saved_session = "$tmp phenotypes ";
+                $saved_session = "1 phenotype ";
             }
             $message2 = "download phenotype and genotype data";
             $phenotype = $_SESSION['phenotype'];
@@ -240,16 +244,16 @@ class Downloads
         $max_missing = 10;
         $max_miss_line = 10;
         $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
-                ?>
-                </div>
-                <?php
-                if (!empty($_SESSION['training_lines']) && !empty($_SESSION['selected_lines'])) {
-                    $min_maf = 5;
-                    $max_missing = 10;
-                    $max_miss_line = 10;
-                    $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
-                    ?>
-                  <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
+        ?>
+        </div>
+        <?php
+        if (!empty($_SESSION['training_lines']) && !empty($_SESSION['selected_lines'])) {
+            $min_maf = 5;
+            $max_missing = 10;
+            $max_miss_line = 10;
+            $unique_str = chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80)).chr(rand(65, 80));
+            ?>
+            <p>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" />%
         &nbsp;&nbsp;&nbsp;&nbsp;
         Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data
         &nbsp;&nbsp;&nbsp;&nbsp;
@@ -268,10 +272,10 @@ class Downloads
                   <div id="step4" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%"></div>
                   <div id="step5" style="clear: both; float: left; margin-bottom: 1.5em; width: 100%">
 
-                    <?php
-                    echo "</div>";
-                }
+                <?php
                 echo "</div>";
+        }
+        echo "</div>";
     }
 
     /**
@@ -364,7 +368,7 @@ class Downloads
             unset($_SESSION['selected_lines']);
         }
         if (empty($_SESSION['selected_lines']) || empty($_SESSION['training_lines'])) {
-        ?>
+            ?>
         <table>
         <tr><td><b>Genome Wide Association (consensus genotype)</b><br>
         1. Select a <a href="downloads/select_all.php">set of lines, trait, and trials</a> (one trait).<br>
@@ -385,7 +389,7 @@ class Downloads
         </table>
         
         <p><a href="downloads/genomic-tools.php">Additional notes on GWAS and G-BLUP methods</a><br>
-        <?php
+            <?php
         }
         if (!empty($_SESSION['training_traits']) && !empty($_SESSION['training_trials'])) {
             echo "<table>";
@@ -435,20 +439,20 @@ class Downloads
                 echo "</table>";
             }
         } elseif (!empty($_SESSION['phenotype']) && !empty($_SESSION['selected_trials'])) {
-        ?>
-        <table>
-        <tr><td>Traits<td>Trials<td>Lines<td>Genetic Map
-        <tr><td>
-        <?php
-        $traits = $_SESSION['phenotype'];
-        $map = $_SESSION['selected_map'];
-        //$traits= implode(",",$tmp); use when I get this working for multiple traits
-        $sql = "select phenotypes_name from phenotypes where phenotype_uid IN ($traits)";
-        $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-        while ($row = mysqli_fetch_array($res)) {
-            echo "$row[0]<br>";
-        }
-        echo "<td>";
+            ?>
+            <table>
+            <tr><td>Traits<td>Trials<td>Lines<td>Genetic Map
+            <tr><td>
+            <?php
+            $traits = $_SESSION['phenotype'];
+            $map = $_SESSION['selected_map'];
+            //$traits= implode(",",$tmp); use when I get this working for multiple traits
+            $sql = "select phenotypes_name from phenotypes where phenotype_uid IN ($traits)";
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            while ($row = mysqli_fetch_array($res)) {
+                echo "$row[0]<br>";
+            }
+            echo "<td>";
         $tmp = $_SESSION['selected_trials'];
         $e_uid = implode(",", $tmp);
         $sql = "select trial_code from experiments where experiment_uid IN ($e_uid)";
@@ -502,7 +506,7 @@ class Downloads
           <br><table><tr><td>Minimum MAF &ge; <input type="text" name="mmaf" id="mmaf" size="2" value="<?php echo ($min_maf) ?>" /><br>
           Remove markers missing &gt; <input type="text" name="mmm" id="mmm" size="2" value="<?php echo ($max_missing) ?>" />% of data<br>
         <?php
-            if (!isset($_SESSION['geno_exps'])) { 
+            if (!isset($_SESSION['geno_exps'])) {
             ?>
         Remove lines missing &gt; <input type="text" name="mml" id="mml" size="2" value="<?php echo ($max_miss_line) ?>" />% of data<br>
             <?php
@@ -562,13 +566,14 @@ class Downloads
       }
       ?>
       </p>
-      <?php 
+      <?php
     }
 
     /**
      * setup results page for R stat analysis
      */
-    private function genomic_prediction() {
+    private function genomic_prediction()
+    {
         ?>
         <h2>Genomic Selection</h2>
         <img alt="spinner" id="spinner" src="images/ajax-loader.gif" style="display:none;" />
@@ -578,7 +583,8 @@ class Downloads
     /**
      * call R program for displaying histograms
      */
-    private function run_histo() {
+    private function run_histo()
+    {
         global $mysqli;
         $unique_str = $_GET['unq'];
         $dir = '/tmp/tht/';
@@ -600,7 +606,7 @@ class Downloads
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             $row = mysqli_fetch_array($res);
             $phenolabel = $row[0];
-            $phenounit = $row[1]; 
+            $phenounit = $row[1];
         
         $ntrials = 0;
         $triallabel = "";
@@ -1462,7 +1468,10 @@ class Downloads
         $delimiter = "\t";
         $output = '';
 
-        $experiments = implode(",", $experiments);
+        if (is_array($experiments)) {
+            $experiments = implode(',', $experiments);
+        }
+
         if (isset($_SESSION['filtered_lines'])) {
             $lines = $_SESSION['filtered_lines'];
         } else {
@@ -2340,7 +2349,7 @@ class Downloads
 	 * @param unknown_type $markers
 	 * @return string
 	 */
-	function type2_build_conflicts_download($lines,$markers) {
+	private function type2_build_conflicts_download($lines,$markers) {
           global $mysqli;
 	 
 	  if (count($markers)>0) {
