@@ -6,7 +6,7 @@
  */
 
 require 'config.php';
-//define("DEBUG", 3);
+define("DEBUG", 0);
 
 /*
  * Logged in page initialization
@@ -63,6 +63,9 @@ class Annotations_Check
         $this->type_Annotation();
 
         $footer_div = 1;
+        ?>
+        <script type="text/javascript" src="curator_data/trial.js"></script>
+        <?php
         include $config['root_dir'].'theme/footer.php';
     }
 
@@ -70,19 +73,6 @@ class Annotations_Check
     {
         global $mysqli;
         ?>
-        <script type="text/javascript">
-
-        function update_database(filepath, filename, username, data_public_flag)
-        {
-
-            var url='<?php echo $_SERVER[PHP_SELF];?>?function=typeDatabase&linedata=' + filepath + '&file_name=' + filename + '&user_name=' + username + '&public=' + data_public_flag;
-
-            // Opens the url in the same window
-            window.open(url, "_self");
-        }
-
-        </script>
-
         <style type="text/css">
     th {background: #5B53A6 !important; color: white !important; border-left: 2px solid #5B53A6; white-space: nowrap }
     table {background: none; border-collapse: collapse}
