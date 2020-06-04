@@ -285,7 +285,7 @@ class LineNames_Check
 
 	// Initialize searching for lines that new vs. to be updated.
 	$line_inserts_str = "";
-	$line_uid = "";
+	$line_uid = array();
 	$line_uids = array();
 	$line_uids_multiple = "";
 	$lines_seen = array();
@@ -423,7 +423,7 @@ class LineNames_Check
 		}
 		else {
 		  //update the line record
-		  $line_uids[] = implode(",",$line_uid);
+		  $line_uids[] = $line_uid[0];
 		  // What??! $line_uids is a string, not an array.  And it contains exactly 1 uid.
 		}
 	      }
@@ -484,7 +484,7 @@ class LineNames_Check
 	  } /* end of if empty first cell */
 	} /* end of for ($irow) */
 
-	if (($line_uids) != "") {
+	if (empty($line_uids)) {
 	  // $line_uids is a string containing 1 uid.  
 	  $line_updates =implode(",",$line_uids);
 	  // Get line names.
