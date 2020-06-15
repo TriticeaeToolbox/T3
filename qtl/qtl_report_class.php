@@ -485,9 +485,6 @@ class Downloads
                     if ($row2 = mysqli_fetch_array($res2)) {
                         $chrom = $row2[0];
                         $pos = $row2[1];
-                    } else {
-                        $chrom = "";
-                        $pos = "";
                     }
                     $link1 = "/jbrowse/?data=wheat&loc=$chrom:$pos";
                     $link2 = "<a target=\"_new\" href=\"$target_url" . "THTdownload_gwa1_" . $gexp . "_" . $pexp . "_" . $puid . ".png\">Manhattan</a>";
@@ -586,11 +583,10 @@ class Downloads
                 mysqli_stmt_fetch($stmt);
                 mysqli_stmt_close($stmt);
             }
-            $sql = "select phenotype_exp, gwas from $database  where phenotype_uid IN ($puid)";
+            $sql = "select gwas from $database  where phenotype_uid IN ($puid)";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
             while ($row = mysqli_fetch_array($res)) {
-                    $pexp = $row[0];
-                    $gwas = json_decode($row[1]);
+                    $gwas = json_decode($row[0]);
                     foreach ($gwas as $val) {
                         $marker = $val[0];
                         $chrom = $val[1];
@@ -998,6 +994,8 @@ class Downloads
             $gwas = json_decode($row[1]);
             foreach ($gwas as $val) {
                 $marker = $val[0];
+                $chrom = $val[1];
+                $pos = $val[2];
                 $zvalue = $val[3];
                 $qvalue = $val[4];
                 $pvalue = $val[5];
@@ -1019,8 +1017,6 @@ class Downloads
                             $chrom = "chr" . $chrom;
                         }
                     } else {
-                        $chrom = "";
-                        $pos = "";
                         $start = "";
                         $stop = "";
                     }
