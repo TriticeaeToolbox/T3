@@ -101,6 +101,7 @@ class Genes
         //echo "<a href=" . $config['base_url'] . "genes/?assembly=" . $assembly . "&search=HORVU2Hr1G069650>HORVU2Hr1G069650</a>, ";
         //echo "<a href=" . $config['base_url'] . "genes/?assembly=" . $assembly . "&search=abp1>abp1</a>, ";
         echo "<a href=" . $config['base_url'] . "genes/?assembly=" . $assembly . "&search=Dormancy>Dormancy</a><br><br>";
+        $query = htmlentities($query);
         ?>
         <form>
         <input type="hidden" name="assembly" value=<?php echo $assembly ?>>
