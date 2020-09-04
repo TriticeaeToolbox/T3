@@ -77,8 +77,12 @@ function get_imgmap_cladematrix(array $mx, array $mxnm, $cell_size, $lnm)
     }
 
     // image map for pages
-	$selected_markers_all=$_SESSION['clicked_buttons'];
-	$cnt_all=count($selected_markers_all);
+        if (isset($_SESSION['clicked_buttons'])) {
+	    $selected_markers_all=$_SESSION['clicked_buttons'];
+	    $cnt_all=count($selected_markers_all);
+        } else {
+            $cnt_all = 0;
+        }
 	$mkrppg=20; // display 20 markers per page
 	$page=0; // default page number to 0, 
 	if (isset($_GET['pagenum'])) $page=$_GET['pagenum'];

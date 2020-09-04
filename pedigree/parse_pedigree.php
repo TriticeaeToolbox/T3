@@ -24,7 +24,11 @@ if (isset($pstr) && $pstr!=='') {
     // The difference between the programs are just where the pedigree string
     // is passed from.
     print "Alleles of selected markers are shown on the right. &nbsp;&nbsp;<br>";
-    $markers = $_SESSION['clicked_buttons'];
+    if (isset($_SESSION['clicked_buttons'])) {
+        $markers = $_SESSION['clicked_buttons'];
+    } else {
+        $markers = array();
+    }
     for ($i = 0; $i<count($markers); $i++) {
         $res = mysqli_query($mysqli, "select marker_name from markers where marker_uid = $markers[$i]");
         $markername = mysqli_fetch_row($res);
