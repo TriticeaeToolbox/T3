@@ -60,7 +60,7 @@ class Downloads
     private function type1Select()
     {
         global $config;
-        include $config['root_dir'].'theme/normal_header.php';
+        include $config['root_dir'].'theme/admin_header2.php';
         $phenotype = "";
         $lines = "";
         $markers = "";
@@ -88,7 +88,7 @@ class Downloads
         ?>        
         </div>
         <div id="step1" style="float: left; margin-bottom: 1.5em;">
-        <script type="text/javascript" src="phenotype/downloads05.js"></script><br>
+        <script type="text/javascript" src="phenotype/downloads06.js"></script><br>
         <?php
         $this->type1_phenotype();
         ?>
@@ -166,24 +166,24 @@ class Downloads
                 }
             }
         }
-      if (isset($_SESSION['selected_traits'])) {
-        $ntraits=count($_SESSION['selected_traits']);
-        echo "<table>";
-        echo "<tr><th>Currently selected traits</th><td><th>Currently selected trials</th>";
-        print "<tr><td><select name=\"deselLines[]\" multiple=\"multiple\" onchange=\"javascript: remove_phenotype_items(this.options)\">";
-          $phenotype_ary = $_SESSION['selected_traits'];
-          $sql = "select phenotypes_name from phenotypes where phenotype_uid=?";
-          $stmt = mysqli_prepare($mysqli, $sql);
-          mysqli_stmt_bind_param($stmt, "i", $uid);  
-          foreach ($phenotype_ary as $uid) {
-              mysqli_stmt_execute($stmt);
-              mysqli_stmt_bind_result($stmt, $selval);
-              mysqli_stmt_fetch($stmt);
-              print "<option value=\"$uid\" >$selval</option>\n";
-          }
-          mysqli_stmt_close($stmt);
-        print "</select>";
-        echo "<td><td><select name=\"deseLines[]\" multiple=\"multiple\" onchange=\"javascript: remove_trial_items(this.options)\">";
+        if (isset($_SESSION['selected_traits'])) {
+            $ntraits=count($_SESSION['selected_traits']);
+            echo "<table>";
+            echo "<tr><th>Currently selected traits</th><td><th>Currently selected trials</th>";
+            print "<tr><td><select name=\"deselLines[]\" multiple=\"multiple\" onchange=\"javascript: remove_phenotype_items(this.options)\">";
+            $phenotype_ary = $_SESSION['selected_traits'];
+            $sql = "select phenotypes_name from phenotypes where phenotype_uid=?";
+            $stmt = mysqli_prepare($mysqli, $sql);
+            mysqli_stmt_bind_param($stmt, "i", $uid);
+            foreach ($phenotype_ary as $uid) {
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_bind_result($stmt, $selval);
+                mysqli_stmt_fetch($stmt);
+                print "<option value=\"$uid\" >$selval</option>\n";
+            }
+            mysqli_stmt_close($stmt);
+            print "</select>";
+            echo "<td><td><select name=\"deseLines[]\" multiple=\"multiple\" onchange=\"javascript: remove_trial_items(this.options)\">";
         if (isset($_SESSION['selected_trials'])) {
           $trials_ary = $_SESSION['selected_trials'];
           foreach ($trials_ary as $uid) {
@@ -241,7 +241,7 @@ class Downloads
 		<th>Category</th>
 	    </tr>
 	    <tr><td>
-	    <select name="phenotype_categories" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_categories(this.options)">
+	    <select name="phenotype_categories" id="pheno_cat" multiple="multiple" style="height: 12em;" onchange="javascript: update_phenotype_categories(this.options)">
             <?php
                 $sql = "select distinct(phenotype_category.phenotype_category_uid) as id, phenotype_category_name as name from phenotype_category, phenotypes
                   where phenotype_category.phenotype_category_uid = phenotypes.phenotype_category_uid";
@@ -259,15 +259,15 @@ class Downloads
 		</td>
 		</table>
                 <?php
-                if (count($_SESSION['selected_lines']) > 0) {
-                ?>
-	        Show only traits and trials<br>
-                <input type="checkbox" name = "subset" id="selectwithin" <?php echo "$sub_ckd"; ?> onclick="javascript: update_lines_within(this.value)">contained in selected lines<br>
-		<?php
+                if (isset($_SESSION['selected_lines']) && count($_SESSION['selected_lines']) > 0) {
+                    ?>
+	            Show only traits and trials<br>
+                    <input type="checkbox" name = "subset" id="selectwithin" <?php echo "$sub_ckd"; ?> onclick="javascript: update_lines_within(this.value)">contained in selected lines<br>
+		    <?php
                 } else {
-                ?>
-                <input type="hidden" name = "subset" id="selectwithin">
-                <?php
+                    ?>
+                    <input type="hidden" name = "subset" id="selectwithin">
+                    <?php
                 }
 	}
 
