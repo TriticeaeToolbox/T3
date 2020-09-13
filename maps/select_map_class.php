@@ -227,6 +227,7 @@ class Maps
                 $uid = $row[0];
                 $markers[$uid] = 1;
             }
+            $markers_filtered = array();
             foreach ($markers_map as $marker_uid) {
                 if (isset($markers[$marker_uid])) {
                     $markers_filtered[] = $marker_uid;
