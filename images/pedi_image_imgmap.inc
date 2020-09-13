@@ -13,28 +13,28 @@ function get_imgmap_cladematrix(array $mx, array $mxnm, $cell_size, $lnm)
     $cell_height=11; // for line names
     $hlw=0.5; // half of line width
     $bmg=1; // margin for button. The gap between line-name rectangles.  Larger values shrink the rectangle.
-	$cmg=2; // vertical margin for allele values.
-	$nwidth=14; // width of allele values
-// 	$nheight=$cell_height; // height of a character
- 	$nheight=11; // height of a character. Used for marker alleles
-	$imw=$maxcol*$cell_width+100+3*$cell_width+$nwidth*strlen($dstr);
-	$imh=$maxlv*$cell_height+100;
-	$x=50;
-	$y=50;
-	$imgmap=array();
+    $cmg=2; // vertical margin for allele values.
+    $nwidth=14; // width of allele values
+//  $nheight=$cell_height; // height of a character
+    $nheight=11; // height of a character. Used for marker alleles
+    $imw=$maxcol*$cell_width+100+3*$cell_width+$nwidth*strlen($dstr);
+    $imh=$maxlv*$cell_height+100;
+    $x=50;
+    $y=50;
+    $imgmap=array();
     for ($i=$maxcol-1; $i>=0; $i--) {
-    		for ($j=0; $j<$maxlv; $j++) {
-    			$xcoor=$x+($maxcol-1-$i)*$cell_width;
-    			$ycoor=$y+$j*$cell_height;
-    			// if ($i==0) imageline($im, $x, $ycoor+$cell_height, $x+($maxcol+1)*$cell_width, $ycoor+$cell_height, IMG_COLOR_STYLED);
-    			if ($mx[$j][$i]==2) { // draw a T
-					// for purdy compatibility
-					$bstr=$mxnm[$j][$i];
-					$bstr=preg_replace('/^\d+\*/','', $bstr);
-					$bstr=preg_replace('/\*\d+$/','',$bstr);
-					array_push($imgmap, array('shape'=>'rect', 'coords'=>implode(",",array ($xcoor+$bmg, $ycoor+$bmg, $xcoor+$cell_width-$bmg, $ycoor+$cell_height-5)), 'href'=>"pedigree/show_pedigree.php?line=".urlencode($bstr), 'alt'=>$bstr, 'title'=>$bstr));
-    				// array_push($imgmap, array('shape'=>'rect', 'coords'=>implode(",",array ($xcoor+$bmg, $ycoor+$bmg, $xcoor+$cell_width-$bmg, $ycoor+$cell_height-5)), 'href'=>"pedigree/show_pedigree.php?line=".urlencode($mxnm[$j][$i]), 'alt'=>$mxnm[$j][$i], 'title'=>$mxnm[$j][$i]));
-    				
+        for ($j=0; $j<$maxlv; $j++) {
+            $xcoor=$x+($maxcol-1-$i)*$cell_width;
+            $ycoor=$y+$j*$cell_height;
+            // if ($i==0) imageline($im, $x, $ycoor+$cell_height, $x+($maxcol+1)*$cell_width, $ycoor+$cell_height, IMG_COLOR_STYLED);
+            if ($mx[$j][$i]==2) { // draw a T
+                // for purdy compatibility
+                $bstr=$mxnm[$j][$i];
+                $bstr=preg_replace('/^\d+\*/','', $bstr);
+                $bstr=preg_replace('/\*\d+$/','',$bstr);
+		array_push($imgmap, array('shape'=>'rect', 'coords'=>implode(",",array ($xcoor+$bmg, $ycoor+$bmg, $xcoor+$cell_width-$bmg, $ycoor+$cell_height-5)), 'href'=>"pedigree/show_pedigree.php?line=".urlencode($bstr), 'alt'=>$bstr, 'title'=>$bstr));
+    			// array_push($imgmap, array('shape'=>'rect', 'coords'=>implode(",",array ($xcoor+$bmg, $ycoor+$bmg, $xcoor+$cell_width-$bmg, $ycoor+$cell_height-5)), 'href'=>"pedigree/show_pedigree.php?line=".urlencode($mxnm[$j][$i]), 'alt'=>$mxnm[$j][$i], 'title'=>$mxnm[$j][$i]));
+    			
     			}
     		}
     }
@@ -83,10 +83,13 @@ function get_imgmap_cladematrix(array $mx, array $mxnm, $cell_size, $lnm)
         } else {
             $cnt_all = 0;
         }
+        $smkrs_all = array();
 	$mkrppg=20; // display 20 markers per page
 	$page=0; // default page number to 0, 
 	if (isset($_GET['pagenum'])) $page=$_GET['pagenum'];
-	if ($page>floor(($cnt_all-1)/$mkrppg)) $page=floor((count($smkrs_all)-1)/$mkrppg);
+	if ($page>floor(($cnt_all-1)/$mkrppg)) {
+            $page=floor((count($smkrs_all)-1)/$mkrppg);
+        }
 	if ($page<0) $page=0;
 	$leftlink="";
 	$rightlink="";
