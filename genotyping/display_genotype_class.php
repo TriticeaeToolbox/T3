@@ -68,8 +68,8 @@ class ShowData
     {
         global $mysqli;
         global $config;
-        $_SESSION[selected_lines] = explode(",", $_POST[linelist]);
-        $exps_str = $_POST[genoexp];
+        $_SESSION['selected_lines'] = explode(",", $_POST['linelist']);
+        $exps_str = $_POST['genoexp'];
         $experiments = explode(',', $exps_str);
         $_SESSION['geno_exps'] = $experiments;
         $sql = "select count(marker_uid) from allele_bymarker_exp_101 where experiment_uid in ($exps_str)";
@@ -385,7 +385,7 @@ class ShowData
           $num_maf = $num_miss = 0;
           while (mysqli_stmt_fetch($stmt)) {
               $maf = round(100*min((2*$sumaa+$sumab)/(2*$total),($sumab+2*$sumbb)/(2*$total)),1);
-              $miss = round(100*$summis/$total,1);
+              $miss = round(100*$summis/$total, 1);
               if (($maf >= $min_maf) AND ($miss <= $max_missing)) {
 	        $marker_names[] = $name;
 	        $outputheader .= $delimiter.$name;
