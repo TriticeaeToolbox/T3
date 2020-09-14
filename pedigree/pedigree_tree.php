@@ -24,9 +24,9 @@ if (isset($_GET['line_name'])) {
 }
 
 
-    ?>
-    <?php echo (htmlspecialchars($_REQUEST['line']) != "") ? " : " . htmlspecialchars($_REQUEST['line']) : "" ; ?></h2>
-    <div class="section">
+?>
+<?php echo (htmlspecialchars($_REQUEST['line']) != "") ? " : " . htmlspecialchars($_REQUEST['line']) : "" ; ?></h2>
+<div class="section">
 
 <?php
 if (isset($_GET['line_name'])) {
@@ -68,17 +68,21 @@ if (isset($_GET['line_name'])) {
 if (isset($_REQUEST['line']) && ($_REQUEST['line'] != "")) {
     echo "<div style=\"text-align: left;border:none\">\n";
     print "Alleles of selected markers are shown on the right. &nbsp;&nbsp;<br>";
-	$markers = $_SESSION['clicked_buttons'];
-	for ($i = 0; $i<count($markers); $i++) {
-	  $res = mysqli_query($mysqli, "select marker_name from markers where marker_uid = $markers[$i]");
-	  $markername = mysqli_fetch_row($res);
-	  $num = $i+1;
-	  print "<b>$num</b>: $markername[0]<br>";
-	}
+    if (isset($_SESSION['clicked_buttons'])) {
+        $markers = $_SESSION['clicked_buttons'];
+    } else {
+        $markers = array();
+    }
+    for ($i = 0; $i<count($markers); $i++) {
+        $res = mysqli_query($mysqli, "select marker_name from markers where marker_uid = $markers[$i]");
+        $markername = mysqli_fetch_row($res);
+        $num = $i+1;
+        print "<b>$num</b>: $markername[0]<br>";
+    }
 	print "<a href = ".$config['base_url']."genotyping/marker_selection.php>Select markers.</a>";
 	// Search the pedigree relations to get the pedigree tree
 	$nvisited=array();
-	$pediarr=array($_REQUEST['line']=>getPedigrees_r($_REQUEST['line'],$nvisited));
+	$pediarr=array($_REQUEST['line']=>getPedigrees_r($_REQUEST['line'], $nvisited));
 	$linename=$_REQUEST['line'];
 	// Generate the pedigree annotation with the names of the internal nodes
 	// This is the working data structure representation in THT for pedigree
