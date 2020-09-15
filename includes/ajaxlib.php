@@ -1046,16 +1046,16 @@ function SelcMarkerSet($arr)
             $sql = "select marker_name from markers where marker_uid=$mkruid";
             $result=mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
             while ($row=mysqli_fetch_assoc($result)) {
-              $selval=$row['marker_name'];
-              if(! in_array($selval,$markerlist)) {
-                 array_push($markerlist, $selval);
-                 print "<option value='$mkruid'>$selval</option>\n";
-              }
+                $selval=$row['marker_name'];
+                if (!in_array($selval, $markerlist)) {
+                    array_push($markerlist, $selval);
+                    print "<option value='$mkruid'>$selval</option>\n";
+                }
             }
-         }
-         print "</select></table>";
-         print "<p><input type='submit' value='Remove marker' style='color: blue' /></p>";
-         print "</form>";
+        }
+        print "</select></table>";
+        print "<p><input type='submit' value='Remove marker' style='color: blue' /></p>";
+        print "</form>";
     }
     if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0)) {
         $count = count($_SESSION['clicked_buttons']);
@@ -1107,7 +1107,7 @@ function SelcExperiment($arr)
     } else {
         die("Error: genotype experiment not found\n");
     }
-    if ((count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) {
+    if (isset($_SESSION['clicked_buttons']) && (count($_SESSION['clicked_buttons']) > 0) && (count($_SESSION['clicked_buttons']) < 1000)) {
         print "<form id='deselMkrsForm' action='".$_SERVER['PHP_SELF']."' method='post'>";
         print "<table><tr><td>\n";
         print "<select id='mlist' name='deselMkrs[]' multiple='multiple' size=10>";
@@ -1184,7 +1184,8 @@ function DispMarkers($arr)
     }
 }
 
-function DispMarkerSet($arr) {
+function DispMarkerSet($arr)
+{
     global $mysqli;
     if (! isset($arr)) {
         print "Invalid inputs";
@@ -1210,14 +1211,15 @@ function DispMarkerSet($arr) {
         }
         //print "</textarea>";
     } else {
-      print "$sql\n";
+        print "$sql\n";
     }
 }
 
 /**
  * This function is used in advanced_search.php. It is the backend for the phenotype selection table, cell 1.
  */
-function DispCategorySel($arr) {
+function DispCategorySel($arr)
+{
     global $mysqli;
 	if(! isset($arr['id']) || !is_numeric($arr['id']) ) {
 		echo "Please Select A Category";
