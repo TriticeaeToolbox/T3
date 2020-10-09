@@ -106,8 +106,8 @@ if (empty($_GET) or $_REQUEST['reselect']) {
 
     <?php
     // If reselecting parameters, read in the old values.
-    $weight = $_REQUEST[wt];
-    $reverse = $_REQUEST[reverse];
+    $weight = $_REQUEST['wt'];
+    $reverse = $_REQUEST['reverse'];
     // If user hasn't yet specified the relative weights, divide equally.
     foreach ($traitnames as $tn) {
         if (!$weight[$tn]) {
