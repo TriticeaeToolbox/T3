@@ -39,16 +39,15 @@ if (isset($_GET['uid'])) {
     $sql = "select marker_name, chrom, bin, pos from marker_report_reference
       inner join allele_frequencies af1
       on marker_report_reference.marker_uid = af1.marker_uid
-      and af1.experiment_uid = $uid
-      and assembly_name = \"$assembly\"
+      and af1.experiment_uid = ? 
+      and assembly_name = ? 
       order by marker_name";
+    $stmt = mysqli_prepare($mysqli, $sql);
+    mysqli_stmt_bind_param($stmt, 'is', $uid, $assembly);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_bind_result($stmt, $marker1_name, $chrom, $contig, $pos);
     $count = 0;
-    $result = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-    while ($row=mysqli_fetch_row($result)) {
-        $marker1_name = $row[0];
-        $chrom = $row[1];
-        $contig = $row[2];
-        $pos = $row[3];
+    while (mysqli_stmt_fetch($stmt)) {
         if (preg_match("/IWGS/", $assembly)) {
             $jbrowse = "<tr><td>$marker1_name<td><a href=\"" . $browserLink[$assembly] . "$contig:$pos\" target=\"_blank\">$contig<td>$pos";
         } else {
@@ -56,6 +55,7 @@ if (isset($_GET['uid'])) {
         }
         echo "$jbrowse\n";
     }
+    mysqli_stmt_close($stmt);
     echo "</table>";
 } else {
     $sql = "select experiment_uid, count(*) from allele_frequencies
