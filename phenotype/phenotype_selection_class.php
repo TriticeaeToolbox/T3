@@ -60,7 +60,7 @@ class Downloads
     private function type1Select()
     {
         global $config;
-        include $config['root_dir'].'theme/admin_header2.php';
+        include $config['root_dir'].'theme/admin_header.php';
         $phenotype = "";
         $lines = "";
         $markers = "";
