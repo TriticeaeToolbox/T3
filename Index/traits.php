@@ -56,7 +56,7 @@ if (!isset($_SESSION['selected_traits'])) {
     finish("Please <a href=".$config['base_url']."phenotype/phenotype_selection.php>choose a set of traits</a> to combine.");
 }
 $i = 0;
-foreach ($_SESSION[selected_traits] as $traitid) {
+foreach ($_SESSION['selected_traits'] as $traitid) {
     $traitids[$i] = $traitid;
     $traitnames[$i] = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid=$traitid");
     $i++;
@@ -68,7 +68,7 @@ if ($traitcount == 0) {
 }
 // Currently Selected Trials
 $j = 0;
-foreach ($_SESSION[selected_trials] as $trialid) {
+foreach ($_SESSION['selected_trials'] as $trialid) {
     $trialids[$j] = $trialid;
     $trialnames[$j] = mysql_grab("select trial_code from experiments where experiment_uid = $trialid");
     $j++;
