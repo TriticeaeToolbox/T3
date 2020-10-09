@@ -216,6 +216,10 @@ foreach ($entries as $cl) {
                         $linecount++;
                     }
                 }
+                if ($linecount == 0) {
+                    echo "Error: no lines selected\n";
+                    continue;
+                }
                 $mean[$tn][$trial] = $sum / $linecount;
                 foreach ($lines as $line) {
                     if ($actual[$tn][$trial][$line]) {
