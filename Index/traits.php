@@ -195,8 +195,8 @@ foreach ($entries as $cl) {
         order by phenotypes_name, trial_code, abs(value) desc";
     $res = mysqli_query($mysqli, $sql) or finish("<p>MySQL error: ". mysqli_error($mysqli));
     // Read it into the master array $actual, indexed by (trait, trial, line).
-    while ($row = mysqli_fetch_assoc($res)) {
-        $actual[$row["phenotypes_name"]][$row["trial_code"]][$row["line_record_name"]] = $row["value"];
+    while ($row = mysqli_fetch_array($res)) {
+        $actual[$row['phenotypes_name']][$row['trial_code']][$row['line_record_name']] = $row['value'];
         // Get the names of the lines.
         if (!in_array($row[5], $lines)) {
             $lines[] = $row[5];
