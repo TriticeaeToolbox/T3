@@ -88,7 +88,7 @@ class Downloads
         ?>        
         </div>
         <div id="step1" style="float: left; margin-bottom: 1.5em;">
-        <script type="text/javascript" src="phenotype/downloads06.js"></script><br>
+        <script type="text/javascript" src="phenotype/downloads05.js"></script><br>
         <?php
         $this->type1_phenotype();
         ?>
