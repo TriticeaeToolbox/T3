@@ -53,7 +53,7 @@ function scaled($rawvalue, $trait, $trial)
 
 // Get the Currently Selected Traits.
 if (!isset($_SESSION['selected_traits'])) {
-    finish("Please <a href=".$config[base_url]."phenotype/phenotype_selection.php>choose a set of traits</a> to combine.");
+    finish("Please <a href=".$config['base_url']."phenotype/phenotype_selection.php>choose a set of traits</a> to combine.");
 }
 $i = 0;
 foreach ($_SESSION[selected_traits] as $traitid) {
@@ -64,7 +64,7 @@ foreach ($_SESSION[selected_traits] as $traitid) {
 $traitcount = count($traitids);
 $traitlist = implode(',', $traitids);
 if ($traitcount == 0) {
-    finish("Please <a href=".$config[base_url]."phenotype/phenotype_selection.php>choose a set of traits</a> to combine.");
+    finish("Please <a href=".$config['base_url']."phenotype/phenotype_selection.php>choose a set of traits</a> to combine.");
 }
 // Currently Selected Trials
 $j = 0;
@@ -98,7 +98,7 @@ if (empty($_GET) or $_REQUEST['reselect']) {
     ?>
     Choose relative weights and a scaling method to combine the traits into an index.
     <br>If smaller values of a trait are better, reverse the scale.
-    <br>Data will come from the <a href=<?php echo $config[base_url]?>phenotype/phenotype_selection.php>currently selected trials</a>.
+    <br>Data will come from the <a href=<?php echo $config['base_url']?>phenotype/phenotype_selection.php>currently selected trials</a>.
     <br><br>
     <form>
     <table>
@@ -195,8 +195,8 @@ foreach ($entries as $cl) {
         order by phenotypes_name, trial_code, abs(value) desc";
     $res = mysqli_query($mysqli, $sql) or finish("<p>MySQL error: ". mysqli_error($mysqli));
     // Read it into the master array $actual, indexed by (trait, trial, line).
-    while ($row = mysqli_fetch_array($res)) {
-        $actual[$row[phenotypes_name]][$row[trial_code]][$row[line_record_name]] = $row[value];
+    while ($row = mysqli_fetch_assoc($res)) {
+        $actual[$row["phenotypes_name"]][$row["trial_code"]][$row["line_record_name"]] = $row["value"];
         // Get the names of the lines.
         if (!in_array($row[5], $lines)) {
             $lines[] = $row[5];
