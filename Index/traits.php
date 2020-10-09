@@ -154,10 +154,10 @@ foreach ($entries as $cl) {
 <?php
     // end of if (empty($_REQUEST))
 } else { // Submit button was clicked.
-    $weight = $_REQUEST[wt];
+    $weight = $_REQUEST['wt'];
     $totalwt = array_sum($weight); // Needn't add up to 100.
-    $reverse = $_REQUEST[reverse];
-    $scaling = $_REQUEST[scaling];
+    $reverse = $_REQUEST['reverse'];
+    $scaling = $_REQUEST['scaling'];
     if ($_REQUEST['base-line'] != 0) {
         $scaling = "percent";
     }
