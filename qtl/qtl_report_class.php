@@ -705,7 +705,6 @@ class Downloads
                     if ($qvalue < 0.05) {
                         $goodList[$marker_name] = 1;
                     }
-
                 }
             } else {
                 foreach ($gwas as $val) {
@@ -800,6 +799,7 @@ class Downloads
         $browserLink['RefSeq1.1'] = "https://wheat.pw.usda.gov/jb?data=/ggds/whe-iwgsc2018&loc=";
         $browserLink['Wheat_Pangenome'] = "https://triticeaetoolbox.org/jbrowse/?data=wheat2017&loc=";
         $browserLink['OatSeedRef90'] = "https://triticeaetoolbox.org/jbrowse/?data=oat&loc=";
+        $browserLink['PepsiCo 2019'] = "https://wheat.pw.usda.gov/jb?data=/ggds/oat-ot3098-pepsico&loc=";
         // get species
         if (preg_match("/([A-Za-z]+)\/[^\/]+\/[^\/]+$/", $_SERVER['PHP_SELF'], $match)) {
             $species = $match[1];
