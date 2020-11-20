@@ -1,13 +1,11 @@
 <?php
 require 'config.php';
 require $config['root_dir'].'includes/bootstrap.inc';
-require $config['root_dir'].'theme/admin_header2.php';
+require $config['root_dir'].'theme/admin_header.php';
 $mysqli = connecti();
 ?>
 <script src="<?php echo $config['base_url']?>analyze/boxplot.js"></script>
-<script src="<?php echo $config['base_url']?>analyze/html2canvas.js"></script>
-<script src="<?php echo $config['base_url']?>analyze/boxplotdownload.js"></script>
-<link rel="stylesheet" type="text/css" href="<?php echo $config[base_url]?>analyze/boxplot.css" />
+<link rel="stylesheet" type="text/css" href="<?php echo $config['base_url']?>analyze/boxplot.css" />
 
 <h1>Boxplot summaries of Trait values in selected Trials</h1>
 
@@ -15,70 +13,46 @@ $mysqli = connecti();
 $trials = $_SESSION['selected_trials'];
 $traits = $_SESSION['selected_traits'];
 if (!$trials or !$traits) {
-    echo "Please select at least one <a href='$config[base_url]phenotype/phenotype_selection.php'>Trait and Trial</a>.<p>";
+    echo "Please select at least one <a href=\"" . $config['base_url'] . "phenotype/phenotype_selection.php\">Trait and Trial</a>.<p>";
 } else {
     foreach ($traits as $trait) {
-      $sql = "select phenotypes_name from phenotypes where phenotype_uid = ?";
-      if ($stmt = mysqli_prepare($mysqli, $sql)) {
-        mysqli_stmt_bind_param($stmt, "i", $trait);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $trtname);
-        mysqli_stmt_fetch($stmt);
-        mysqli_stmt_close($stmt);
+        $trtname = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid = $trait");
         print "<b>$trtname</b>";
-      }
-      print "<table><tr>";
-      foreach ($trials as $trial) {
-        $sql = "select trial_code from experiments where experiment_uid = ?";
-        if ($stmt = mysqli_prepare($mysqli, $sql)) {
-          mysqli_stmt_bind_param($stmt, "i", $trial);
-          mysqli_stmt_execute($stmt);
-          mysqli_stmt_bind_result($stmt, $name);
-          mysqli_stmt_fetch($stmt);
-          mysqli_stmt_close($stmt);
-        }
-        $valuecount = mysql_grab("select count(p.value)
+        print "<table><tr>";
+        foreach ($trials as $trial) {
+            $name = mysql_grab("select trial_code from experiments where experiment_uid = $trial");
+            $valuecount = mysql_grab("select count(p.value)
 			      from tht_base t, phenotype_data p
 			      where t.tht_base_uid = p.tht_base_uid
 			      and t.experiment_uid = $trial
 			      ");
-      print "<td style='position:relative; height:250px; vertical-align:top; 
+            print "<td style='position:relative; height:250px; vertical-align:top; 
              width:150px'><a href='display_phenotype.php?trial_code=$name'>$name</a><br>";
-      print "n = <b>$valuecount</b><p>";
+            print "n = <b>$valuecount</b><p>";
       // Construct a div id for this table cell.
-      print "<div id=bp-$trait-$trial></div></td>";
-      $sql = "select pd.value
+            print "<div id=bp-$trait-$trial></div></td>";
+            $sql = "select pd.value
             from tht_base t, phenotype_data pd
             where t.experiment_uid = $trial
             and t.tht_base_uid = pd.tht_base_uid
             and pd.phenotype_uid = $trait";
-      $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-      $vals = array();
-      while ($row = mysqli_fetch_array($res)) {
-          $vals[] = round($row[0], 1);
-      }
-      $vlst = implode(",", $vals);
-      $vallist[$trait][$trial] = (string) $vlst;
-      ?>
-      <script type="text/javascript">
-      var data = new Array(<?php echo $vallist[$trait][$trial] ?>);
-      var cell = '<?php echo "bp-$trait-$trial" ?>';
-      createBoxPlot(data, 200, cell);
-      </script>
-      <!--button type="button" value="download" onclick="downloadImage(<?php echo "'bp-" . $trait . "-" . $trial . "'"; ?>);">Download Image</button-->
-<?php
-  }
-    print "</table>";
-    ?>
-    <script type="text/javascript">
-      html2canvas(document.body), {
-        onrenderd: function(canvas) {
-            document.body.appendChild(canvas);
+            $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+            $vals = array();
+            while ($row = mysqli_fetch_array($res)) {
+                $vals[] = round($row[0], 1);
+            }
+            $vlst = implode(",", $vals);
+            $vallist[$trait][$trial] = (string) $vlst;
+            ?>
+            <script type="text/javascript">
+            var data = new Array(<?php echo $vallist[$trait][$trial] ?>);
+            var cell = '<?php echo "bp-$trait-$trial" ?>';
+            createBoxPlot(data, 200, cell);
+            </script>
+            <?php
         }
-        });
-      </script>
-    <?php
-  }
+        print "</table>";
+    }
 }
 ?>
 <div class='section' style='font-size:90%'>
