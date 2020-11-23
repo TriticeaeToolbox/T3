@@ -154,7 +154,7 @@ class SelectMarkers
                     $pos = $row[1];
                     $map_list[$marker_uid] = $pos;
                 }
-                $temp = count($map_list);
+                //$temp = count($map_list);
                 //echo "$temp found in map<br>\n";
                 $sql = "select marker_uid, marker_name, alleles from allele_bymarker_exp_ACTG where experiment_uid = $geno_exp";
                 //echo "$sql<br>\n";
