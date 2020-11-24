@@ -240,7 +240,7 @@ if (!isset($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) =
   }
   $empty = array();
   foreach ($tmp as $id) {
-    $empty[$id] = NA;
+    $empty[$id] = 'NA';
   }
   
   if (isset($_SESSION['selected_trials'])) {
