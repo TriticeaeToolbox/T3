@@ -731,6 +731,7 @@ class Downloads
         header('Content-Disposition: attachment;filename="qtl_detail.csv"');
 
         echo "\"trait\",\"marker\",\"chromosome\",position,gene,z-score,q-value,p-value,\"phenotype/genotype trial\"\n";
+        $output_index = array();
         foreach ($puid_list as $puid) {
             $sql = "select phenotypes_name from phenotypes where phenotype_uid = ?";
             if ($stmt = mysqli_prepare($mysqli, $sql)) {
