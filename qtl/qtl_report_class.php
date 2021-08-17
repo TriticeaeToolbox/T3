@@ -485,9 +485,6 @@ class Downloads
                     if ($row2 = mysqli_fetch_array($res2)) {
                         $chrom = $row2[0];
                         $pos = $row2[1];
-                    } else {
-                        $chrom = "";
-                        $pos = "";
                     }
                     $link1 = "/jbrowse/?data=wheat&loc=$chrom:$pos";
                     $link2 = "<a target=\"_new\" href=\"$target_url" . "THTdownload_gwa1_" . $gexp . "_" . $pexp . "_" . $puid . ".png\">Manhattan</a>";
@@ -586,11 +583,10 @@ class Downloads
                 mysqli_stmt_fetch($stmt);
                 mysqli_stmt_close($stmt);
             }
-            $sql = "select phenotype_exp, gwas from $database  where phenotype_uid IN ($puid)";
+            $sql = "select gwas from $database  where phenotype_uid IN ($puid)";
             $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli) . "<br>$sql");
             while ($row = mysqli_fetch_array($res)) {
-                    $pexp = $row[0];
-                    $gwas = json_decode($row[1]);
+                    $gwas = json_decode($row[0]);
                     foreach ($gwas as $val) {
                         $marker = $val[0];
                         $chrom = $val[1];
@@ -709,7 +705,6 @@ class Downloads
                     if ($qvalue < 0.05) {
                         $goodList[$marker_name] = 1;
                     }
-
                 }
             } else {
                 foreach ($gwas as $val) {
@@ -736,6 +731,7 @@ class Downloads
         header('Content-Disposition: attachment;filename="qtl_detail.csv"');
 
         echo "\"trait\",\"marker\",\"chromosome\",position,gene,z-score,q-value,p-value,\"phenotype/genotype trial\"\n";
+        $output_index = array();
         foreach ($puid_list as $puid) {
             $sql = "select phenotypes_name from phenotypes where phenotype_uid = ?";
             if ($stmt = mysqli_prepare($mysqli, $sql)) {
@@ -804,6 +800,7 @@ class Downloads
         $browserLink['RefSeq1.1'] = "https://wheat.pw.usda.gov/jb?data=/ggds/whe-iwgsc2018&loc=";
         $browserLink['Wheat_Pangenome'] = "https://triticeaetoolbox.org/jbrowse/?data=wheat2017&loc=";
         $browserLink['OatSeedRef90'] = "https://triticeaetoolbox.org/jbrowse/?data=oat&loc=";
+        $browserLink['PepsiCo 2019'] = "https://wheat.pw.usda.gov/jb?data=/ggds/oat-ot3098-pepsico&loc=";
         // get species
         if (preg_match("/([A-Za-z]+)\/[^\/]+\/[^\/]+$/", $_SERVER['PHP_SELF'], $match)) {
             $species = $match[1];
@@ -998,6 +995,8 @@ class Downloads
             $gwas = json_decode($row[1]);
             foreach ($gwas as $val) {
                 $marker = $val[0];
+                $chrom = $val[1];
+                $pos = $val[2];
                 $zvalue = $val[3];
                 $qvalue = $val[4];
                 $pvalue = $val[5];
@@ -1019,8 +1018,6 @@ class Downloads
                             $chrom = "chr" . $chrom;
                         }
                     } else {
-                        $chrom = "";
-                        $pos = "";
                         $start = "";
                         $stop = "";
                     }

@@ -49,6 +49,8 @@ if (isset($_POST['clusters'])) {
 if (isset($_SESSION['selected_lines'])) {
     $linecount = count($_SESSION['selected_lines']);
     $clusters = min($clusters, $linecount - 1);
+} else {
+    $linecount = 0;
 }
 
 ?>
@@ -68,8 +70,7 @@ if (isset($_SESSION['selected_lines'])) {
   as your new <font color=blue>Currently selected lines</font>.
 
 <?php
-$selectedcount = count($_SESSION['selected_lines']);
-echo "<h3><font color=blue>Currently selected lines</font>: $selectedcount</h3>";
+echo "<h3><font color=blue>Currently selected lines</font>: $linecount</h3>";
 if (!isset($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0)) {
   // No lines selected so prompt to get some.
     echo "<a href=".$config['base_url']."pedigree/line_properties.php>Select lines.</a> ";

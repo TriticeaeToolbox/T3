@@ -45,7 +45,7 @@ class Histo
                 $this->runHisto();
                 break;
             case "download_session_v4":
-                $this->type1Session(V4);
+                $this->type1Session();
                 break;
             default:
                 $this->type1Select();
@@ -244,7 +244,7 @@ class Histo
             //        $phenotype = "";
             //    }
       
-       $dir = '/tmp/tht/'; 
+       $dir = '/tmp/tht/';
        $filename2 = 'THTdownload_traits_' . $unique_str . '.txt';
        $filename3 = 'THTdownload_gensel_' . $unique_str . '.R';
        $filename4 = 'THTdownload_gensel_' . $unique_str . '.png';
@@ -253,19 +253,19 @@ class Histo
        $filename7 = 'THT_result_' . $unique_str . '.csv';
 
        global $dObj;
-       if(!file_exists($dir.$filename2)){
-                    //$h = fopen($dir.$filename2, "w+");
-                    $datasets_exp = "";
-                    $subset = "yes";
-                    //$output = $this->_type1BuildTasselTraitsDownload($experiments_t,$phenotype,$datasets_exp,$subset);
-                    $output = $dObj->type1_build_traits_download($experiments_t, $phenotype, $datasets_exp);
-                    if ($output != NULL) {
-                      $h = fopen($dir.$filename2, "w+");
-                      fwrite($h,$output);
-                      fclose($h);
-                    }
-                    //fwrite($h,$this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp,$subset));
-                    //fclose($h);
+       if (!file_exists($dir.$filename2)) {
+           //$h = fopen($dir.$filename2, "w+");
+           $datasets_exp = "";
+           $subset = "yes";
+           //$output = $this->_type1BuildTasselTraitsDownload($experiments_t,$phenotype,$datasets_exp,$subset);
+           $output = $dObj->type1_build_traits_download($experiments_t, $phenotype, $datasets_exp);
+           if ($output != null) {
+               $h = fopen($dir.$filename2, "w+");
+               fwrite($h, $output);
+               fclose($h);
+           }
+           //fwrite($h,$this->type1_build_tassel_traits_download($experiments_t,$phenotype,$datasets_exp,$subset));
+           //fclose($h);
        }
     }
 }

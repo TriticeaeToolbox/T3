@@ -715,36 +715,36 @@ while ($row=mysqli_fetch_assoc($innerresult)) {
     /* replacing value in link out string */ 
     $reg_pattern = "/XXXX/";
     $replace_string = $row[value];
-    $source_string = $row[Annotation_Link];
+    $source_string = $row['Annotation_Link'];
     $linkString = preg_replace($reg_pattern,$replace_string,$source_string);
 
-    if ($row[Annotation_Name] == "HARVEST_U32") {
+    if ($row['Annotation_Name'] == "HARVEST_U32") {
 
         /* Check if link exists */
-        if ($row[Annotation_Link] != "") {
+        if ($row['Annotation_Link'] != "") {
             $worksheet->writeUrl($j, 5, "$linkString", "$row[value]",$format_link);
         } else {
             $worksheet->write($j, 5, "$row[value]",$format_row);
         }
     }
 
-    if ($row[Annotation_Name] == "HARVEST_U35") {
+    if ($row['Annotation_Name'] == "HARVEST_U35") {
 
         /* Check if link exists */
-        if ($row[Annotation_Link] != "") {
+        if ($row['Annotation_Link'] != "") {
             $worksheet->writeUrl($j, 6, "$linkString", "$row[value]",$format_link);
         } else {
             $worksheet->write($j, 6, "$row[value]",$format_row);
         }
     }
 
-if ($row[Annotation_Name] == "U32_PROBE_SET") {
+if ($row['Annotation_Name'] == "U32_PROBE_SET") {
 
     /* Check if link exists */
     if ($probe32Count != 1) {
         $j = $j + 1;
     }
-    if ($row[Annotation_Link] != "") {
+    if ($row['Annotation_Link'] != "") {
         $worksheet->writeUrl($j, 7, "$linkString", "$row[value]",$format_link);
     } else {
         $worksheet->write($j, 7, "$row[value]",$format_row);
@@ -753,18 +753,18 @@ if ($row[Annotation_Name] == "U32_PROBE_SET") {
     $jcount = $j;
 }
 
-if ($row[Annotation_Name] == "U32_RICE_LOCUS") {
+if ($row['Annotation_Name'] == "U32_RICE_LOCUS") {
     $j = $test1;
 
     /* Check if link exists */
-    if ($row[Annotation_Link] != "") {
+    if ($row['Annotation_Link'] != "") {
         $worksheet->writeUrl($j, 8, "$linkString", "$row[value]",$format_link);
     } else {
         $worksheet->write($j, 8, "$row[value]",$format_row);
     }
 }
 
-if ($row[Annotation_Name] == "U32_RICE_DESCRIPTION") {
+if ($row['Annotation_Name'] == "U32_RICE_DESCRIPTION") {
     $j = $test1;
 
     /* Check if link exists */
@@ -775,7 +775,7 @@ if ($row[Annotation_Name] == "U32_RICE_DESCRIPTION") {
     }
 }
 
-if ($row[Annotation_Name] == "U35_PROBE_SET") {
+if ($row['Annotation_Name'] == "U35_PROBE_SET") {
     if ($probe35count == 1) {
         $j = $test1;
     }
@@ -794,7 +794,7 @@ if ($row[Annotation_Name] == "U35_PROBE_SET") {
     $jcount1 = $j;
 }
 
-if ($row[Annotation_Name] == "U35_RICE_LOCUS") {
+if ($row['Annotation_Name'] == "U35_RICE_LOCUS") {
     $j = $test1;
 
     /* Check if link exists */
@@ -806,7 +806,7 @@ if ($row[Annotation_Name] == "U35_RICE_LOCUS") {
 
 }
 
-if ($row[Annotation_Name] == "U35_RICE_DESCRIPTION") {
+if ($row['Annotation_Name'] == "U35_RICE_DESCRIPTION") {
     $j = $test1;
 
     /* Check if link exists */

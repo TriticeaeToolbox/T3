@@ -23,7 +23,7 @@
 <script type="text/javascript" src="includes/core.js"></script>
 <script type="text/javascript" src="theme/new.js"></script>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-<script src="//code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="//code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script src="theme/jquery.smartmenus.min.js" type="text/javascript"></script>
 <script src='https://www.google.com/recaptcha/api.js'></script>
@@ -313,7 +313,7 @@ $lang = array(
     if ($results == "marker_primers") {
         ?>
         <li><a href="https://galaxy.triticeaetoolbox.org" target="_blank">SNP Primer Design, Galaxy Platform</a>
-        <li><a href="http://tcapg.ag.cornell.edu/primer_filter" target="_blank">KASP Primer Design, R Shiny</a>
+        <li><a href="http://shiny.triticeaetoolbox.org/primer_filter" target="_blank">KASP Primer Design, R Shiny</a>
         <?php
     }
     ?>

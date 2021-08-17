@@ -418,7 +418,7 @@ $sql = "INSERT INTO alleles (genotyping_data_uid, allele_1, allele_2, updated_on
 if (!$stmt1 = $mysqli->prepare($sql)) {
     echo "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error . "\n$sql\n";
 }
-if (!$stmt1->bind_param('iss',$gen_uid, $allele1, $allele2)) {
+if (!$stmt1->bind_param('iss', $gen_uid, $allele1, $allele2)) {
     echo "Binding parameters failed: (" . $stmt1->errno . ") " . $stmt1->error;
 }
 
@@ -434,12 +434,12 @@ if (!$stmt2->bind_param('ssi', $allele1, $allele2, $gen_uid)) {
 //for imports that take a long time there may be a deadlock when the allele cache does its daily refresh
 //this statement causes the locks to be released earlier
 $sql = "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED";
-$res = mysqli_query($mysqli,$sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
+$res = mysqli_query($mysqli, $sql) or exitFatal($errFile, "Database Error: - ". mysqli_error($mysqli)."\n\n$sql");
     
-while ($inputrow= fgets($reader))  {
+while ($inputrow= fgets($reader)) {
   // If we have too many errors stop processing - something is wrong
-  If ($errLines > 1000) {
-    exitFatal($errFile, "ERROR: Too many import lines have problem."); 
+  if ($errLines > 1000) {
+    exitFatal($errFile, "ERROR: Too many import lines have problem.");
   }    
   if (strlen($inputrow) < 2) continue;
   if (empty($inputrow)) continue;
@@ -575,6 +575,8 @@ while ($inputrow= fgets($reader))  {
 
 	/* Read in the rest of the variables */
         $alleles = $data[$data_pt];
+        /* convert No Call */
+        $alleles = str_replace("NC", "--", $alleles);
         $allele1 = substr($data[$data_pt],0,1);
 	    $allele2 = substr($data[$data_pt],1,1);
         if (($alleles == 'A') || ($alleles == 'C') || ($alleles == 'T') || ($alleles == 'G') || ($alleles == 'N') || ($alleles == 'H')) {
@@ -638,7 +640,7 @@ while ($inputrow= fgets($reader))  {
         fwrite($errFile, $msg);
         $errLines++;
     }
-} // End of while data 
+} // End of while data
 fclose($reader);
 echo "Genotyping record creation completed.\n";
 echo "Stop time - ". date("m/d/y : H:i:s", time()) ."\n";
@@ -648,9 +650,10 @@ echo "Start allele frequency calculation processing...\n";
 // Do allele frequency calculations
 $uniqExpID = array_unique($lineExpHash);
 
-foreach ($uniqExpID as $key=>$expID)  {
-
-        if (empty($expID)) continue;
+foreach ($uniqExpID as $key => $expID) {
+    if (empty($expID)) {
+        continue;
+    }
 
     // Step 1: get tht_base IDs for the experiment
     echo "Working on experiment id - " . $expID . "\n";
@@ -663,13 +666,15 @@ foreach ($uniqExpID as $key=>$expID)  {
     }
 
 //    echo "Size of experiment look up in tht_base - ".  sizeof($tht_base_uid) ."\n";
-    if (sizeof($tht_base_uid) == 0) continue;
+    if (sizeof($tht_base_uid) == 0) {
+        continue;
+    }
 
-    $tht_base_uids = implode(",",$tht_base_uid);
+    $tht_base_uids = implode(",", $tht_base_uid);
     // echo "\t tht_base_uids list - " . $tht_base_uids  . "\n";
     // Step 2: get distinct marker_uid's for these tht_base IDs
     $sql ="SELECT DISTINCT g.marker_uid FROM genotyping_data AS g WHERE g.tht_base_uid IN ($tht_base_uids)";
-    $res = mysqli_query($mysqli, $sql) or 
+    $res = mysqli_query($mysqli, $sql) or
         exitFatal($errFile, "Database Error: genotyping_data lookup with experiment uid - ". $expID . " ". mysqli_error($mysqli). ".\n\n$sql");
     while ($row = mysqli_fetch_array($res)) {
         $mk_uid[] = $row['marker_uid'];
@@ -686,8 +691,9 @@ foreach ($uniqExpID as $key=>$expID)  {
     }
 
     foreach ($mk_uids as $value) {
-
-        if (empty($value)) continue;
+        if (empty($value)) {
+            continue;
+        }
         //get marker name
         $sql ="SELECT markers.marker_name FROM markers
                    WHERE marker_uid = $value";
@@ -704,9 +710,11 @@ foreach ($uniqExpID as $key=>$expID)  {
             $geno_uid[] = $row['gid'];
         }
         echo "--- num genotype ids ".count($geno_uid)." for marker ".$value."\n";
-        $geno_uids = implode(",",$geno_uid);
+        $geno_uids = implode(",", $geno_uid);
         //print_r($geno_uids);
-        if (strlen($geno_uids) == 0 ) echo "Oops, no Genotype_data_uid\n";
+        if (strlen($geno_uids) == 0 ) {
+            echo "Oops, no Genotype_data_uid\n";
+        }
 
         // get alleles and gentrain score
         $sql ="SELECT a.allele_1,a.allele_2, a.GT_score FROM alleles AS a
@@ -729,7 +737,8 @@ foreach ($uniqExpID as $key=>$expID)  {
         $aacnt = 0;
         $abcnt = 0;
         $bbcnt = 0;
-        $misscnt =0;
+        $misscnt = 0;
+        $maf = 0;
         for ($i = 0; $i < count($a1); $i++) {
             if (($a1[$i] == 'A') and ($a2[$i] == 'A')) {
                 $aacnt++;
@@ -744,22 +753,17 @@ foreach ($uniqExpID as $key=>$expID)  {
             }
         }  //end for
         $total = $aacnt + $abcnt + $bbcnt + $misscnt;
-        $aafreq = round($aacnt / $total,3);
-        $bbfreq = round($bbcnt / $total,3);
-        $abfreq = round($abcnt / $total,3);
-        $maf = round(100 * min((2 * $aacnt + $abcnt) /(2 * $total), ($abcnt + 2 * $bbcnt) / (2 * $total)),1);
+        if ($total > 0) {
+            $aafreq = round($aacnt / $total, 3);
+            $bbfreq = round($bbcnt / $total, 3);
+            $abfreq = round($abcnt / $total, 3);
+            $maf = round(100 * min((2 * $aacnt + $abcnt) /(2 * $total), ($abcnt + 2 * $bbcnt) / (2 * $total)), 1);
+        }
         if (($aacnt == $total) or ($abcnt == $total) or ($bbcnt == $total)) {
             $mono = "Y";
         } else {
             $mono = "N";
         }
-
-       //echo $mono." Miss: ".$misscnt." AA ".$aacnt." BB ".$bbcnt." AB ".$abcnt." MAF ".$maf." total ".$total."\n";
-       //$tstcnt++;
-
-        //if ($tstcnt > 1600) {
-        //    exitFatal ($errFile, "Error: tstcnt > 1600");
-        //}
 
         $result =mysqli_query($mysqli, "SELECT allele_frequency_uid FROM allele_frequencies where experiment_uid = $expID and marker_uid = $value");
                 $rgen=mysqli_num_rows($result);
@@ -777,14 +781,14 @@ foreach ($uniqExpID as $key=>$expID)  {
                 }
         mysqli_query($mysqli, $sql) or exitFatal($errFile, "Database Error: during update or insertion into  allele_frequencies table - ". mysqli_error($mysqli) . "\n\n$sql");
         //reset key variables
-	unset($geno_uid);
+        unset($geno_uid);
         unset($a1);
         unset($a2);
         unset($gt);
     }
-    unset ($mk_uid);
-    unset ($mk_uids);
-    unset ($tht_base_uid);
+    unset($mk_uid);
+    unset($mk_uids);
+    unset($tht_base_uid);
 }
 
 echo "Allele frequency calculations completed.\nNow updating the allele cache table.\n";
@@ -792,15 +796,16 @@ $body = "Allele frequency calculations completed.\nNow updating the allele cache
 send_email($emailAddr, "Genotype import step 1", $body);
 
 // Shortcut function for mysql_query().
-function mysqlq($command) {
-  global $mysqli;
-  global $errFile;
-  mysqli_query($mysqli, $command);
-  $errmsg = mysqli_error($mysqli);
-  if (!empty($errmsg)) {
-    $exitmsg = $errmsg . "\nCommand was: \n" . $command . "\n";
-    exitFatal($errFile, $exitmsg);
-  }
+function mysqlq($command)
+{
+    global $mysqli;
+    global $errFile;
+    mysqli_query($mysqli, $command);
+    $errmsg = mysqli_error($mysqli);
+    if (!empty($errmsg)) {
+        $exitmsg = $errmsg . "\nCommand was: \n" . $command . "\n";
+        exitFatal($errFile, $exitmsg);
+    }
 }
 
 // Update table allele_cache.
@@ -839,23 +844,25 @@ mysqlq("create TABLE acxyz (line_record_uid int(10) unsigned, line_record_name v
 //$sql = "select marker_uid, marker_name from markers order by marker_name";
 $sql = "select distinct marker_uid from allele_cache order by marker_name";
 $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
-while ($row = mysqli_fetch_array($res)) 
-  /* array_push($marker_uid_list, $row[0]); */
-  $marker_uid_list[] = $row[0];
+while ($row = mysqli_fetch_array($res)) {
+    /* array_push($marker_uid_list, $row[0]); */
+    $marker_uid_list[] = $row[0];
+}
 
-foreach ($marker_uid_list as $marker_uid) 
-  mysqlq("insert into acxyz (line_record_uid, line_record_name, marker_uid, marker_name, count)
+foreach ($marker_uid_list as $marker_uid) {
+    mysqlq("insert into acxyz (line_record_uid, line_record_name, marker_uid, marker_name, count)
           select line_record_uid, line_record_name, marker_uid, marker_name, count(distinct alleles)
           from allele_cache where alleles != '--'
           and marker_uid = $marker_uid
           group by line_record_name
           having count(distinct alleles) > 1");
+}
 mysqlq("ALTER TABLE acxyz add index (line_record_uid), add index (marker_uid)");
 
 mysqlq("drop table if exists allele_conflicts_temp");
 mysqlq("create table allele_conflicts_temp (line_record_uid int(10) unsigned, marker_uid int(10) unsigned, alleles varchar(2), experiment_uid int(10) unsigned)");
-foreach ($marker_uid_list as $marker_uid) 
-  mysqlq("insert into allele_conflicts_temp (line_record_uid, marker_uid, alleles, experiment_uid)
+foreach ($marker_uid_list as $marker_uid) {
+    mysqlq("insert into allele_conflicts_temp (line_record_uid, marker_uid, alleles, experiment_uid)
           select a.line_record_uid, a.marker_uid, a.alleles, a.experiment_uid
           from allele_cache a, acxyz
           where a.marker_uid = $marker_uid
@@ -863,7 +870,7 @@ foreach ($marker_uid_list as $marker_uid)
           and a.line_record_uid = acxyz.line_record_uid
           and a.alleles != '--'
           order by a.line_record_name, a.experiment_uid");
-
+}
 mysqlq("drop table if exists allele_conflicts");
 mysqlq("rename table allele_conflicts_temp to allele_conflicts");
 
@@ -881,7 +888,7 @@ exec($cmd, $output);
 foreach ($output as $line) {
     echo "$line<br>\n";
 }
-foreach ($uniqExpID as $key=>$expID) {
+foreach ($uniqExpID as $key => $expID) {
     echo "adding entry to allele_bymarker_exp for $expID\n";
     $cmd = "/usr/bin/php " . $progPath . "cron/create-allele-bymarker-exp.php $expID";
     exec($cmd, $output);
@@ -895,7 +902,6 @@ if (filesize($errorFile)  > 0) {
     $body = "There was a problem during the offline importing process.\n".
         "Please have the curator review the error file at " . $urlPath.'curator_data/'.$tPath . "\n";
     echo "Genotype Data Import processing encountered some errors, check error file ". $errorFile , " for more information\n";
-    
 } else {
     $body = "The offline genotype data import completed successfully.\n".
     "Genotyping data import completed at - ". date("m/d/y : H:i:s", time()). "\n\n".

@@ -113,7 +113,8 @@ if (!isset($_SESSION['filtered_markers'])) {
     }
     if ($update) {
         echo "Updating table allele_byline_clust...<p>";
-        ini_set('memory_limit', '4G');
+        ini_set('memory_limit', '8G') or die("Error: could not allocate memory\n");
+            
         mysqli_query($mysqli, "truncate table allele_byline_clust") or die(mysqli_error($mysqli));
         $lookup = array('AA' => '1',
         'BB' => '0',
@@ -137,7 +138,7 @@ if (!isset($_SESSION['filtered_markers'])) {
                     $alleles[$i] = $afreq[$markerids[$i]];
                 } else {
                     // Translate to numeric score.
-	            $alleles[$i] = $lookup[$alleles[$i]];
+                    $alleles[$i] = $lookup[$alleles[$i]];
                 }
           }
         $alleles = implode(',', $alleles);

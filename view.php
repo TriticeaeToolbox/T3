@@ -73,8 +73,6 @@ if (preg_match($pattern, $table)) {
             error(1, "No Record Found");
             mysqli_stmt_close($stmt);
         }
-    } else {
-        echo "Error mysqli_error($mysqli)";
     }
 } elseif ($grin) {
     // Argument is a GRIN accession ID.

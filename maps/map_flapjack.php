@@ -1,9 +1,9 @@
 <?php
 /**
 / 4/26/2011 J.Lee  Redirect output file to Temp folder and
-/		   Address possible concurrency issue, hardwire map data
-/                  MSIE about box not adjustable, comments not updated when
-/                  selecting mapset, etc.
+/   Address possible concurrency issue, hardwire map data
+/   MSIE about box not adjustable, comments not updated when
+/   selecting mapset, etc.
 */
 
 require_once 'config.php';
@@ -121,7 +121,7 @@ class Map_FlapJack
 	
         function load_flapjack() {
 			
-	var url="<?php echo $_SERVER[PHP_SELF];?>?function=typeFlapJack";
+	var url="<?php echo $_SERVER['PHP_SELF'];?>?function=typeFlapJack";
         url = url.replace(/\/\/\/+/g, '/');
 			// Opens the url in the same window
         window.open(url, "_self");
@@ -144,7 +144,7 @@ class Map_FlapJack
         function create_output(mapsetID) {
 		
            //alert (" I was here");
-            var url="<?php echo $_SERVER[PHP_SELF];?>?function=typeMapOut" + "&msid=" + mapsetID;
+            var url="<?php echo $_SERVER['PHP_SELF'];?>?function=typeMapOut" + "&msid=" + mapsetID;
             url = url.replace(/\/\/\/+/g, '/');
 			// Opens the url in the same window
             window.open(url, "_self");

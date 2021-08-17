@@ -135,6 +135,7 @@ if (isset($_REQUEST['deep'])) {
 /* Handle the results */
 // If no hits.
 if (empty($found)) {
+    $keywords = htmlentities($keywords);
     if (isset($_REQUEST['deep'])) {
         print "<h3>In-Depth Search executed.</h3>";
         print "<p>Keyword \"$keywords\" not found.<p>";

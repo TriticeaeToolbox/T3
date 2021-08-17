@@ -45,12 +45,15 @@ if (isset($_POST['mycluster'])) {
 
 // If only a few lines are selected, reduce the suggested number of clusters.
 $clusters = 5;
-if (isset($_POST['clusters'])) 
-  $clusters = $_POST['clusters'];
+if (isset($_POST['clusters'])) {
+    $clusters = $_POST['clusters'];
+}
 if (isset($_SESSION['selected_lines'])) {
-  $linecount = count($_SESSION['selected_lines']);
-  $clusters = min($clusters, $linecount - 1);
- }
+    $linecount = count($_SESSION['selected_lines']);
+    $clusters = min($clusters, $linecount - 1);
+} else {
+    $linecount = 0;
+}
 
 ?>
 
@@ -70,15 +73,13 @@ if (isset($_SESSION['selected_lines'])) {
   as your new <font color=blue>Currently selected lines</font>. Reclustering a group of lines requires at least 25 members in a cluster.
 
 <?php
-$selectedcount = count($_SESSION['selected_lines']);
-echo "<h3><font color=blue>Currently selected lines</font>: $selectedcount</h3>";
-if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0) ) {
+echo "<h3><font color=blue>Currently selected lines</font>: $linecount</h3>";
+if (!isset($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0)) {
   // No lines selected so prompt to get some.
   echo "<a href=".$config['base_url']."pedigree/line_properties.php>Select lines</a> or ";
   echo "<a href=".$config['base_url']."downloads/select_all.php>lines and trait</a>. ";
   echo "(Patience required for more than a few hundred lines.)";
-}
-else {
+} else {
   print "<textarea rows = 9>";
   foreach ($_SESSION['selected_lines'] as $lineuid) {
     $result=mysqli_query($mysqli, "select line_record_name from line_records where line_record_uid=$lineuid") or die("invalid line uid\n");
@@ -121,4 +122,4 @@ else {
 
 echo "</div></div></div>";
 $footer_div=1;
-require $config['root_dir'].'theme/footer.php'; 
+require $config['root_dir'].'theme/footer.php';

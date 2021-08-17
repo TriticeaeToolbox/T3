@@ -1089,7 +1089,7 @@ function displayTable($query, $sortable=FALSE, $link="") {
 
 		foreach($row as $k=>$v) {
 			if(isset($tables[$k])) {
-				$v = "<a href=" . $config['base_url']."view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
+				$v = "<a href=\"" . $config['base_url']."view.php?table=" . urlencode($tables[$k]) . "&name=". urlencode($v)."\">$v</a>";
 			}
 			$ret .= "\t<td>$v</td>\n";
 		}

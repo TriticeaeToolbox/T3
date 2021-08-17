@@ -53,10 +53,10 @@ function scaled($rawvalue, $trait, $trial)
 
 // Get the Currently Selected Traits.
 if (!isset($_SESSION['selected_traits'])) {
-    finish("Please <a href=".$config[base_url]."phenotype/phenotype_selection.php>choose a set of traits</a> to combine.");
+    finish("Please <a href=".$config['base_url']."phenotype/phenotype_selection.php>choose a set of traits</a> to combine.");
 }
 $i = 0;
-foreach ($_SESSION[selected_traits] as $traitid) {
+foreach ($_SESSION['selected_traits'] as $traitid) {
     $traitids[$i] = $traitid;
     $traitnames[$i] = mysql_grab("select phenotypes_name from phenotypes where phenotype_uid=$traitid");
     $i++;
@@ -64,11 +64,11 @@ foreach ($_SESSION[selected_traits] as $traitid) {
 $traitcount = count($traitids);
 $traitlist = implode(',', $traitids);
 if ($traitcount == 0) {
-    finish("Please <a href=".$config[base_url]."phenotype/phenotype_selection.php>choose a set of traits</a> to combine.");
+    finish("Please <a href=".$config['base_url']."phenotype/phenotype_selection.php>choose a set of traits</a> to combine.");
 }
 // Currently Selected Trials
 $j = 0;
-foreach ($_SESSION[selected_trials] as $trialid) {
+foreach ($_SESSION['selected_trials'] as $trialid) {
     $trialids[$j] = $trialid;
     $trialnames[$j] = mysql_grab("select trial_code from experiments where experiment_uid = $trialid");
     $j++;
@@ -98,7 +98,7 @@ if (empty($_GET) or $_REQUEST['reselect']) {
     ?>
     Choose relative weights and a scaling method to combine the traits into an index.
     <br>If smaller values of a trait are better, reverse the scale.
-    <br>Data will come from the <a href=<?php echo $config[base_url]?>phenotype/phenotype_selection.php>currently selected trials</a>.
+    <br>Data will come from the <a href=<?php echo $config['base_url']?>phenotype/phenotype_selection.php>currently selected trials</a>.
     <br><br>
     <form>
     <table>
@@ -106,8 +106,8 @@ if (empty($_GET) or $_REQUEST['reselect']) {
 
     <?php
     // If reselecting parameters, read in the old values.
-    $weight = $_REQUEST[wt];
-    $reverse = $_REQUEST[reverse];
+    $weight = $_REQUEST['wt'];
+    $reverse = $_REQUEST['reverse'];
     // If user hasn't yet specified the relative weights, divide equally.
     foreach ($traitnames as $tn) {
         if (!$weight[$tn]) {
@@ -154,10 +154,10 @@ foreach ($entries as $cl) {
 <?php
     // end of if (empty($_REQUEST))
 } else { // Submit button was clicked.
-    $weight = $_REQUEST[wt];
+    $weight = $_REQUEST['wt'];
     $totalwt = array_sum($weight); // Needn't add up to 100.
-    $reverse = $_REQUEST[reverse];
-    $scaling = $_REQUEST[scaling];
+    $reverse = $_REQUEST['reverse'];
+    $scaling = $_REQUEST['scaling'];
     if ($_REQUEST['base-line'] != 0) {
         $scaling = "percent";
     }
@@ -196,7 +196,7 @@ foreach ($entries as $cl) {
     $res = mysqli_query($mysqli, $sql) or finish("<p>MySQL error: ". mysqli_error($mysqli));
     // Read it into the master array $actual, indexed by (trait, trial, line).
     while ($row = mysqli_fetch_array($res)) {
-        $actual[$row[phenotypes_name]][$row[trial_code]][$row[line_record_name]] = $row[value];
+        $actual[$row['phenotypes_name']][$row['trial_code']][$row['line_record_name']] = $row['value'];
         // Get the names of the lines.
         if (!in_array($row[5], $lines)) {
             $lines[] = $row[5];
@@ -215,6 +215,10 @@ foreach ($entries as $cl) {
                         $sum += $actual[$tn][$trial][$line];
                         $linecount++;
                     }
+                }
+                if ($linecount == 0) {
+                    echo "Error: no lines selected\n";
+                    continue;
                 }
                 $mean[$tn][$trial] = $sum / $linecount;
                 foreach ($lines as $line) {

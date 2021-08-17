@@ -44,7 +44,7 @@ if (isset($_GET['mml'])) {
     $max_miss_line = 10;
 }
 
-if (isset ($_SESSION['selected_lines'])) {
+if (isset($_SESSION['selected_lines'])) {
     $selected_lines = $_SESSION['selected_lines'];
     if (isset($_SESSION['geno_exps'])) {
         $experiment_uid = $_SESSION['geno_exps'][0];
@@ -54,7 +54,7 @@ if (isset ($_SESSION['selected_lines'])) {
     }
 }
 
-if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0) ) {
+if (!isset($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) == 0)) {
   // No lines selected so prompt to get some.
   echo "<a href=".$config['base_url']."pedigree/line_properties.php>Select lines.</a> ";
   echo "(Patience required for more than a few hundred lines.)";
@@ -89,23 +89,25 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
               updated_on timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	      PRIMARY KEY (line_record_uid)
 	    ) COMMENT 'Cache created from table allele_byline.'";
-    $res = mysqli_query($mysqli, $sql) or die (mysqli_error($mysqli));
-    $update = TRUE;
-  }
-  else {
+    $res = mysqli_query($mysqli, $sql) or die(mysqli_error($mysqli));
+    $update = true;
+  } else {
     // Update cache table if necessary. Empty?
-    if(mysqli_num_rows(mysqli_query($mysqli, "select line_record_uid from allele_byline_clust")) == 0)
-      $update = TRUE;
+    if (mysqli_num_rows(mysqli_query($mysqli, "select line_record_uid from allele_byline_clust")) == 0) {
+      $update = true;
+    }
     // Out of date?
     $sql = "select if( datediff(
 	    (select max(updated_on) from allele_frequencies),
 	    (select max(updated_on) from allele_byline_clust)
   	  ) > 0, 'need_update', 'okay')";
     $need = mysql_grab($sql);
-    if ($need == 'need_update') $update = TRUE;
+    if ($need == 'need_update') {
+        $update = TRUE;
+    }
   }
   if ($update) {
-    ini_set('memory_limit', '4G');
+    ini_set('memory_limit', '8G') or die("Error: can allocate memory\n");
     echo "Updating table allele_byline_clust...<p>";
     mysqli_query($mysqli, "truncate table allele_byline_clust") or die(mysqli_error($mysqli));
     $lookup = array('AA' => '1',
@@ -238,7 +240,7 @@ if (!isset ($_SESSION['selected_lines']) || (count($_SESSION['selected_lines']) 
   }
   $empty = array();
   foreach ($tmp as $id) {
-    $empty[$id] = NA;
+    $empty[$id] = 'NA';
   }
   
   if (isset($_SESSION['selected_trials'])) {

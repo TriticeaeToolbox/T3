@@ -64,6 +64,7 @@ class Protein
         echo "<a href=" . $config['base_url'] . "protein/?assembly=" . $assembly . "&search=rust>rust</a>, ";
         //echo "<a href=" . $config['base_url'] . "genes/?assembly=" . $assembly . "&search=abp1>abp1</a>, ";
         echo "<a href=" . $config['base_url'] . "protein/?assembly=" . $assembly . "&search=Dormancy>Dormancy</a><br><br>";
+        $query = htmlentities($query);
         ?>
         <form>
         <input type="hidden" name="assembly" value=<?php echo $assembly ?>>

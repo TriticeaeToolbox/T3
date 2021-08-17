@@ -75,18 +75,18 @@ class Haplotype
         $line_names=array();
         while ($row=mysqli_fetch_assoc($result)) {
             $linename=$row['line_record_name'];
-     $lineuid=$row['line_record_uid'];
-     $mkruid=$row['marker_uid'];
-     $alleleval=$row['alleles'];
-     $line_uids[$linename]=$lineuid;
-     $line_names[$lineuid]=$linename;
-     if (!isset($lines[$linename])) {
-         $lines[$linename]=array();
-     }
-     if (!isset($lines[$linename][$mkruid])) {
-         $lines[$linename][$mkruid]=$alleleval;
-     }
-   }
+            $lineuid=$row['line_record_uid'];
+            $mkruid=$row['marker_uid'];
+            $alleleval=$row['alleles'];
+            $line_uids[$linename]=$lineuid;
+            $line_names[$lineuid]=$linename;
+            if (!isset($lines[$linename])) {
+                $lines[$linename]=array();
+            }
+            if (!isset($lines[$linename][$mkruid])) {
+                $lines[$linename][$mkruid]=$alleleval;
+            }
+        }
 
    $i = 0;
    $markers = array();
@@ -171,18 +171,20 @@ class Haplotype
  }
 
  function check_session() {
-		$tmp = count($_SESSION['clicked_buttons']);
-		if ($tmp > 5) {
-		  echo "$tmp markers selected<br>\n";
-		  echo "Error - Please select no more than 5 markers<br>";
-		  echo "<p><a href=genotyping/marker_selection.php>Select markers</a></p>";
-		  return;
-		}
-		if (isset($_POST['dispMissing'])) {
-		  $dispMissing = 1;
-		} else {
-		  $dispMissing = 0;
-		}
+    if (isset($_SESSION['clicked_buttons'])) {
+	$tmp = count($_SESSION['clicked_buttons']);
+	if ($tmp > 5) {
+	  echo "$tmp markers selected<br>\n";
+	  echo "Error - Please select no more than 5 markers<br>";
+	  echo "<p><a href=genotyping/marker_selection.php>Select markers</a></p>";
+	  return;
+	}
+    }
+    if (isset($_POST['dispMissing'])) {
+	  $dispMissing = 1;
+    } else {
+	  $dispMissing = 0;
+    }
  }
 
  /* for GBS data convert calls to ACTG */
