@@ -126,7 +126,7 @@ class Downloads
 
         $typeG = $_GET['typeG'];
         $typeGE = $_GET['typeGE'];
-        if (isset($_SESSION['phenotype'])) {
+        if (is_array($_SESSION['phenotype'])) {
             $tmp = count($_SESSION['phenotype']);
             if ($tmp==1) {
                 $saved_session = "$tmp phenotype ";
